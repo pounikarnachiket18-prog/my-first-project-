@@ -4,3 +4,4 @@ output/*.cues.json
 output/*.sfx.wav
 output/*.video.mp4
 sfx/*.wav
+downloads/
