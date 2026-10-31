@@ -1,0 +1,16 @@
+{
+  "_note": "Free photos under the Unsplash License (free for commercial use, no attribution required). Run `npm run images` to download them into images/. Any slot can be replaced by dropping your own <slot>.jpg into images/.",
+  "dark_room":       { "id": "Bg7mK9nrcF4", "page": "https://unsplash.com/photos/a-person-in-a-dark-room-with-a-cell-phone-Bg7mK9nrcF4" },
+  "dark_red":        { "id": "qPK13mDKSsk", "page": "https://unsplash.com/photos/a-person-in-a-dark-room-with-a-cell-phone-qPK13mDKSsk" },
+  "man_dark":        { "id": "uOHHT4hm5Is", "page": "https://unsplash.com/photos/a-man-standing-in-a-dark-room-holding-a-cell-phone-uOHHT4hm5Is" },
+  "alarm_bed":       { "id": "sfn-Nb6ml40", "page": "https://unsplash.com/photos/an-alarm-clock-sitting-on-top-of-a-bed-sfn-Nb6ml40" },
+  "crowd_phones":    { "id": "A11J5ld9wgM", "page": "https://unsplash.com/photos/a-crowd-of-people-holding-up-their-cell-phones-A11J5ld9wgM" },
+  "concert_phones":  { "id": "kklTX22lHBo", "page": "https://unsplash.com/photos/concert-crowd-holds-up-phones-in-the-dark-kklTX22lHBo" },
+  "crowd_record":    { "id": "h0ft0UldMU0", "page": "https://unsplash.com/photos/crowd-holding-up-smartphones-to-record-an-event-h0ft0UldMU0" },
+  "friends_table":   { "id": "7rikoYB9fys", "page": "https://unsplash.com/photos/a-group-of-people-sitting-at-a-table-with-cell-phones-7rikoYB9fys" },
+  "table_phone":     { "id": "veNPSVMwXys", "page": "https://unsplash.com/photos/a-person-sitting-at-a-table-with-a-cell-phone-veNPSVMwXys" },
+  "students_hall":   { "id": "QCNJ3xGnFR4", "page": "https://unsplash.com/photos/students-looking-at-phones-in-a-lecture-hall-QCNJ3xGnFR4" },
+  "students_class":  { "id": "jIZnT7iqars", "page": "https://unsplash.com/photos/two-students-looking-at-a-smartphone-in-class-jIZnT7iqars" },
+  "walk_field":      { "id": "YM9nMOMkaHc", "page": "https://unsplash.com/photos/a-person-walking-in-a-field-YM9nMOMkaHc" },
+  "walk_mountain":   { "id": "tPKQwYHy8q4", "page": "https://unsplash.com/photos/silhouette-of-man-walking-along-field-leading-to-mountain-tPKQwYHy8q4" }
+}

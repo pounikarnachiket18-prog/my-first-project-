@@ -1,0 +1,16 @@
+{
+  "name": "reels-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Motion-graphics Instagram Reels pipeline: HTML + GSAP compositions rendered frame-by-frame with Playwright, synthesized SFX, muxed with ffmpeg.",
+  "type": "module",
+  "scripts": {
+    "sfx": "python3 tools/sfx.py",
+    "images": "node tools/fetch_images.mjs",
+    "render": "node tools/render.mjs",
+    "preview": "node tools/render.mjs --preview"
+  },
+  "dependencies": {
+    "gsap": "^3.12.5"
+  }
+}
