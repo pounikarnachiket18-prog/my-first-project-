@@ -1,0 +1,55 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@800&family=Playfair+Display:wght@900&display=block" rel="stylesheet">
+<style>
+*{margin:0;box-sizing:border-box}
+body{width:1280px;height:720px;overflow:hidden;background:#050b1c}
+.t{position:relative;width:1280px;height:720px;overflow:hidden;
+  background:radial-gradient(circle at 74% 50%,#1b3470 0,#0c1b40 38%,#050b1c 75%)}
+.dots{position:absolute;inset:0;background-image:radial-gradient(#ffffff14 1.5px,transparent 1.6px);background-size:28px 28px;
+  -webkit-mask-image:linear-gradient(90deg,transparent 30%,#000 75%)}
+.ring{position:absolute;border-radius:50%;border:2px solid #e9b84a55;left:50%;top:50%}
+.glow{position:absolute;left:940px;top:360px;width:760px;height:760px;transform:translate(-50%,-50%);
+  background:radial-gradient(circle,#f5c34a66 0,#f5c34a22 30%,transparent 62%)}
+/* banknotes */
+.note{position:absolute;width:330px;height:165px;border-radius:14px;box-shadow:0 18px 40px #0009;overflow:hidden}
+.note::before{content:"";position:absolute;inset:12px;border:2px solid #00000022;border-radius:8px}
+.note::after{content:"";position:absolute;right:38px;top:50%;width:84px;height:84px;margin-top:-42px;border-radius:50%;background:#ffffff40;border:3px solid #00000018}
+.note b{position:absolute;left:30px;bottom:22px;font:900 54px/1 "Playfair Display",serif;color:#00000055}
+.n1{left:700px;top:96px;transform:rotate(-16deg);background:linear-gradient(135deg,#c9b4ec,#9c86d0)}
+.n2{left:900px;top:470px;transform:rotate(12deg);background:linear-gradient(135deg,#f3d27a,#d9a93c)}
+/* coin */
+.coin{position:absolute;left:940px;top:360px;width:400px;height:400px;transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff2b8 0,#f6cf5c 22%,#d99a22 60%,#9a6510 100%);
+  box-shadow:0 30px 70px #000a,inset 0 0 0 14px #f8d96f,inset 0 0 0 20px #a8701a,inset 0 -12px 30px #7a4d0a}
+.coin span{position:absolute;inset:0;display:grid;place-items:center;font:800 250px/1 Inter,sans-serif;color:#7a4b06;
+  text-shadow:0 3px 0 #ffe9a0,0 -2px 0 #5a3500;padding-bottom:12px}
+.chip{position:absolute;width:96px;height:96px;border-radius:50%;display:grid;place-items:center;font:800 40px Inter,sans-serif;color:#7a4b06;
+  background:radial-gradient(circle at 35% 30%,#fff0b0,#e2a933 65%,#a06a12);box-shadow:0 12px 26px #0009,inset 0 0 0 6px #f6d36a}
+/* text */
+.txt{position:absolute;left:64px;top:56px;width:640px}
+.tag{display:inline-flex;align-items:center;gap:12px;background:#e9b84a;color:#081330;font:800 25px/1 Inter,sans-serif;letter-spacing:.06em;
+  padding:12px 20px 12px 16px;border-radius:8px;box-shadow:0 8px 20px #0007}
+.tag i{width:14px;height:14px;border-radius:50%;background:#c4161c;box-shadow:0 0 0 4px #c4161c44}
+h1{font:400 140px/.94 Anton,Impact,sans-serif;color:#fff;margin-top:26px;letter-spacing:.005em;text-transform:uppercase;
+  text-shadow:0 6px 0 #000a,0 14px 40px #000c}
+h1 em{font-style:normal;color:#ffc62e;display:block}
+.sub{margin-top:24px;font:800 34px/1.1 Inter,sans-serif;color:#cfd8f2;letter-spacing:.01em}
+.sub b{color:#fff;border-bottom:5px solid #e9b84a}
+</style></head>
+<body><div class="t">
+  <div class="dots"></div>
+  <div class="glow"></div>
+  <div class="ring" style="left:940px;width:560px;height:560px;margin:-280px 0 0 -280px"></div>
+  <div class="ring" style="left:940px;width:700px;height:700px;margin:-350px 0 0 -350px;border-color:#e9b84a30"></div>
+  <div class="ring" style="left:940px;width:860px;height:860px;margin:-430px 0 0 -430px;border-color:#e9b84a1c"></div>
+  <div class="note n1"><b>₹500</b></div>
+  <div class="note n2"><b>₹200</b></div>
+  <div class="coin"><span>₹</span></div>
+  <div class="chip" style="left:1130px;top:120px;transform:rotate(14deg)">₹10</div>
+  <div class="chip" style="left:704px;top:470px;width:80px;height:80px;font-size:34px;transform:rotate(-12deg)">₹5</div>
+  <div class="txt">
+    <div class="tag"><i></i>RBI EXPLAINED</div>
+    <h1>Who controls<em>your money?</em></h1>
+  </div>
+</div></body></html>
