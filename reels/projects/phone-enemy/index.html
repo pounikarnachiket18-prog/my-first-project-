@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="hi-Latn">
+<head>
+<meta charset="utf-8">
+<title>Phone Enemy Reel</title>
+<script src="../../node_modules/gsap/dist/gsap.min.js"></script>
+<style>
+  /* ===================================================== tokens */
+  :root {
+    --ink: #0b0b0d;
+    --paper: #f4f0e8;
+    --red: #ff2a3b;
+    --red-deep: #b3001b;
+    --white: #ffffff;
+    --mute: rgba(255,255,255,.62);
+    --display: "Inter Display", "Inter", system-ui, sans-serif;
+    --ui: "Inter", system-ui, sans-serif;
+    --emoji: "Noto Color Emoji";
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--ink); }
+  body { font-family: var(--display); color: var(--white); -webkit-font-smoothing: antialiased; }
+
+  #stage { position: absolute; inset: 0; overflow: hidden; background: var(--ink); transform-origin: 50% 50%; }
+  .scene { position: absolute; inset: 0; visibility: hidden; overflow: hidden; }
+  .fill  { position: absolute; inset: 0; }
+
+  /* photo backgrounds (used when images/<slot>.jpg exists) */
+  .photo-bg { position: absolute; inset: -6%; background-size: cover; background-position: center; }
+  .shade { position: absolute; inset: 0; }
+
+  /* ===================================================== kinetic words */
+  .w {
+    position: absolute; left: 60px; right: 60px; text-align: center;
+    font-weight: 800; letter-spacing: -0.035em; line-height: .92;
+    opacity: 0; will-change: transform, opacity, filter;
+    text-shadow: 0 6px 40px rgba(0,0,0,.45);
+  }
+  .w.dark { color: var(--ink); text-shadow: none; }
+  .w .red, .red { color: var(--red); }
+  .w .thin { font-weight: 300; }
+  .sub { font-family: var(--ui); font-weight: 500; letter-spacing: -.01em; }
+  .emoji { font-family: var(--emoji); font-weight: 400; letter-spacing: 0; }
+
+  /* ===================================================== overlays */
+  #grain {
+    position: absolute; inset: -200px; pointer-events: none; opacity: .11; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 1.4 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  #vignette { position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 85% 70% at 50% 48%, transparent 55%, rgba(0,0,0,.55) 100%); }
+  #flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+  #progress { position: absolute; left: 0; bottom: 0; height: 9px; width: 100%; background: #fff;
+    transform-origin: 0 50%; transform: scaleX(0); mix-blend-mode: difference; }
+  #handle { position: absolute; top: 150px; right: 70px; display: none; align-items: center; gap: 14px;
+    font: 600 30px var(--ui); letter-spacing: .02em; color: rgba(255,255,255,.85); mix-blend-mode: difference; }
+  #handle svg { width: 44px; height: 44px; }
+
+  /* ===================================================== phone mockup */
+  .phone {
+    position: absolute; width: 600px; height: 1230px; left: 240px; top: 520px;
+    border-radius: 96px; background: linear-gradient(145deg,#2a2a2e,#0d0d10 40%,#1b1b1f);
+    padding: 20px; box-shadow: 0 80px 160px rgba(0,0,0,.65), inset 0 0 0 3px #3a3a40, inset 0 0 0 8px #111;
+  }
+  .phone .screen { position: relative; width: 100%; height: 100%; border-radius: 78px; overflow: hidden; }
+  .phone .island { position: absolute; top: 26px; left: 50%; width: 170px; height: 50px; margin-left: -85px;
+    border-radius: 30px; background: #000; z-index: 5; }
+  .lock-time { position: absolute; top: 150px; width: 100%; text-align: center; font: 600 190px var(--display);
+    letter-spacing: -.04em; color: #fff; line-height: 1; }
+  .lock-date { position: absolute; top: 112px; width: 100%; text-align: center; font: 600 34px var(--ui); color: rgba(255,255,255,.85); }
+  .notifs { position: absolute; left: 26px; right: 26px; top: 420px; display: flex; flex-direction: column; gap: 16px; }
+  .notif {
+    display: flex; gap: 18px; align-items: center; padding: 22px 24px; border-radius: 38px;
+    background: rgba(250,250,252,.82); color: #111; box-shadow: 0 10px 30px rgba(0,0,0,.18);
+    opacity: 0;
+  }
+  .notif .ic { flex: none; width: 72px; height: 72px; border-radius: 18px; display: grid; place-items: center; font: 40px var(--emoji); }
+  .notif .tx { flex: 1; min-width: 0; font-family: var(--ui); }
+  .notif .tt { display: flex; justify-content: space-between; font-size: 25px; font-weight: 700; }
+  .notif .tt span { font-weight: 500; color: #777; font-size: 22px; }
+  .notif .bd { font-size: 25px; font-weight: 450; color: #222; margin-top: 4px; line-height: 1.2; }
+
+  /* ===================================================== collage cards */
+  .card { position: absolute; border-radius: 26px; overflow: hidden; box-shadow: 0 40px 80px rgba(0,0,0,.28), 0 6px 18px rgba(0,0,0,.15); opacity: 0; }
+  .card.photo { border: 14px solid #fff; border-radius: 10px; background: #ddd center/cover no-repeat; }
+  .post { background: #fff; color: #111; font-family: var(--ui); }
+  .post .hd { display: flex; align-items: center; gap: 14px; padding: 20px 22px; font-weight: 700; font-size: 24px; }
+  .post .av { width: 52px; height: 52px; border-radius: 50%; padding: 3px; background: conic-gradient(#ff2a6d,#ffb800,#ff2a6d); }
+  .post .av i { display: block; width: 100%; height: 100%; border-radius: 50%; border: 3px solid #fff; }
+  .post .img { height: 380px; display: grid; place-items: center; font: 150px var(--emoji); }
+  .post .ft { padding: 18px 22px 24px; font-size: 23px; }
+  .post .ft b { font-size: 26px; }
+  .vid { background: #111; color: #fff; font-family: var(--ui); }
+  .vid .play { position: absolute; left: 50%; top: 44%; width: 120px; height: 120px; margin: -60px; border-radius: 50%;
+    background: rgba(255,255,255,.18); display: grid; place-items: center; }
+  .vid .play:after { content: ""; margin-left: 12px; border-left: 46px solid #fff; border-top: 28px solid transparent; border-bottom: 28px solid transparent; }
+  .vid .meta { position: absolute; left: 26px; bottom: 30px; right: 26px; font-size: 24px; font-weight: 600; }
+  .vid .bar { position: absolute; left: 0; bottom: 0; height: 8px; width: 63%; background: var(--red); }
+  .chat { background: #ece5dd; font-family: var(--ui); padding: 26px; display: flex; flex-direction: column; gap: 14px; }
+  .chat .b { max-width: 82%; padding: 16px 22px; border-radius: 24px; font-size: 27px; color: #111; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,.08); }
+  .chat .b.me { align-self: flex-end; background: #d9fdd3; }
+
+  /* ===================================================== screen-time widget */
+  .st {
+    position: absolute; left: 110px; right: 110px; top: 640px; padding: 56px 56px 50px; border-radius: 64px;
+    background: linear-gradient(180deg,#1f1f23,#141417); box-shadow: 0 60px 140px rgba(0,0,0,.6), inset 0 0 0 2px rgba(255,255,255,.06);
+    font-family: var(--ui);
+  }
+  .st .lbl { font-size: 30px; font-weight: 600; color: var(--mute); letter-spacing: .02em; }
+  .st .big { font: 800 150px var(--display); letter-spacing: -.045em; margin-top: 6px; line-height: 1; }
+  .st .delta { font-size: 30px; font-weight: 600; color: var(--red); margin-top: 14px; }
+  .st .bars { display: flex; align-items: flex-end; gap: 28px; height: 300px; margin-top: 46px; border-bottom: 2px solid rgba(255,255,255,.12); }
+  .st .bars div { flex: 1; border-radius: 14px 14px 4px 4px; background: linear-gradient(180deg,#ff5468,#ff2a3b); transform-origin: 50% 100%; transform: scaleY(0); }
+  .st .days { display: flex; gap: 28px; margin-top: 16px; }
+  .st .days span { flex: 1; text-align: center; font-size: 26px; color: var(--mute); font-weight: 600; }
+
+  /* ===================================================== hearts */
+  .heart { position: absolute; width: 90px; height: 90px; left: 495px; top: 1500px; opacity: 0; }
+  .likepill { position: absolute; left: 50%; top: 600px; transform: translateX(-50%); padding: 26px 46px; border-radius: 100px;
+    background: var(--red); font: 800 64px var(--display); letter-spacing: -.02em; display: flex; gap: 18px; align-items: center; opacity: 0; white-space: nowrap; }
+
+  /* ===================================================== loss list */
+  .loss { position: absolute; left: 120px; right: 120px; top: 520px; display: flex; flex-direction: column; gap: 46px; }
+  .loss .row { position: relative; display: flex; align-items: center; justify-content: space-between; font: 800 120px var(--display); letter-spacing: -.04em; opacity: 0; }
+  .loss .row .strike { position: absolute; left: -12px; top: 52%; height: 16px; width: 640px; background: var(--red); transform-origin: 0 50%; transform: scaleX(0); }
+  .loss .row .x { color: var(--red); font-size: 110px; }
+  .dream { margin-top: 30px; opacity: 0; }
+  .dream .t { font: 800 120px var(--display); letter-spacing: -.04em; display: flex; justify-content: space-between; align-items: baseline; }
+  .dream .t small { font: 600 46px var(--ui); color: var(--red); letter-spacing: 0; }
+  .dream .track { height: 40px; border-radius: 40px; background: rgba(255,255,255,.12); margin-top: 26px; overflow: hidden; }
+  .dream .track i { display: block; height: 100%; width: 3%; background: var(--red); border-radius: 40px; transform-origin: 0 50%; transform: scaleX(0); }
+  .dream .pending { font: 700 40px var(--ui); color: var(--mute); margin-top: 22px; letter-spacing: .3em; }
+
+  /* ===================================================== turn + CTA (light) */
+  .light { background: var(--paper); color: var(--ink); }
+  .sun { position: absolute; left: 140px; right: 140px; top: 300px; height: 560px; border-radius: 50px; overflow: hidden;
+    background: linear-gradient(180deg,#ffd9a8 0%,#ffb37c 45%,#f4876c 100%); box-shadow: 0 40px 90px rgba(80,40,0,.18); opacity: 0; }
+  .sun .disc { position: absolute; left: 50%; width: 300px; height: 300px; margin-left: -150px; top: 330px; border-radius: 50%;
+    background: radial-gradient(circle,#fff6d8 0%,#ffe08a 55%,#ffc463 100%); box-shadow: 0 0 120px 40px rgba(255,232,150,.7); }
+  .sun .hill { position: absolute; left: -10%; right: -10%; height: 260px; border-radius: 50% 50% 0 0; }
+  .sun .walker { position: absolute; left: 50%; bottom: 112px; width: 46px; height: 120px; margin-left: -23px; }
+  .tip { position: absolute; left: 90px; right: 90px; display: flex; align-items: center; gap: 34px; padding: 38px 44px; border-radius: 44px;
+    background: #fff; box-shadow: 0 24px 60px rgba(40,30,10,.12); font: 700 50px var(--ui); letter-spacing: -.02em; color: var(--ink); opacity: 0; }
+  .tip .emoji { font-size: 76px; }
+  .tip .n { margin-left: auto; font: 800 40px var(--display); color: rgba(0,0,0,.22); }
+  .ctabar { position: absolute; left: 90px; right: 90px; top: 1340px; display: flex; flex-direction: column; gap: 22px; }
+  .pill { padding: 30px 40px; border-radius: 34px; font: 700 42px var(--ui); letter-spacing: -.015em; opacity: 0; line-height: 1.2; }
+  .pill.dark { background: var(--ink); color: #fff; }
+  .pill.redp { background: var(--red); color: #fff; }
+  .ul { position: absolute; left: 0; right: 0; bottom: 4px; height: 18px; background: var(--red); transform-origin: 0 50%; transform: scaleX(0); border-radius: 4px; }
+  .underline { position: absolute; height: 22px; background: var(--red); transform-origin: 0 50%; transform: scaleX(0); border-radius: 4px; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- =========================== A: HOOK -->
+  <section class="scene" id="sA">
+    <div class="fill" style="background: radial-gradient(ellipse 70% 45% at 50% 62%, #12305a 0%, #070b16 55%, #020204 100%)"></div>
+    <div class="photo-bg" data-slot="dark_room"></div>
+    <div class="shade" style="background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,.35) 40%, rgba(0,0,0,.75))"></div>
+    <div class="phone" id="aPhone" style="top: 2100px">
+      <div class="screen" style="background: radial-gradient(circle at 50% 35%, #3b6cff 0%, #1a2a6c 45%, #050814 100%)">
+        <div class="island"></div>
+        <div class="lock-date">Raat ke</div>
+        <div class="lock-time">2:47</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== B: MORNING -->
+  <section class="scene" id="sB">
+    <div class="fill" style="background: radial-gradient(ellipse 80% 60% at 50% 30%, #3a2a1c 0%, #120d09 70%)"></div>
+    <div class="photo-bg" data-slot="alarm_bed"></div>
+    <div class="shade" style="background: linear-gradient(180deg, rgba(0,0,0,.65), rgba(0,0,0,.35) 50%, rgba(0,0,0,.7))"></div>
+    <div class="phone" id="bPhone" style="top: 560px">
+      <div class="screen" style="background: linear-gradient(170deg,#ffb07a 0%,#e86a6a 40%,#5b2a6e 100%)">
+        <div class="island"></div>
+        <div class="lock-date">Shanivaar, 1 November</div>
+        <div class="lock-time">7:02</div>
+        <div class="notifs" id="bNotifs"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== C: SCROLL COLLAGE (white) -->
+  <section class="scene" id="sC" style="background: radial-gradient(ellipse at 50% 45%, #ffffff 0%, #ecebe8 70%, #d9d7d2 100%)">
+    <div class="fill" id="cCards"></div>
+    <div id="cCounter" class="sub" style="position:absolute; top: 175px; z-index:5; width:100%; text-align:center; color:#111; opacity:0">
+      <div style="font: 600 34px var(--ui); letter-spacing:.2em; color: rgba(0,0,0,.5)">REELS DEKHE</div>
+      <div id="cCount" style="font: 800 170px var(--display); letter-spacing:-.05em; line-height:1; text-shadow: 0 0 30px #fff, 0 0 60px #fff">1</div>
+    </div>
+  </section>
+
+  <!-- =========================== D: SCREEN TIME -->
+  <section class="scene" id="sD">
+    <div class="fill" style="background: radial-gradient(ellipse 80% 60% at 50% 45%, #1d0a0e 0%, #070607 70%)"></div>
+    <div class="photo-bg" data-slot="man_dark"></div>
+    <div class="shade" style="background: rgba(0,0,0,.72)"></div>
+    <div class="st" id="dCard">
+      <div class="lbl">SCREEN TIME · ROZ KA AVERAGE</div>
+      <div class="big" id="dBig">0h 00m</div>
+      <div class="delta">▲ 38% pichhle hafte se zyada</div>
+      <div class="bars" id="dBars"></div>
+      <div class="days"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+    </div>
+  </section>
+
+  <!-- =========================== E: DOPAMINE -->
+  <section class="scene" id="sE">
+    <div class="fill" style="background: radial-gradient(ellipse 80% 60% at 50% 60%, #3d0610 0%, #0c0204 75%)"></div>
+    <div class="photo-bg" data-slot="concert_phones"></div>
+    <div class="shade" style="background: linear-gradient(180deg, rgba(20,0,4,.8), rgba(20,0,4,.55) 50%, rgba(20,0,4,.85))"></div>
+    <div class="fill" id="eHearts"></div>
+    <div class="likepill" id="eLike"><span class="emoji">❤️</span><span id="eLikeN">+1</span></div>
+  </section>
+
+  <!-- =========================== F: LOSS -->
+  <section class="scene" id="sF">
+    <div class="fill" style="background: #070708"></div>
+    <div class="photo-bg" data-slot="students_hall"></div>
+    <div class="shade" style="background: rgba(5,5,6,.82)"></div>
+    <div class="loss" id="fLoss">
+      <div class="row"><span>Focus</span><span class="x">✕</span><i class="strike"></i></div>
+      <div class="row"><span>Neend</span><span class="x">✕</span><i class="strike"></i></div>
+      <div class="row"><span>Padhai</span><span class="x">✕</span><i class="strike"></i></div>
+      <div class="dream" id="fDream">
+        <div class="t"><span>Sapne</span><small id="fPct">0%</small></div>
+        <div class="track"><i id="fBar"></i></div>
+        <div class="pending" id="fPend">LOADING…</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== G: TURN (light) -->
+  <section class="scene light" id="sG">
+    <div class="sun" id="gSun">
+      <div class="disc" id="gDisc"></div>
+      <div class="hill" style="bottom:-60px; background:#e9784f"></div>
+      <div class="hill" style="bottom:-150px; left:-30%; right:20%; background:#c95a3a"></div>
+      <svg class="walker" viewBox="0 0 46 120"><circle cx="23" cy="12" r="11" fill="#5a2a1e"/><path d="M23 24 L23 70 M23 70 L10 118 M23 70 L36 118 M23 34 L6 60 M23 34 L40 58" stroke="#5a2a1e" stroke-width="9" stroke-linecap="round" fill="none"/></svg>
+    </div>
+    <div class="photo-bg card photo" data-slot="walk_field" style="inset: auto; left:140px; right:140px; top:300px; height:560px; opacity:0"></div>
+  </section>
+
+  <!-- =========================== H: CTA (light) -->
+  <section class="scene light" id="sH">
+    <div class="tip" style="top: 640px"><span class="emoji">📵</span><span>Phone doosre<br>kamre mein</span><span class="n">01</span></div>
+    <div class="tip" style="top: 870px"><span class="emoji">⏰</span><span>Asli alarm<br>clock wapas</span><span class="n">02</span></div>
+    <div class="tip" style="top: 1100px"><span class="emoji">🌅</span><span>Uthte hi 1 ghanta<br>no phone</span><span class="n">03</span></div>
+    <div class="ctabar">
+      <div class="pill dark"><span class="emoji">📌</span>  Save karo — kal se shuru</div>
+      <div class="pill redp"><span class="emoji">👀</span>  Bhejo us dost ko jo abhi bhi scroll kar raha hai</div>
+    </div>
+  </section>
+
+  <!-- kinetic text layer (above all scenes) -->
+  <div class="fill" id="words"></div>
+
+  <div id="grain"></div>
+  <div id="vignette"></div>
+  <div id="flash"></div>
+  <div id="handle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg><span id="handleTx"></span></div>
+  <div id="progress"></div>
+</div>
+
+<script>
+/* ==================================================================== config */
+const CONFIG = {
+  handle: "",          // e.g. "@yourname" — shows a watermark top-right when set
+  fps: 30,
+  duration: 27.6,
+};
+
+/* ==================================================================== setup */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const AVAIL = new Set(window.AVAILABLE_IMAGES || []);
+const imgFor = (slot) => ["jpg", "jpeg", "png", "webp"].map((e) => `${slot}.${e}`).find((f) => AVAIL.has(f));
+let seed = 1337;
+const rnd = () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296);
+const R = (a, b) => a + rnd() * (b - a);
+
+// photo slots: show the photo if present, otherwise keep the designed fallback
+$$("[data-slot]").forEach((el) => {
+  const f = imgFor(el.dataset.slot);
+  if (f) { el.style.backgroundImage = `url(images/${f})`; el.dataset.has = "1"; }
+  else el.style.display = "none";
+});
+if (CONFIG.handle) { $("#handle").style.display = "flex"; $("#handleTx").textContent = CONFIG.handle; }
+
+const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+const cues = [];
+const updaters = [];
+const sfx = (t, name, gain = 1, extra = {}) => cues.push({ t: +t.toFixed(3), sfx: name, gain, ...extra });
+
+/* scene visibility */
+function scene(id, t0, t1) {
+  tl.set(`#${id}`, { visibility: "visible" }, t0);
+  tl.set(`#${id}`, { visibility: "hidden" }, t1);
+}
+
+/* kinetic word: appears at t, leaves at t1 */
+const W = $("#words");
+function word(html, t, t1, o = {}) {
+  const el = document.createElement("div");
+  el.className = "w" + (o.dark ? " dark" : "");
+  el.innerHTML = html;
+  el.style.fontSize = (o.size || 130) + "px";
+  el.style.top = (o.y ?? 860) + "px";
+  if (o.weight) el.style.fontWeight = o.weight;
+  if (o.align) el.style.textAlign = o.align;
+  W.appendChild(el);
+  const from = o.from || { opacity: 0, scale: 1.28, filter: "blur(16px)" };
+  tl.fromTo(el, from, { opacity: 1, scale: 1, y: 0, x: 0, filter: "blur(0px)", duration: o.inDur || 0.24, ease: o.ease || "expo.out" }, t);
+  if (o.drift) tl.to(el, { scale: 1.06, duration: t1 - t, ease: "none" }, t);
+  if (t1 != null) tl.to(el, { opacity: 0, filter: "blur(10px)", scale: o.outScale || 0.94, duration: 0.12, ease: "power2.in" }, t1 - 0.12);
+  if (o.sfx !== false) sfx(t - 0.03, o.sfx || "swish", o.gain ?? 0.55);
+  return el;
+}
+
+/* RGB-split glitch on an element over [t, t+dur] */
+function glitch(el, t, dur = 0.45, power = 1) {
+  const steps = Math.round(dur / 0.04);
+  for (let i = 0; i < steps; i++) {
+    const dx = R(-18, 18) * power, dy = R(-6, 6) * power;
+    tl.set(el, {
+      x: dx, y: dy, skewX: R(-8, 8) * power,
+      textShadow: `${R(-22, 22) * power}px 0 rgba(255,0,60,.9), ${R(-22, 22) * power}px 0 rgba(0,220,255,.85)`,
+      clipPath: rnd() < 0.35 ? `inset(${R(0, 40)}% 0 ${R(0, 40)}% 0)` : "inset(0% 0 0% 0)",
+    }, t + i * 0.04);
+  }
+  tl.set(el, { x: 0, y: 0, skewX: 0, textShadow: "0 6px 40px rgba(0,0,0,.45)", clipPath: "inset(0% 0 0% 0)" }, t + dur);
+}
+
+/* camera shake on the stage */
+function shake(t, dur = 0.35, amp = 22) {
+  const steps = Math.round(dur / 0.033);
+  for (let i = 0; i < steps; i++) {
+    const k = 1 - i / steps;
+    tl.set("#stage", { x: R(-amp, amp) * k, y: R(-amp, amp) * k, rotation: R(-0.8, 0.8) * k }, t + i * 0.033);
+  }
+  tl.set("#stage", { x: 0, y: 0, rotation: 0 }, t + dur);
+}
+
+/* blur-zoom transition helper: scene out */
+function zoomOut(id, t) {
+  tl.fromTo(`#${id}`, { scale: 1, filter: "blur(0px) brightness(1)", opacity: 1 }, { scale: 1.25, filter: "blur(30px) brightness(1.4)", opacity: 0, duration: 0.3, ease: "power2.in", immediateRender: false }, t - 0.3);
+  sfx(t - 0.32, "whoosh", 0.75);
+}
+function zoomIn(id, t) {
+  tl.fromTo(`#${id}`, { scale: 0.86, filter: "blur(24px) brightness(1)", opacity: 0 }, { scale: 1, filter: "blur(0px) brightness(1)", opacity: 1, duration: 0.42, ease: "expo.out" }, t);
+}
+function flash(t, peak = 0.85, dur = 0.35) {
+  tl.fromTo("#flash", { opacity: peak }, { opacity: 0, duration: dur, ease: "power2.out", immediateRender: false }, t);
+}
+function kenburns(id, t0, t1, from = 1.0, to = 1.12) {
+  const bg = $(`#${id} .photo-bg[data-has]`);
+  if (bg) tl.fromTo(bg, { scale: from }, { scale: to, duration: t1 - t0, ease: "none" }, t0);
+}
+
+/* ==================================================================== TIMELINE */
+sfx(0, "drone", 0.32, { dur: 20.1 });
+
+/* ---------- A. HOOK  0.0 – 3.4 ---------- */
+scene("sA", 0, 3.4);
+kenburns("sA", 0, 3.4, 1.15, 1.0);
+tl.fromTo("#sA", { opacity: 1 }, { opacity: 1, duration: 0.01 }, 0);
+word("Tumhara", 0.05, 0.5, { size: 150, y: 820, sfx: "whoosh", gain: 0.6 });
+word("sabse bada", 0.5, 0.95, { size: 150, y: 820 });
+const dushman = word('<span class="red">DUSHMAN</span>', 0.95, 1.95, { size: 230, y: 790, sfx: "hit", gain: 1, inDur: 0.12, from: { opacity: 0, scale: 2.2, filter: "blur(30px)" } });
+glitch(dushman, 1.02, 0.42, 1);
+sfx(1.0, "glitch", 0.6);
+shake(0.97, 0.4, 26);
+flash(0.95, 0.35, 0.3);
+word("tumhari", 1.95, 2.35, { size: 130, y: 470, sfx: "swish" });
+word('<span class="thin">jeb mein</span> <span class="red">hai.</span>', 2.35, 3.3, { size: 150, y: 470, sfx: "swish" });
+tl.to("#aPhone", { top: 620, duration: 0.45, ease: "back.out(1.4)" }, 2.25);
+sfx(2.33, "hit", 0.75);
+sfx(2.45, "buzz", 0.7);
+shake(2.52, 0.3, 14);
+tl.to("#aPhone", { rotation: 1.4, duration: 0.05, yoyo: true, repeat: 7, ease: "none" }, 2.5);  // vibrate
+zoomOut("sA", 3.4);
+
+/* ---------- B. MORNING  3.4 – 6.3 ---------- */
+scene("sB", 3.4, 6.3);
+zoomIn("sB", 3.4);
+kenburns("sB", 3.4, 6.3);
+tl.fromTo("#bPhone", { y: 120, scale: 0.92 }, { y: 0, scale: 1, duration: 2.9, ease: "power2.out" }, 3.4);
+word('Subah aankh<br><span class="thin">khulte hi…</span>', 3.5, 4.55, { size: 110, y: 200, sfx: false });
+word('pehla kaam<span class="red">?</span>', 4.55, 5.55, { size: 130, y: 220 });
+const NOTIFS = [
+  ["🎬", "linear-gradient(135deg,#ff2a6d,#ffb800)", "Reels", "abhi", "12 naye reels tumhara wait kar rahe hain"],
+  ["💬", "#25c25a", "Chats", "2m", "Group: 147 unread messages"],
+  ["🛍️", "#ff8a00", "Shop", "5m", "Sale khatam hone wali hai! Jaldi karo 🔥"],
+  ["🎮", "#7b5cff", "Games", "9m", "Tumhari lives refill ho gayi ❤️"],
+];
+NOTIFS.forEach(([ic, bg, app, ago, body], i) => {
+  const n = document.createElement("div");
+  n.className = "notif";
+  n.innerHTML = `<div class="ic" style="background:${bg}">${ic}</div><div class="tx"><div class="tt">${app}<span>${ago}</span></div><div class="bd">${body}</div></div>`;
+  $("#bNotifs").appendChild(n);
+  const t = 4.75 + i * 0.27;
+  tl.fromTo(n, { opacity: 0, y: -60, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.35, ease: "back.out(1.8)" }, t);
+  sfx(t, i === 0 ? "ding" : "pop", i === 0 ? 0.55 : 0.5);
+});
+word('<span class="red">PHONE.</span>', 5.6, 6.3, { size: 200, y: 200, sfx: "hit", gain: 0.7, inDur: 0.14, from: { opacity: 0, scale: 1.8, filter: "blur(20px)" } });
+shake(5.6, 0.25, 12);
+zoomOut("sB", 6.3);
+
+/* ---------- C. SCROLL COLLAGE  6.3 – 9.7 ---------- */
+scene("sC", 6.3, 9.7);
+flash(6.3, 0.6, 0.25);
+const CARDS = [
+  { slot: "crowd_phones",   kind: "post",  emo: "🏝️", grad: "linear-gradient(135deg,#7fd3ff,#ffd59e)", user: "@travel.daily", likes: "24.1K", x: 70,  y: 530, w: 440, h: 560, r: -9 },
+  { slot: "friends_table",  kind: "vid",   x: 560, y: 480, w: 420, h: 600, r: 7, views: "2.3M views", grad: "linear-gradient(160deg,#3a1c71,#d76d77,#ffaf7b)" },
+  { slot: "students_class", kind: "chat",  x: 120, y: 1110, w: 470, h: 430, r: 5 },
+  { slot: "concert_phones", kind: "post",  emo: "🍕", grad: "linear-gradient(135deg,#ffcf71,#ff6f61)", user: "@foodie.bhai", likes: "8,903", x: 560, y: 1080, w: 420, h: 540, r: -6 },
+  { slot: "crowd_record",   kind: "vid",   x: 300, y: 760, w: 480, h: 640, r: -2, views: "11M views", grad: "linear-gradient(160deg,#0f2027,#2c5364,#00d2ff)" },
+  { slot: "dark_red",       kind: "post",  emo: "😂", grad: "linear-gradient(135deg,#f9d423,#ff4e50)", user: "@memes.official", likes: "312K", x: 40,  y: 820, w: 420, h: 540, r: 11 },
+  { slot: "table_phone",    kind: "chat",  x: 590, y: 790, w: 440, h: 400, r: -10 },
+];
+CARDS.forEach((c, i) => {
+  const el = document.createElement("div");
+  const photo = imgFor(c.slot);
+  el.className = "card " + (photo ? "photo" : c.kind);
+  Object.assign(el.style, { left: c.x + "px", top: c.y + "px", width: c.w + "px", height: c.h + "px" });
+  if (photo) el.style.backgroundImage = `url(images/${photo})`;
+  else if (c.kind === "post") el.innerHTML = `<div class="hd"><div class="av"><i style="background:${c.grad}"></i></div>${c.user}</div><div class="img" style="background:${c.grad};height:${c.h - 190}px">${`<span class="emoji">${c.emo}</span>`}</div><div class="ft"><b>♥ ${c.likes}</b> likes · 💬 · ↗</div>`;
+  else if (c.kind === "vid") el.innerHTML = `<div class="fill" style="background:${c.grad}"></div><div class="play"></div><div class="meta">▶ ${c.views}<br><span style="font-weight:400;opacity:.8">Bas ye wala dekh lo…</span></div><div class="bar"></div>`;
+  else el.innerHTML = `<div class="b">bro ye reel dekh 😂😂</div><div class="b me">hahaha 💀</div><div class="b">ek aur bhejta hu</div><div class="b me">bhej</div>`;
+  $("#cCards").appendChild(el);
+  const t = 6.35 + i * 0.36;
+  const dir = i % 2 ? 1 : -1;
+  tl.fromTo(el, { opacity: 0, x: dir * 700, y: R(-200, 200), rotation: c.r + dir * 25, scale: 1.25 },
+    { opacity: 1, x: 0, y: 0, rotation: c.r, scale: 1, duration: 0.42, ease: "expo.out" }, t);
+  tl.to(el, { y: -40, duration: 9.7 - t, ease: "none" }, t + 0.42);
+  sfx(t - 0.04, i % 2 ? "whoosh" : "swish", 0.5, { pan: dir * 0.4 });
+  sfx(t + 0.16, "shutter", 0.18);
+});
+word("Ek reel.", 6.45, 7.1, { size: 140, y: 1540, dark: true, sfx: false });
+word('Bas <span class="red">ek aur.</span>', 7.1, 7.8, { size: 140, y: 1540, dark: true, sfx: false });
+word('"Sirf 5 minute…"', 7.8, 8.55, { size: 120, y: 1550, dark: true, sfx: false });
+word('<span class="red">2 ghante</span> baad.', 8.55, 9.65, { size: 135, y: 1540, dark: true, sfx: "hit", gain: 0.55 });
+tl.fromTo("#cCounter", { opacity: 0, y: -40 }, { opacity: 1, y: 0, duration: 0.3 }, 6.5);
+updaters.push((t) => {
+  if (t < 6.5 || t > 9.7) return;
+  const k = Math.min(1, (t - 6.5) / 2.9);
+  const n = Math.max(1, Math.round(1 + 185 * Math.pow(k, 2.2)));
+  $("#cCount").textContent = n;
+});
+for (let t = 6.6; t < 9.35; t += 0.11 - Math.min(0.06, (t - 6.6) * 0.025)) sfx(t, "counter", 0.35);
+zoomOut("sC", 9.7);
+
+/* ---------- D. SCREEN TIME  9.7 – 13.1 ---------- */
+scene("sD", 9.7, 13.1);
+zoomIn("sD", 9.7);
+kenburns("sD", 9.7, 13.1);
+const BARS = [0.62, 0.71, 0.58, 0.83, 0.77, 0.94, 1.0];
+BARS.forEach((h, i) => {
+  const b = document.createElement("div");
+  b.style.height = h * 100 + "%";
+  $("#dBars").appendChild(b);
+  tl.to(b, { scaleY: 1, duration: 0.45, ease: "back.out(1.6)" }, 9.95 + i * 0.09);
+  sfx(9.95 + i * 0.09, "tick", 0.35);
+});
+tl.fromTo("#dCard", { y: 160, opacity: 0, rotationX: 25 }, { y: 0, opacity: 1, rotationX: 0, duration: 0.6, ease: "expo.out" }, 9.75);
+updaters.push((t) => {
+  if (t < 9.7 || t > 13.1) return;
+  const k = gsap.parseEase("power2.out")(Math.min(1, Math.max(0, (t - 9.9) / 1.1)));
+  const m = Math.round(402 * k);
+  $("#dBig").textContent = `${Math.floor(m / 60)}h ${String(m % 60).padStart(2, "0")}m`;
+});
+word("Roz 6+ ghante…", 11.05, 11.75, { size: 110, y: 330 });
+tl.to("#dCard", { y: 260, scale: 0.86, opacity: 0.35, filter: "blur(6px)", duration: 0.5, ease: "power2.inOut" }, 11.7);
+word('<span class="thin">matlab saal ke</span>', 11.75, 13.05, { size: 90, y: 330, sfx: false });
+const din = word('<span class="red">91 DIN.</span>', 11.95, 13.05, { size: 260, y: 520, sfx: "boom", gain: 1, inDur: 0.12, from: { opacity: 0, scale: 0.4, filter: "blur(30px)" } });
+sfx(11.95, "hit", 0.8);
+shake(11.95, 0.45, 24);
+glitch(din, 12.0, 0.25, 0.6);
+word('<span class="sub" style="font-size:54px; color:var(--mute)">Poore 3 mahine. Gayab.</span>', 12.3, 13.05, { size: 54, y: 860, sfx: false });
+zoomOut("sD", 13.1);
+
+/* ---------- E. DOPAMINE  13.1 – 16.7 ---------- */
+scene("sE", 13.1, 16.7);
+zoomIn("sE", 13.1);
+kenburns("sE", 13.1, 16.7);
+const HEART = `<svg viewBox="0 0 24 24"><path fill="#ff2a3b" d="M12 21.6 10.6 20.3C5.4 15.6 2 12.5 2 8.6 2 5.5 4.4 3 7.5 3c1.7 0 3.4.8 4.5 2.1C13.1 3.8 14.8 3 16.5 3 19.6 3 22 5.5 22 8.6c0 3.9-3.4 7-8.6 11.7L12 21.6z"/></svg>`;
+for (let i = 0; i < 34; i++) {
+  const h = document.createElement("div");
+  h.className = "heart";
+  h.innerHTML = HEART;
+  $("#eHearts").appendChild(h);
+  const t = 13.2 + i * 0.075;
+  const s = R(0.5, 1.6);
+  tl.fromTo(h, { opacity: 0, x: R(-80, 80), y: 0, scale: 0.2, rotation: R(-30, 30) },
+    { opacity: 1, scale: s, duration: 0.25, ease: "back.out(3)" }, t);
+  tl.to(h, { x: R(-480, 480), y: R(-1500, -900), rotation: R(-60, 60), duration: R(1.6, 2.6), ease: "power1.out" }, t);
+  tl.to(h, { opacity: 0, duration: 0.5, ease: "none" }, t + 1.3);
+  if (i % 3 === 0) sfx(t, i % 2 ? "pop_high" : "pop", 0.32, { pan: R(-0.6, 0.6) });
+}
+tl.fromTo("#eLike", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2.5)" }, 13.25);
+updaters.push((t) => {
+  if (t < 13.1 || t > 16.7) return;
+  const k = Math.min(1, Math.max(0, (t - 13.25) / 1.6));
+  $("#eLikeN").textContent = "+" + Math.round(1 + 1283 * Math.pow(k, 2)).toLocaleString("en-IN") + " likes";
+});
+tl.to("#eLike", { opacity: 0, y: -60, duration: 0.25 }, 14.9);
+word("Har like…", 13.3, 13.95, { size: 130, y: 860 });
+word("har notification…", 13.95, 14.6, { size: 110, y: 860 });
+word('<span class="thin">ek chhota sa</span>', 14.6, 15.0, { size: 110, y: 760 });
+const nasha = word('<span class="red">NASHA.</span>', 15.0, 15.85, { size: 250, y: 860, sfx: "heartbeat", gain: 1, inDur: 0.1, from: { opacity: 0, scale: 1.6, filter: "blur(24px)" } });
+tl.to(nasha, { scale: 1.08, duration: 0.11, yoyo: true, repeat: 3, ease: "power1.inOut" }, 15.12);
+sfx(15.0, "hit", 0.5);
+shake(15.0, 0.3, 14);
+word('<span class="thin">Ye apps free nahi hain.</span>', 15.85, 16.25, { size: 92, y: 760 });
+word('Keemat?<br><span class="red">Tumhara TIME.</span>', 16.25, 16.75, { size: 120, y: 780, sfx: "pop_low", gain: 0.5 });
+zoomOut("sE", 16.75);
+
+/* ---------- F. LOSS  16.75 – 20.2 ---------- */
+scene("sF", 16.75, 20.2);
+zoomIn("sF", 16.75);
+kenburns("sF", 16.75, 20.2);
+$$("#fLoss .row").forEach((row, i) => {
+  const t = 16.9 + i * 0.5;
+  tl.fromTo(row, { opacity: 0, x: -120 }, { opacity: 1, x: 0, duration: 0.28 }, t);
+  sfx(t - 0.03, "swish", 0.45);
+  tl.to($(".strike", row), { scaleX: 1, duration: 0.18, ease: "power4.out" }, t + 0.24);
+  tl.fromTo($(".x", row), { scale: 0, rotation: -90 }, { scale: 1, rotation: 0, duration: 0.3, ease: "back.out(3)" }, t + 0.24);
+  tl.to($("span", row), { opacity: 0.35, duration: 0.2 }, t + 0.3);
+  sfx(t + 0.24, "glitch", 0.35);
+  sfx(t + 0.25, "pop_low", 0.45);
+});
+tl.fromTo("#fDream", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.35 }, 18.45);
+sfx(18.42, "whoosh", 0.4);
+tl.to("#fBar", { scaleX: 1, duration: 1.0, ease: "power1.out" }, 18.7);
+updaters.push((t) => {
+  if (t < 16.75 || t > 20.2) return;
+  const k = Math.min(1, Math.max(0, (t - 18.7) / 1.0));
+  $("#fPct").textContent = Math.round(3 * k) + "%";
+  $("#fPend").textContent = t > 19.35 ? "PENDING… FOREVER?" : "LOADING…";
+  $("#fPend").style.color = t > 19.35 ? "#ff2a3b" : "";
+});
+for (let i = 0; i < 4; i++) sfx(18.75 + i * 0.22, "key", 0.4);
+sfx(18.9, "riser_short", 0.55);
+sfx(19.35, "glitch", 0.5);
+glitch("#fDream", 19.35, 0.5, 0.8);
+// CRT power-off
+tl.fromTo("#stage", { scaleY: 1, filter: "brightness(1)" }, { scaleY: 0.004, filter: "brightness(3)", duration: 0.22, ease: "power4.in", immediateRender: false }, 19.85);
+tl.to("#stage", { scaleX: 0, duration: 0.14, ease: "power4.in" }, 20.07);
+tl.set("#stage", { scaleX: 1, scaleY: 1, filter: "none" }, 20.25);
+sfx(19.85, "whoosh_down", 0.6);
+sfx(20.05, "tick", 0.6);
+
+/* ---------- G. TURN  20.5 – 23.9 ---------- */
+// short silence of black, then the light opens
+scene("sG", 20.5, 23.9);
+tl.fromTo("#sG", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, 20.5);
+sfx(20.45, "pad", 0.75, { dur: 7.2 });
+sfx(20.5, "whoosh_long", 0.35);
+const sunEl = imgFor("walk_field") ? "#sG .photo-bg" : "#gSun";
+tl.fromTo(sunEl, { opacity: 0, y: 80, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.9, ease: "expo.out" }, 20.55);
+tl.fromTo("#gDisc", { y: 120 }, { y: -40, duration: 3.3, ease: "power1.out" }, 20.55);
+word('<span class="thin">Phone ek</span>', 20.75, 22.3, { size: 100, y: 1010, dark: true, sfx: "pop_low", gain: 0.4, from: { opacity: 0, y: 40, filter: "blur(8px)" } });
+word("TOOL hai.", 21.05, 22.3, { size: 190, y: 1120, dark: true, sfx: "hit", gain: 0.45, from: { opacity: 0, y: 60, filter: "blur(12px)" } });
+word('<span class="thin">Tumhara</span>', 22.3, 23.85, { size: 100, y: 1010, dark: true, sfx: "pop_low", gain: 0.4, from: { opacity: 0, y: 40, filter: "blur(8px)" } });
+word('<span class="red" style="position:relative;display:inline-block">MAALIK<i class="ul"></i></span> nahi.', 22.55, 23.85, { size: 165, y: 1125, dark: true, sfx: "hit", gain: 0.55, from: { opacity: 0, y: 60, filter: "blur(12px)" } });
+tl.fromTo("#words .ul", { scaleX: 0 }, { scaleX: 1, duration: 0.35, ease: "power4.out" }, 22.85);
+sfx(22.83, "swish", 0.5);
+
+/* ---------- H. CTA  23.9 – end ---------- */
+scene("sH", 23.9, CONFIG.duration + 1);
+tl.fromTo("#sH", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 23.9);
+sfx(23.85, "whoosh", 0.45);
+word('Aaj raat se <span class="red">try karo:</span>', 23.95, null, { size: 96, y: 400, dark: true, sfx: false, from: { opacity: 0, y: -40, filter: "blur(10px)" } });
+$$("#sH .tip").forEach((el, i) => {
+  const t = 24.35 + i * 0.42;
+  tl.fromTo(el, { opacity: 0, x: 500, rotation: 4 }, { opacity: 1, x: 0, rotation: 0, duration: 0.5, ease: "expo.out" }, t);
+  sfx(t - 0.03, "swish", 0.45);
+  sfx(t + 0.12, "pop", 0.45);
+});
+$$("#sH .pill").forEach((el, i) => {
+  const t = 25.75 + i * 0.4;
+  tl.fromTo(el, { opacity: 0, y: 80, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.7)" }, t);
+  sfx(t, i ? "ding" : "pop_high", 0.45);
+});
+tl.to(".pill.redp", { scale: 1.035, duration: 0.35, yoyo: true, repeat: 2, ease: "sine.inOut" }, 26.4);
+
+/* global progress bar */
+tl.fromTo("#progress", { scaleX: 0 }, { scaleX: 1, duration: CONFIG.duration, ease: "none" }, 0);
+tl.set({}, {}, CONFIG.duration);
+
+/* ==================================================================== API */
+const grain = $("#grain");
+window.REEL = {
+  width: 1080, height: 1920, fps: CONFIG.fps, duration: CONFIG.duration,
+  cues: cues.sort((a, b) => a.t - b.t),
+  seek(t) {
+    tl.seek(t, false);
+    updaters.forEach((fn) => fn(t));
+    const f = Math.floor(t * 24);
+    grain.style.transform = `translate(${(f * 73) % 200 - 100}px, ${(f * 131) % 200 - 100}px)`;
+  },
+};
+window.REEL_READY = (async () => {
+  await document.fonts.ready;
+  await Promise.all([...document.querySelectorAll("[data-has]")].map((el) => new Promise((res) => {
+    const img = new Image(); img.onload = img.onerror = res; img.src = el.style.backgroundImage.slice(5, -2);
+  })));
+  $$("#fLoss .row").forEach((r) => ($(".strike", r).style.width = $("span", r).offsetWidth + 24 + "px"));
+  REEL.seek(0);
+})();
+</script>
+</body>
+</html>
