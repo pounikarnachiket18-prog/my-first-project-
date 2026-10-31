@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Image Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Montserrat:wght@400;800&family=Noto+Sans+Devanagari:wght@400;800&family=Poppins:wght@400;700;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0f13;--panel:#171920;--line:#2a2d38;--text:#e9eaf0;--muted:#9097a8;--accent:#ffcc00;--accent-ink:#111;--ok:#3ecf8e;--warn:#ff8a4c}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#f4f5f8;--panel:#fff;--line:#dde0e8;--text:#15171d;--muted:#5d6475;--accent:#1d4ed8;--accent-ink:#fff}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+header h1{font-size:18px;margin:0 8px 0 0}
+.tabs{display:flex;gap:6px}
+.tab{background:none;border:1px solid var(--line);color:var(--text);padding:7px 14px;border-radius:999px;cursor:pointer;font:inherit}
+.tab.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+main{padding:16px;max-width:1400px;margin:0 auto}
+.view{display:none}.view.on{display:block}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+input[type=text],input[type=search],input[type=password],select,textarea{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:9px 11px;font:inherit;min-width:0}
+textarea{width:100%;resize:vertical}
+button.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer}
+button.ghost{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font:inherit;cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+#q{flex:1 1 260px}
+.note{color:var(--muted);font-size:13px;margin:8px 0}
+.grid{columns:4 220px;column-gap:12px;margin-top:14px}
+.card{break-inside:avoid;margin:0 0 12px;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.card img{display:block;width:100%;height:auto;background:var(--line);min-height:80px}
+.card .meta{padding:8px 10px;font-size:12px;color:var(--muted)}
+.card .meta b{color:var(--text);font-weight:600}
+.card .acts{display:flex;gap:6px;padding:0 10px 10px;flex-wrap:wrap}
+.card .acts button{font-size:12px;padding:6px 10px}
+.badge{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--ok);color:var(--ok);margin-right:4px}
+.badge.att{border-color:var(--warn);color:var(--warn)}
+.editor{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start}
+@media (max-width:900px){.editor{grid-template-columns:1fr}}
+.stage{background:repeating-conic-gradient(var(--line) 0 25%,transparent 0 50%) 0 0/20px 20px;border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;justify-content:center;align-items:center;min-height:300px}
+#cv{max-width:100%;max-height:78vh;height:auto;box-shadow:0 6px 30px #0006;touch-action:none;cursor:grab}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+.panel h3{font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:14px 0 8px}
+.panel h3:first-child{margin-top:0}
+label.f{display:grid;grid-template-columns:96px 1fr 40px;align-items:center;gap:8px;font-size:13px;margin:5px 0}
+label.f input[type=range]{width:100%}
+label.f output{font-size:12px;color:var(--muted);text-align:right}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:14px;text-align:center;color:var(--muted);font-size:13px;cursor:pointer}
+.drop.hot{border-color:var(--accent);color:var(--text)}
+#credit{font-size:12px;color:var(--muted);margin-top:8px;word-break:break-word}
+.more{text-align:center;margin:12px 0}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:9px 16px;border-radius:8px;font-size:14px;opacity:0;transition:.2s;pointer-events:none;max-width:90vw}
+#toast.on{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <h1>Image Studio</h1>
+  <div class="tabs">
+    <button class="tab on" data-view="find">Find images</button>
+    <button class="tab" data-view="edit">Editor</button>
+  </div>
+</header>
+
+<main>
+<!-- ========== FIND ========== -->
+<section class="view on" id="view-find">
+  <form class="row" id="searchForm">
+    <input type="search" id="q" placeholder="Search free images: mountains, smartphone, money, city night…" autofocus>
+    <select id="source" title="Image source">
+      <option value="openverse">Openverse (800M+ CC images)</option>
+      <option value="pixabay">Pixabay (needs free API key)</option>
+      <option value="picsum">Random photo backgrounds</option>
+    </select>
+    <select id="lic" title="License filter">
+      <option value="free">No attribution needed (CC0 / Public domain)</option>
+      <option value="commercial">Commercial use OK (credit may be required)</option>
+    </select>
+    <select id="orient" title="Orientation">
+      <option value="">Any shape</option>
+      <option value="tall">Portrait (reels/stories)</option>
+      <option value="wide">Landscape (YouTube)</option>
+      <option value="square">Square</option>
+    </select>
+    <button class="btn" type="submit">Search</button>
+  </form>
+  <div class="row" id="pixabayRow" style="display:none;margin-top:8px">
+    <input type="password" id="pxKey" placeholder="Pixabay API key (free at pixabay.com/api/docs)" style="flex:1 1 300px">
+    <button class="ghost" type="button" id="saveKey">Save key</button>
+  </div>
+  <p class="note" id="status">Every result is free to use in your content. The default filter shows only CC0 / public-domain images, which need no credit. Click <b>Edit</b> to put text on an image, or <b>Download</b> to save the full-size file.</p>
+  <div class="grid" id="grid"></div>
+  <div class="more"><button class="ghost" id="moreBtn" style="display:none">Load more</button></div>
+</section>
+
+<!-- ========== EDIT ========== -->
+<section class="view" id="view-edit">
+  <div class="editor">
+    <div>
+      <div class="stage"><canvas id="cv" width="1080" height="1920"></canvas></div>
+      <div id="credit"></div>
+    </div>
+    <div class="panel">
+      <h3>Image</h3>
+      <div class="drop" id="drop">Drop, paste (Ctrl+V) or <u>choose</u> an image<input type="file" id="file" accept="image/*" hidden></div>
+      <h3>Canvas size</h3>
+      <select id="preset" style="width:100%">
+        <option value="1080x1920">Reel / Story / Short — 1080×1920</option>
+        <option value="1080x1350">Instagram portrait post — 1080×1350</option>
+        <option value="1080x1080">Square post — 1080×1080</option>
+        <option value="1280x720">YouTube thumbnail — 1280×720</option>
+        <option value="1920x1080">YouTube video frame — 1920×1080</option>
+        <option value="2560x1440">YouTube banner — 2560×1440</option>
+        <option value="1000x1500">Pinterest pin — 1000×1500</option>
+      </select>
+      <h3>Framing <span style="text-transform:none;letter-spacing:0">(or drag the image)</span></h3>
+      <label class="f">Zoom<input type="range" id="zoom" min="1" max="3" step="0.01" value="1"><output></output></label>
+      <h3>Adjust</h3>
+      <label class="f">Brightness<input type="range" id="bri" min="30" max="170" value="100"><output></output></label>
+      <label class="f">Contrast<input type="range" id="con" min="30" max="170" value="100"><output></output></label>
+      <label class="f">Saturation<input type="range" id="sat" min="0" max="200" value="100"><output></output></label>
+      <label class="f">Blur<input type="range" id="blur" min="0" max="30" value="0"><output></output></label>
+      <label class="f">B&amp;W<input type="range" id="gray" min="0" max="100" value="0"><output></output></label>
+      <label class="f">Darken<input type="range" id="dark" min="0" max="90" value="0"><output></output></label>
+      <label class="f">Bottom fade<input type="range" id="fade" min="0" max="100" value="35"><output></output></label>
+      <h3>Text</h3>
+      <textarea id="txt" rows="3" placeholder="Your headline (new line = new line)">PHONE IS YOUR
+BIGGEST ENEMY</textarea>
+      <div class="row" style="margin-top:6px">
+        <select id="font" style="flex:1">
+          <option value="Anton">Anton</option>
+          <option value="Bebas Neue">Bebas Neue</option>
+          <option value="Poppins" data-w="900">Poppins Black</option>
+          <option value="Montserrat" data-w="800">Montserrat</option>
+          <option value="Playfair Display" data-w="700">Playfair (serif)</option>
+          <option value="Noto Sans Devanagari" data-w="800">Noto Devanagari (हिंदी)</option>
+        </select>
+        <input type="color" id="color" value="#ffffff" title="Text colour">
+        <input type="color" id="hl" value="#ffcc00" title="Highlight colour for *starred* words">
+      </div>
+      <p class="note" style="margin:4px 0">Wrap words in *stars* to highlight them.</p>
+      <label class="f">Size<input type="range" id="size" min="30" max="260" value="120"><output></output></label>
+      <label class="f">Position<input type="range" id="ty" min="5" max="95" value="72"><output></output></label>
+      <label class="f">Outline<input type="range" id="stroke" min="0" max="20" value="0"><output></output></label>
+      <label class="f">Shadow<input type="range" id="shadow" min="0" max="60" value="20"><output></output></label>
+      <div class="row">
+        <select id="align"><option value="center">Center</option><option value="left">Left</option></select>
+        <label style="font-size:13px"><input type="checkbox" id="box"> Text box</label>
+        <label style="font-size:13px"><input type="checkbox" id="upper" checked> CAPS</label>
+      </div>
+      <input type="text" id="handle" placeholder="@yourhandle (watermark, optional)" style="width:100%;margin-top:8px">
+      <h3>Export</h3>
+      <div class="row">
+        <button class="btn" id="dlPng">PNG</button>
+        <button class="btn" id="dlJpg">JPG</button>
+        <button class="ghost" id="copyBtn">Copy</button>
+        <button class="ghost" id="resetBtn">Reset</button>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<div id="toast"></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+const store = { get(k){try{return localStorage.getItem(k)}catch{return null}}, set(k,v){try{localStorage.setItem(k,v)}catch{}} };
+const toast = (m) => { const t=$("#toast"); t.textContent=m; t.classList.add("on"); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove("on"),2600); };
+
+/* ---------- tabs ---------- */
+function show(view){ document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.view===view)); document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on",v.id==="view-"+view)); }
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>show(b.dataset.view));
+
+/* ---------- search ---------- */
+let page=1, lastQuery="";
+$("#pxKey").value = store.get("pixabayKey") || "";
+$("#saveKey").onclick = () => { store.set("pixabayKey",$("#pxKey").value.trim()); toast("Pixabay key saved in this browser"); };
+$("#source").onchange = () => { $("#pixabayRow").style.display = $("#source").value==="pixabay" ? "flex" : "none"; };
+$("#searchForm").onsubmit = (e) => { e.preventDefault(); page=1; $("#grid").innerHTML=""; search(); };
+$("#moreBtn").onclick = () => { page++; search(); };
+
+async function search(){
+  const q=$("#q").value.trim(), src=$("#source").value;
+  if(!q && src!=="picsum"){ toast("Type something to search"); return; }
+  lastQuery=q; $("#status").textContent="Searching…"; $("#moreBtn").style.display="none";
+  try{
+    const {items,hasMore} = await ({openverse:searchOpenverse,pixabay:searchPixabay,picsum:searchPicsum})[src](q,page);
+    items.forEach(addCard);
+    $("#status").textContent = items.length||page>1 ? `${$("#grid").children.length} images. All free to use; check the badge to see if credit is needed.` : "No results. Try a simpler word, or switch the license filter.";
+    $("#moreBtn").style.display = hasMore ? "inline-block" : "none";
+  }catch(err){ $("#status").textContent = "Search failed: "+err.message; }
+}
+
+async function searchOpenverse(q,p){
+  const lic=$("#lic").value, o=$("#orient").value;
+  const u=new URL("https://api.openverse.org/v1/images/");
+  u.searchParams.set("q",q); u.searchParams.set("page",p); u.searchParams.set("page_size",20); u.searchParams.set("mature","false");
+  if(lic==="free") u.searchParams.set("license","cc0,pdm"); else u.searchParams.set("license_type","commercial");
+  if(o) u.searchParams.set("aspect_ratio",o);
+  const r=await fetch(u); if(r.status===429) throw new Error("Openverse rate limit reached; wait a minute and try again.");
+  if(!r.ok) throw new Error("Openverse returned "+r.status); const j=await r.json();
+  return { hasMore: p < (j.page_count||1), items: j.results.map(x=>({
+    thumb: x.thumbnail || x.url, full: x.url, alt: `https://api.openverse.org/v1/images/${x.id}/thumb/?full_size=true&compressed=false`,
+    title: x.title || "Untitled", w:x.width, h:x.height,
+    free: ["cc0","pdm"].includes(x.license), license: x.license==="pdm"?"Public domain":x.license==="cc0"?"CC0":("CC "+x.license.toUpperCase()+" "+(x.license_version||"")).trim(),
+    credit: x.attribution || `"${x.title}" by ${x.creator||"unknown"}, ${x.license}`, page: x.foreign_landing_url, by: x.creator||x.provider }))};
+}
+async function searchPixabay(q,p){
+  const key=$("#pxKey").value.trim() || store.get("pixabayKey"); if(!key) throw new Error("add your free Pixabay API key first (pixabay.com/api/docs).");
+  const o=$("#orient").value;
+  const u=new URL("https://pixabay.com/api/"); u.searchParams.set("key",key); u.searchParams.set("q",q.slice(0,100)); u.searchParams.set("page",p);
+  u.searchParams.set("per_page",30); u.searchParams.set("safesearch","true"); u.searchParams.set("image_type","photo");
+  if(o==="tall") u.searchParams.set("orientation","vertical"); if(o==="wide") u.searchParams.set("orientation","horizontal");
+  const r=await fetch(u); if(!r.ok) throw new Error("Pixabay returned "+r.status+(r.status===400?" (check your API key)":"")); const j=await r.json();
+  return { hasMore: p*30 < Math.min(j.totalHits,500), items: j.hits.map(x=>({
+    thumb:x.webformatURL, full:x.largeImageURL, alt:x.webformatURL, title:x.tags, w:x.imageWidth, h:x.imageHeight,
+    free:true, license:"Pixabay License", credit:`Image by ${x.user} from Pixabay`, page:x.pageURL, by:x.user }))};
+}
+async function searchPicsum(q,p){
+  const o=$("#orient").value, [w,h] = o==="tall"?[1080,1920]:o==="square"?[1080,1080]:[1920,1080];
+  const r=await fetch(`https://picsum.photos/v2/list?page=${p}&limit=30`); if(!r.ok) throw new Error("Picsum returned "+r.status); const j=await r.json();
+  return { hasMore:true, items:j.map(x=>({
+    thumb:`https://picsum.photos/id/${x.id}/400/${Math.round(400*h/w)}`, full:`https://picsum.photos/id/${x.id}/${w}/${h}`, alt:x.download_url,
+    title:`Photo by ${x.author}`, w, h, free:true, license:"Unsplash License", credit:`Photo by ${x.author} on Unsplash`, page:x.url, by:x.author }))};
+}
+
+function addCard(it){
+  const c=document.createElement("div"); c.className="card";
+  const img=new Image(); img.loading="lazy"; img.referrerPolicy="no-referrer"; img.src=it.thumb; img.alt=it.title;
+  img.onerror=()=>{ if(img.src!==it.full) img.src=it.full; else c.remove(); };
+  const meta=document.createElement("div"); meta.className="meta";
+  meta.innerHTML=`<span class="badge ${it.free?"":"att"}">${it.free?"No credit needed":"Credit required"}</span><span></span><br><b></b>`;
+  meta.querySelector("span:nth-child(2)").textContent=it.license+(it.w?` · ${it.w}×${it.h}`:"");
+  meta.querySelector("b").textContent=it.title.slice(0,80);
+  const acts=document.createElement("div"); acts.className="acts";
+  const mk=(label,cls,fn)=>{const b=document.createElement("button");b.className=cls;b.textContent=label;b.onclick=fn;acts.append(b);return b;};
+  mk("Edit","btn",()=>loadRemote(it));
+  const dl=mk("Download","ghost",async()=>{dl.disabled=true;await downloadRemote(it);dl.disabled=false;});
+  mk("Copy credit","ghost",()=>copyText(it.credit));
+  if(it.page) mk("Source","ghost",()=>window.open(it.page,"_blank","noopener"));
+  c.append(img,meta,acts); $("#grid").append(c);
+}
+async function copyText(t){ try{await navigator.clipboard.writeText(t);toast("Copied: "+t.slice(0,60));}catch{prompt("Copy this:",t);} }
+const safeName = (s) => (s||"image").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,50) || "image";
+async function fetchBlob(urls){ for(const u of urls){ try{ const r=await fetch(u,{referrerPolicy:"no-referrer"}); if(r.ok){ const b=await r.blob(); if(b.type.startsWith("image/")) return b; } }catch{} } return null; }
+function saveBlob(blob,name){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.append(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(a.href),5000); }
+async function downloadRemote(it){
+  toast("Downloading…");
+  const b=await fetchBlob([it.full,it.alt]);
+  if(!b){ window.open(it.full,"_blank","noopener"); toast("Opened full image in a new tab: right-click → Save image"); return; }
+  const ext=(b.type.split("/")[1]||"jpg").replace("jpeg","jpg").replace("svg+xml","svg");
+  saveBlob(b,`${safeName(it.title)}.${ext}`); if(!it.free) copyText(it.credit);
+}
+
+/* ---------- editor ---------- */
+const cv=$("#cv"), ctx=cv.getContext("2d");
+let photo=null, pan={x:0,y:0}, credit="";
+const ctl=["zoom","bri","con","sat","blur","gray","dark","fade","size","ty","stroke","shadow"];
+const defaults={}; ctl.forEach(id=>defaults[id]=$("#"+id).value);
+document.querySelectorAll("#view-edit input, #view-edit select, #view-edit textarea").forEach(el=>el.addEventListener("input",draw));
+$("#preset").onchange=()=>{ const [w,h]=$("#preset").value.split("x").map(Number); cv.width=w; cv.height=h; pan={x:0,y:0}; draw(); };
+
+function setPhoto(img,cr){ photo=img; credit=cr||""; pan={x:0,y:0}; $("#zoom").value=1; $("#credit").textContent=credit?"Credit: "+credit:""; show("edit"); draw(); }
+function loadImg(src){ return new Promise((ok,no)=>{ const i=new Image(); i.crossOrigin="anonymous"; i.referrerPolicy="no-referrer"; i.onload=()=>ok(i); i.onerror=no; i.src=src; }); }
+async function loadRemote(it){
+  toast("Loading image…");
+  // Prefer a blob (always canvas-safe); fall back to a CORS image element.
+  const b=await fetchBlob([it.full,it.alt]);
+  try{ const img = b ? await loadImg(URL.createObjectURL(b)) : await loadImg(it.full).catch(()=>loadImg(it.alt)); setPhoto(img, it.free?"":it.credit); }
+  catch{ toast("This host blocks editing. Use Download, then drop the file into the editor."); }
+}
+function loadFile(f){ if(!f||!f.type.startsWith("image/")) return; loadImg(URL.createObjectURL(f)).then(i=>setPhoto(i,"")); }
+$("#drop").onclick=()=>$("#file").click();
+$("#file").onchange=(e)=>loadFile(e.target.files[0]);
+["dragover","dragenter"].forEach(ev=>document.addEventListener(ev,e=>{e.preventDefault();$("#drop").classList.add("hot");}));
+["dragleave","drop"].forEach(ev=>document.addEventListener(ev,e=>{e.preventDefault();$("#drop").classList.remove("hot");}));
+document.addEventListener("drop",e=>loadFile(e.dataTransfer.files[0]));
+document.addEventListener("paste",e=>{ const f=[...(e.clipboardData?.files||[])].find(f=>f.type.startsWith("image/")); if(f) loadFile(f); });
+
+// drag to reposition
+let drag=null;
+cv.addEventListener("pointerdown",e=>{ if(!photo) return; cv.setPointerCapture(e.pointerId); cv.style.cursor="grabbing"; const k=cv.width/cv.getBoundingClientRect().width; drag={x:e.clientX,y:e.clientY,px:pan.x,py:pan.y,k}; });
+cv.addEventListener("pointermove",e=>{ if(!drag) return; pan.x=drag.px+(e.clientX-drag.x)*drag.k; pan.y=drag.py+(e.clientY-drag.y)*drag.k; draw(); });
+cv.addEventListener("pointerup",()=>{ drag=null; cv.style.cursor="grab"; });
+
+function draw(){
+  document.querySelectorAll("label.f").forEach(l=>{ const i=l.querySelector("input"); l.querySelector("output").textContent=i.value; });
+  const W=cv.width, H=cv.height, v=id=>+$("#"+id).value;
+  ctx.save(); ctx.filter="none"; ctx.clearRect(0,0,W,H);
+  if(photo){
+    const s=Math.max(W/photo.naturalWidth,H/photo.naturalHeight)*v("zoom"), dw=photo.naturalWidth*s, dh=photo.naturalHeight*s;
+    pan.x=Math.min(Math.max(pan.x,-(dw-W)/2),(dw-W)/2); pan.y=Math.min(Math.max(pan.y,-(dh-H)/2),(dh-H)/2);
+    ctx.filter=`brightness(${v("bri")}%) contrast(${v("con")}%) saturate(${v("sat")}%) grayscale(${v("gray")}%) blur(${v("blur")*W/1080}px)`;
+    const bleed=v("blur")?v("blur")*3:0; // hide soft edges when blurred
+    ctx.drawImage(photo,(W-dw)/2+pan.x-bleed,(H-dh)/2+pan.y-bleed,dw+bleed*2,dh+bleed*2);
+    ctx.filter="none";
+  }else{
+    const g=ctx.createLinearGradient(0,0,W,H); g.addColorStop(0,"#1e1b4b"); g.addColorStop(1,"#0f766e"); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  }
+  if(v("dark")){ ctx.fillStyle=`rgba(0,0,0,${v("dark")/100})`; ctx.fillRect(0,0,W,H); }
+  if(v("fade")){ const g=ctx.createLinearGradient(0,H*0.35,0,H); g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,`rgba(0,0,0,${v("fade")/100})`); ctx.fillStyle=g; ctx.fillRect(0,0,W,H); }
+  ctx.restore();
+  drawText(W,H,v);
+}
+
+function drawText(W,H,v){
+  let raw=$("#txt").value; if(!raw.trim()) return drawHandle(W,H);
+  if($("#upper").checked) raw=raw.toUpperCase();
+  const opt=$("#font").selectedOptions[0], weight=opt.dataset.w||"400", fam=opt.value;
+  const size=v("size")*Math.min(W,H)/1080, lh=size*1.08, pad=W*0.07, maxW=W-pad*2, align=$("#align").value;
+  ctx.font=`${weight} ${size}px "${fam}", Impact, sans-serif`; ctx.textBaseline="middle";
+  // tokenize into words with highlight flags, wrap to width
+  const lines=[];
+  raw.split("\n").forEach(par=>{ let hl=false, line=[], lw=0; const space=ctx.measureText(" ").width;
+    par.split(/\s+/).filter(Boolean).forEach(tok=>{ const parts=tok.split("*"); let txt="", flags=[];
+      parts.forEach((p,i)=>{ if(i>0) hl=!hl; if(p){ txt+=p; flags.push([p,hl]); } });
+      const w=ctx.measureText(txt).width;
+      if(line.length && lw+space+w>maxW){ lines.push(line); line=[]; lw=0; }
+      if(line.length) lw+=space; line.push({segs:flags,w}); lw+=w; });
+    lines.push(line); });
+  const total=lines.length*lh, cy=H*v("ty")/100, top=Math.min(Math.max(cy-total/2,pad*0.5),H-total-pad*0.5);
+  const space=ctx.measureText(" ").width, widths=lines.map(l=>l.reduce((a,w)=>a+w.w,0)+space*Math.max(l.length-1,0));
+  if($("#box").checked){ const bw=Math.max(...widths)+size*0.6; const bx=align==="center"?(W-bw)/2:pad-size*0.3; ctx.fillStyle="rgba(0,0,0,.6)"; roundRect(bx,top-size*0.25,bw,total+size*0.4,size*0.2); }
+  lines.forEach((line,i)=>{ let x=align==="center"?(W-widths[i])/2:pad; const y=top+lh*i+lh/2;
+    line.forEach(word=>{ word.segs.forEach(([t,hl])=>{ const w=ctx.measureText(t).width;
+      ctx.shadowColor="rgba(0,0,0,.7)"; ctx.shadowBlur=v("shadow")*W/1080; ctx.shadowOffsetY=v("shadow")*W/4000;
+      if(v("stroke")){ ctx.lineWidth=v("stroke")*size/60; ctx.strokeStyle="#000"; ctx.lineJoin="round"; ctx.strokeText(t,x,y); ctx.shadowColor="transparent"; }
+      ctx.fillStyle=hl?$("#hl").value:$("#color").value; ctx.textAlign="left"; ctx.fillText(t,x,y); ctx.shadowColor="transparent"; x+=w; }); x+=space; }); });
+  drawHandle(W,H);
+}
+function drawHandle(W,H){ const h=$("#handle").value.trim(); if(!h) return; const s=Math.min(W,H)*0.032;
+  ctx.font=`600 ${s}px Poppins, sans-serif`; ctx.textAlign="center"; ctx.textBaseline="alphabetic"; ctx.fillStyle="rgba(255,255,255,.75)"; ctx.shadowColor="rgba(0,0,0,.6)"; ctx.shadowBlur=s/3; ctx.fillText(h,W/2,H-s*1.6); ctx.shadowColor="transparent"; }
+function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.fill(); }
+
+const fileBase=()=>safeName($("#txt").value.split("\n")[0])+"-"+cv.width+"x"+cv.height;
+$("#dlPng").onclick=()=>cv.toBlob(b=>saveBlob(b,fileBase()+".png"),"image/png");
+$("#dlJpg").onclick=()=>cv.toBlob(b=>saveBlob(b,fileBase()+".jpg"),"image/jpeg",0.92);
+$("#copyBtn").onclick=()=>cv.toBlob(async b=>{ try{ await navigator.clipboard.write([new ClipboardItem({"image/png":b})]); toast("Image copied to clipboard"); }catch{ toast("Clipboard not allowed here; use PNG instead"); } },"image/png");
+$("#resetBtn").onclick=()=>{ ctl.forEach(id=>$("#"+id).value=defaults[id]); pan={x:0,y:0}; draw(); };
+
+document.fonts.ready.then(draw); document.fonts.onloadingdone=draw; draw();
+</script>
+</body>
+</html>

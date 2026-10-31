@@ -8,9 +8,12 @@
     "sfx": "python3 tools/sfx.py",
     "images": "node tools/fetch_images.mjs",
     "render": "node tools/render.mjs",
-    "preview": "node tools/render.mjs --preview"
+    "preview": "node tools/render.mjs --preview",
+    "find-images": "node tools/find_images.mjs",
+    "studio": "python3 -m http.server 8080 --directory ../image-studio"
   },
   "dependencies": {
-    "gsap": "^3.12.5"
+    "gsap": "^3.12.5",
+    "sharp": "^0.35.5"
   }
 }
