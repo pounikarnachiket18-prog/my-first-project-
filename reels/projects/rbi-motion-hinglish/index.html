@@ -1,0 +1,789 @@
+<!doctype html>
+<html lang="hi-Latn">
+<head>
+<meta charset="utf-8">
+<title>RBI Motion Cut Hinglish</title>
+<!--
+  Motion-graphics transformation of RBI_Documentary.mp4
+  Source : 2:05, 16:9, calm narrated explainer
+  Result : 48 s, 9:16 reel, Hinglish, kinetic typography + animated infographics + SFX
+  Render : node tools/render.mjs projects/rbi-motion-hinglish            (from reels/)
+-->
+<script src="../../node_modules/gsap/dist/gsap.min.js"></script>
+<style>
+  :root {
+    --night: #030812;
+    --navy: #0a1a33;
+    --navy-2: #12284a;
+    --gold: #f0b94d;
+    --gold-2: #ffd88a;
+    --teal: #3fd0bd;
+    --red: #ff5468;
+    --green: #4be38f;
+    --cream: #f6eedb;
+    --mute: rgba(230,236,248,.6);
+    --line: rgba(240,185,77,.35);
+    --display: "Inter Display", "Inter", system-ui, sans-serif;
+    --ui: "Inter", system-ui, sans-serif;
+    --serif: "DejaVu Serif", Georgia, serif;
+    --mono: "JetBrains Mono", "DejaVu Sans Mono", monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--night); }
+  body { font-family: var(--display); color: #fff; -webkit-font-smoothing: antialiased; }
+
+  #stage { position: absolute; inset: 0; overflow: hidden; transform-origin: 50% 50%; }
+  #bg { position: absolute; inset: 0; background: radial-gradient(ellipse 90% 60% at 50% 42%, #14305a 0%, #081428 55%, var(--night) 100%); }
+  #grid { position: absolute; inset: -120px; opacity: .22;
+    background-image: radial-gradient(circle, rgba(240,185,77,.55) 1.4px, transparent 1.6px); background-size: 60px 60px; }
+  .scene { position: absolute; inset: 0; visibility: hidden; overflow: hidden; }
+  .fill { position: absolute; inset: 0; }
+  .abs { position: absolute; }
+
+  /* ------------------------------------------------ kinetic words */
+  .w { position: absolute; left: 70px; right: 70px; text-align: center; font-weight: 800; letter-spacing: -.035em;
+    line-height: .95; opacity: 0; will-change: transform, opacity, filter; text-shadow: 0 8px 40px rgba(0,0,0,.5); }
+  .gold { color: var(--gold); } .teal { color: var(--teal); } .red { color: var(--red); } .green { color: var(--green); }
+  .thin { font-weight: 300; }
+  .serif { font-family: var(--serif); font-weight: 700; letter-spacing: -.01em; }
+  .sub { font-family: var(--ui); font-weight: 500; letter-spacing: -.01em; color: var(--mute); }
+  .mono { font-family: var(--mono); }
+
+  /* chapter tag */
+  .chap { position: absolute; left: 80px; top: 150px; display: flex; align-items: center; gap: 22px; opacity: 0;
+    font: 600 30px var(--mono); letter-spacing: .28em; color: rgba(255,255,255,.75); }
+  .chap b { color: var(--gold); font: 800 44px var(--mono); letter-spacing: 0; }
+  .chap i { display: block; width: 90px; height: 3px; background: var(--gold); transform-origin: 0 50%; }
+
+  /* overlays */
+  #grain { position: absolute; inset: -200px; pointer-events: none; opacity: .09; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 1.4 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+  #vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 85% 70% at 50% 48%, transparent 55%, rgba(0,0,0,.6) 100%); }
+  #flash { position: absolute; inset: 0; background: #fff8e6; opacity: 0; pointer-events: none; }
+  #progress { position: absolute; left: 0; bottom: 0; height: 9px; width: 100%; background: var(--gold); transform-origin: 0 50%; transform: scaleX(0); }
+
+  /* ------------------------------------------------ 0: source */
+  #s0 { background: #050505; }
+  .monitor { position: absolute; left: 60px; width: 960px; height: 540px; top: 640px; border-radius: 18px; overflow: hidden;
+    background: #0a1a33 center/cover no-repeat; box-shadow: 0 0 0 3px #2a2a2a, 0 50px 120px rgba(0,0,0,.8); }
+  .monitor .src { position: absolute; inset: 0; background: center/cover no-repeat; opacity: 0; }
+  .monitor .fallback { position: absolute; inset: 0; display: grid; place-items: center; font: 700 160px var(--serif); color: var(--gold);
+    background: radial-gradient(circle, #14305a, #081428); }
+  .monitor .scan { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 2px, transparent 2px 5px); }
+  .hud { position: absolute; left: 60px; right: 60px; font: 500 28px var(--mono); color: rgba(255,255,255,.7); display: flex; justify-content: space-between; letter-spacing: .06em; }
+  .hud .rec { color: #ff3b3b; }
+  .scrub { position: absolute; left: 60px; width: 960px; top: 1200px; height: 8px; border-radius: 8px; background: rgba(255,255,255,.15); overflow: hidden; }
+  .scrub i { display: block; height: 100%; width: 100%; background: #ff3b3b; transform-origin: 0 50%; transform: scaleX(0); }
+
+  /* ------------------------------------------------ coin */
+  .coin { position: absolute; left: 540px; top: 1180px; width: 0; height: 0; }
+  .coin .face { position: absolute; width: 420px; height: 420px; left: -210px; top: -210px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ffe7a8 0%, #f0b94d 45%, #a8711c 100%);
+    box-shadow: inset 0 0 0 16px rgba(120,70,10,.35), inset 0 0 0 22px rgba(255,230,160,.5), 0 40px 120px rgba(240,185,77,.35);
+    display: grid; place-items: center; font: 800 250px var(--ui); color: #6b420c; text-shadow: 0 3px 0 rgba(255,240,200,.6); }
+  .coin .ring { position: absolute; border-radius: 50%; border: 3px solid var(--line); }
+
+  /* ------------------------------------------------ title */
+  .tline { position: absolute; left: 0; right: 0; text-align: center; font: 800 190px var(--display); letter-spacing: -.045em; line-height: 1; opacity: 0; }
+
+  /* ------------------------------------------------ origins */
+  .year { position: absolute; left: 0; right: 0; top: 520px; text-align: center; font: 700 340px var(--serif); letter-spacing: -.03em; color: var(--gold); opacity: 0;
+    text-shadow: 0 20px 80px rgba(240,185,77,.25); }
+  .ylabel { position: absolute; left: 90px; right: 90px; top: 960px; text-align: center; font: 600 62px var(--ui); letter-spacing: -.02em; line-height: 1.15; opacity: 0; }
+  .ylabel small { display: block; font: 500 38px var(--mono); color: var(--mute); letter-spacing: .08em; margin-top: 18px; }
+  .tl-track { position: absolute; left: 140px; width: 800px; top: 1360px; height: 4px; background: rgba(255,255,255,.12); }
+  .tl-fill { position: absolute; left: 0; top: 0; height: 100%; width: 100%; background: var(--gold); transform-origin: 0 50%; transform: scaleX(0); }
+  .tl-dot { position: absolute; top: -16px; width: 36px; height: 36px; margin-left: -18px; border-radius: 50%; background: var(--night); border: 4px solid rgba(255,255,255,.25); }
+  .tl-dot.on { border-color: var(--gold); background: var(--gold); box-shadow: 0 0 30px var(--gold); }
+  .tl-yr { position: absolute; top: 40px; width: 160px; margin-left: -80px; text-align: center; font: 600 34px var(--mono); color: var(--mute); }
+
+  /* ------------------------------------------------ roles */
+  .hub { position: absolute; left: 540px; top: 1060px; width: 0; height: 0; }
+  .hub .disc { position: absolute; width: 300px; height: 300px; left: -150px; top: -150px; border-radius: 50%; background: radial-gradient(circle, #183a6b, #0a1a33);
+    border: 5px solid var(--gold); display: grid; place-items: center; box-shadow: 0 0 80px rgba(240,185,77,.3); }
+  .hub .disc span { font: 700 104px var(--serif); line-height: 1; }
+  .hub .disc small { position: absolute; bottom: 70px; font: 600 20px var(--mono); letter-spacing: .3em; color: var(--gold); }
+  .pill { position: absolute; padding: 20px 28px; border-radius: 60px; white-space: nowrap; background: rgba(10,26,51,.92); border: 3px solid var(--gold);
+    font: 700 35px var(--ui); letter-spacing: -.015em; transform: translate(-50%,-50%); opacity: 0; box-shadow: 0 20px 50px rgba(0,0,0,.4); }
+  .pill .n { color: var(--gold); font-family: var(--mono); margin-right: 12px; }
+
+  /* ------------------------------------------------ money */
+  .note { position: absolute; left: 540px; top: 760px; width: 700px; height: 330px; margin: -165px 0 0 -350px; border-radius: 22px; opacity: 0;
+    box-shadow: 0 30px 70px rgba(0,0,0,.5), inset 0 0 0 10px rgba(255,255,255,.12); overflow: hidden; }
+  .note .v { position: absolute; left: 44px; bottom: 30px; font: 800 110px var(--display); letter-spacing: -.04em; color: rgba(0,0,0,.55); }
+  .note .wm { position: absolute; right: 60px; top: 50%; width: 200px; height: 200px; margin-top: -100px; border-radius: 50%; background: rgba(255,255,255,.28); box-shadow: inset 0 0 0 10px rgba(0,0,0,.08); }
+  .note .tx { position: absolute; left: 44px; top: 34px; font: 700 24px var(--mono); letter-spacing: .3em; color: rgba(0,0,0,.45); }
+  .note .stripe { position: absolute; left: 360px; top: 0; bottom: 0; width: 14px; background: rgba(0,0,0,.18); }
+  .cn { position: absolute; width: 150px; height: 150px; margin: -75px; border-radius: 50%; display: grid; place-items: center; opacity: 0;
+    background: radial-gradient(circle at 35% 30%, #ffe7a8, #e0a23c 55%, #8f5c16); color: #5a360a; font: 800 48px var(--ui);
+    box-shadow: inset 0 0 0 8px rgba(120,70,10,.3), 0 20px 40px rgba(0,0,0,.45); }
+  .cn.silver { background: radial-gradient(circle at 35% 30%, #fafafa, #b9c0cc 55%, #6b7380); color: #2d333d; box-shadow: inset 0 0 0 8px rgba(40,50,60,.25), 0 20px 40px rgba(0,0,0,.45); }
+  .tag { position: absolute; left: 80px; right: 80px; display: flex; align-items: center; gap: 26px; padding: 30px 38px; border-radius: 30px;
+    background: rgba(10,26,51,.85); border: 2px solid rgba(255,255,255,.1); font: 700 46px var(--ui); letter-spacing: -.02em; opacity: 0; }
+  .tag .k { flex: none; padding: 10px 20px; border-radius: 14px; font: 800 30px var(--mono); letter-spacing: .1em; }
+  .tag em { font-style: normal; color: var(--mute); font-weight: 500; }
+
+  /* ------------------------------------------------ inflation */
+  .av { position: absolute; width: 130px; height: 130px; margin: -65px; border-radius: 50%; display: grid; place-items: center; opacity: 0; box-shadow: 0 16px 40px rgba(0,0,0,.4); }
+  .av svg { width: 70px; height: 70px; }
+  .av.g { background: var(--gold); } .av.t { background: var(--teal); }
+  .legend { position: absolute; top: 760px; left: 0; right: 0; display: flex; justify-content: center; gap: 50px; font: 600 34px var(--ui); color: var(--mute); opacity: 0; }
+  .legend span::before { content: ""; display: inline-block; width: 22px; height: 22px; border-radius: 50%; margin-right: 14px; vertical-align: -2px; background: var(--c); }
+  #gaugeNum { position: absolute; left: 0; right: 0; top: 1380px; text-align: center; font: 800 190px var(--display); letter-spacing: -.05em; opacity: 0; }
+  #gaugeLbl { position: absolute; left: 0; right: 0; top: 1590px; text-align: center; font: 600 40px var(--mono); letter-spacing: .14em; color: var(--mute); opacity: 0; }
+
+  /* ------------------------------------------------ repo */
+  .box { position: absolute; width: 270px; height: 120px; margin-left: -135px; border-radius: 24px; border: 3px solid rgba(255,255,255,.55);
+    background: rgba(10,26,51,.9); display: grid; place-items: center; font: 700 50px var(--serif); opacity: 0; }
+  .box.hl { border-color: var(--gold); color: var(--gold); }
+  .flow { position: absolute; height: 4px; background: rgba(240,185,77,.4); transform-origin: 0 50%; transform: scaleX(0); }
+  .flow::after { content: ""; position: absolute; right: -4px; top: -9px; border-left: 18px solid rgba(240,185,77,.9); border-top: 11px solid transparent; border-bottom: 11px solid transparent; }
+  .dotp { position: absolute; width: 16px; height: 16px; margin: -8px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 16px var(--gold); opacity: 0; }
+  .flabel { position: absolute; width: 300px; margin-left: -150px; text-align: center; font: 600 28px var(--mono); color: var(--gold); opacity: 0; }
+  .col { position: absolute; top: 760px; width: 440px; display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+  .col .head { padding: 26px 0; border-radius: 28px; text-align: center; font: 800 76px var(--display); letter-spacing: -.03em; opacity: 0; }
+  .col .step { margin-top: 74px; position: relative; padding: 30px 20px; border-radius: 24px; text-align: center; font: 700 44px var(--ui); letter-spacing: -.02em;
+    background: rgba(10,26,51,.9); border: 3px solid; opacity: 0; line-height: 1.1; }
+  .col .step::before { content: "↓"; position: absolute; left: 0; right: 0; top: -70px; font: 800 56px var(--ui); color: var(--c); opacity: var(--a, 0); }
+  .col.r { left: 70px; --c: var(--red); } .col.r .head { background: var(--red); color: #2a0006; } .col.r .step { border-color: rgba(255,84,104,.6); }
+  .col.gr { left: 570px; --c: var(--green); } .col.gr .head { background: var(--green); color: #002611; } .col.gr .step { border-color: rgba(75,227,143,.6); }
+
+  /* ------------------------------------------------ toolkit */
+  .tool { position: absolute; left: 80px; right: 80px; height: 350px; border-radius: 36px; padding: 40px 48px; opacity: 0;
+    background: linear-gradient(135deg, rgba(24,58,107,.95), rgba(10,26,51,.95)); border: 3px solid var(--gold); box-shadow: 0 40px 90px rgba(0,0,0,.45); }
+  .tool .ab { font: 700 120px var(--serif); color: var(--gold); line-height: 1; }
+  .tool .nm { font: 700 40px var(--ui); margin-top: 12px; letter-spacing: -.01em; }
+  .tool .ds { font: 500 32px var(--ui); color: var(--mute); margin-top: 10px; }
+  .tool .viz { position: absolute; left: 48px; right: 48px; bottom: 30px; height: 16px; }
+  .tool .meter { position: absolute; left: 0; right: 0; bottom: 0; height: 16px; border-radius: 26px; background: rgba(255,255,255,.1); overflow: hidden; }
+  .tool .meter i { display: block; height: 100%; background: var(--gold); border-radius: 26px; transform-origin: 0 50%; transform: scaleX(0); }
+
+  /* ------------------------------------------------ payments */
+  #net { position: absolute; inset: 0; }
+  .ppill { position: absolute; padding: 18px 34px; border-radius: 50px; border: 3px solid var(--teal); background: rgba(3,8,18,.9); color: var(--teal);
+    font: 800 46px var(--mono); letter-spacing: .06em; transform: translate(-50%,-50%); opacity: 0; }
+
+  /* ------------------------------------------------ outro */
+  .lock { position: absolute; left: 0; right: 0; text-align: center; opacity: 0; }
+  .lock h1 { font: 700 68px var(--serif); letter-spacing: .05em; line-height: 1.15; }
+  .lock .rule { width: 160px; height: 4px; background: var(--gold); margin: 34px auto; transform-origin: 50% 50%; }
+  .lock p { font: 600 36px var(--mono); letter-spacing: .16em; color: var(--gold); }
+  #handle { position: absolute; top: 66px; right: 70px; display: none; align-items: center; gap: 14px; opacity: .9;
+    font: 600 32px var(--ui); letter-spacing: .02em; color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.6); }
+  #handle svg { width: 44px; height: 44px; color: var(--gold); }
+  .lock .follow { display: inline-flex; align-items: center; gap: 16px; margin-top: 70px; padding: 22px 40px; border-radius: 60px;
+    background: var(--gold); color: #2a1a03; font: 800 46px var(--ui); letter-spacing: -.01em; }
+  .lock .credit { margin-top: 50px; font: 500 26px var(--mono); letter-spacing: .1em; color: var(--mute); }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="bg"></div>
+  <div id="grid"></div>
+
+  <!-- ============== 0 · SOURCE: the original documentary -->
+  <section class="scene" id="s0">
+    <div class="hud" style="top: 540px"><span><span class="rec">●</span> SOURCE</span><span>RBI_Documentary.mp4</span></div>
+    <div class="monitor" id="monitor">
+      <div class="fallback">₹</div>
+      <div class="src" data-slot="src1"></div><div class="src" data-slot="src2"></div>
+      <div class="src" data-slot="src3"></div><div class="src" data-slot="src4"></div>
+      <div class="scan"></div>
+    </div>
+    <div class="scrub"><i id="scrubBar"></i></div>
+    <div class="hud" style="top: 1236px"><span id="tc">00:00 / 02:05</span><span>16:9 · NARRATED</span></div>
+  </section>
+
+  <!-- ============== A · HOOK -->
+  <section class="scene" id="sA">
+    <div class="coin" id="coinA"></div>
+  </section>
+
+  <!-- ============== B · TITLE -->
+  <section class="scene" id="sB">
+    <div class="chap" id="chB" style="top: 420px"><i></i>INDIA KA CENTRAL BANK</div>
+    <div class="tline" style="top: 540px; font-size: 150px; font-weight: 300">The</div>
+    <div class="tline gold" style="top: 700px">RESERVE</div>
+    <div class="tline gold" style="top: 890px">BANK</div>
+    <div class="tline" style="top: 1080px; font-size: 150px"><span class="thin">of</span> INDIA</div>
+    <div class="chap" id="chB2" style="top: 1330px; left: 0; right: 0; justify-content: center">SIRF 45 SECOND MEIN</div>
+  </section>
+
+  <!-- ============== C · ORIGINS -->
+  <section class="scene" id="sC">
+    <div class="year">1935</div><div class="year">1937</div><div class="year">1949</div>
+    <div class="ylabel">Kaam shuru<small>RBI ACT, 1934 · 1 APRIL</small></div>
+    <div class="ylabel">HQ shift: <span class="gold">Bombay</span><small>CALCUTTA SE</small></div>
+    <div class="ylabel"><span class="gold">Nationalise</span> hua<small>AB MALIK: GOVERNMENT OF INDIA</small></div>
+    <div class="tl-track"><div class="tl-fill" id="tlFill"></div>
+      <div class="tl-dot" style="left: 0"></div><div class="tl-dot" style="left: 50%"></div><div class="tl-dot" style="left: 100%"></div>
+      <div class="tl-yr" style="left: 0">1935</div><div class="tl-yr" style="left: 50%">1937</div><div class="tl-yr" style="left: 100%">1949</div>
+    </div>
+  </section>
+
+  <!-- ============== D · MANY HATS -->
+  <section class="scene" id="sD">
+    <svg class="fill" id="dLines" viewBox="0 0 1080 1920"></svg>
+    <div class="hub" id="hub"><div class="disc"><span>RBI</span><small>CENTRAL BANK</small></div></div>
+  </section>
+
+  <!-- ============== E · MONEY -->
+  <section class="scene" id="sE">
+    <div id="notes"></div>
+    <div class="tag" id="tagN" style="top: 1060px"><span class="k" style="background: var(--gold); color:#3a2405">NOTES</span><span><span class="gold">RBI</span> jaari karta hai</span></div>
+    <div id="coins"></div>
+    <div class="tag" id="tagC" style="top: 1560px"><span class="k" style="background: #c9d0db; color:#1d232c">COINS</span><span>Sarkar banati hai <em>· RBI ke zariye</em></span></div>
+  </section>
+
+  <!-- ============== F · INFLATION -->
+  <section class="scene" id="sF">
+    <div id="avs"></div>
+    <div class="legend" id="legend"><span style="--c: var(--gold)">3 RBI se</span><span style="--c: var(--teal)">3 Sarkar se</span></div>
+    <svg class="fill" viewBox="0 0 1080 1920">
+      <path id="gArc" d="M 210 1340 A 330 330 0 0 1 870 1340" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="34" stroke-linecap="round"/>
+      <path id="gBand" d="M 306.7 1106.7 A 330 330 0 0 1 773.3 1106.7" fill="none" stroke="#4be38f" stroke-width="34" stroke-linecap="round" opacity=".9"/>
+      <g id="gTicks" font-family="JetBrains Mono" font-size="30" fill="rgba(230,236,248,.6)" text-anchor="middle">
+        <text x="160" y="1352">0%</text><text x="270" y="1080">2%</text><text x="540" y="968">4%</text><text x="810" y="1080">6%</text><text x="920" y="1352">8%</text>
+      </g>
+      <g id="needle" opacity="0"><line x1="540" y1="1340" x2="540" y2="1060" stroke="#fff" stroke-width="12" stroke-linecap="round"/><circle cx="540" cy="1340" r="30" fill="#f0b94d"/></g>
+    </svg>
+    <div id="gaugeNum">4%</div>
+    <div id="gaugeLbl">MEHANGAI TARGET · 2–6% BAND</div>
+  </section>
+
+  <!-- ============== G · REPO -->
+  <section class="scene" id="sG">
+    <div class="box hl" style="left: 200px; top: 360px">RBI</div>
+    <div class="box" style="left: 540px; top: 360px">Banks</div>
+    <div class="box" style="left: 880px; top: 360px">Tum</div>
+    <div class="flow" style="left: 340px; top: 418px; width: 60px"></div>
+    <div class="flow" style="left: 680px; top: 418px; width: 60px"></div>
+    <div class="flabel" style="left: 370px; top: 520px">REPO RATE</div>
+    <div class="flabel" style="left: 710px; top: 520px">LOAN RATE</div>
+    <div id="dots"></div>
+    <div class="col r">
+      <div class="head">REPO ▲</div>
+      <div class="step">Loan mehenga</div><div class="step">Kharcha kam</div><div class="step">Mehangai thandi</div>
+    </div>
+    <div class="col gr">
+      <div class="head">REPO ▼</div>
+      <div class="step">Loan sasta</div><div class="step">Udhaar badhta</div><div class="step">Growth tez</div>
+    </div>
+  </section>
+
+  <!-- ============== H · TOOLKIT -->
+  <section class="scene" id="sH">
+    <div class="tool" style="top: 400px"><div class="ab">CRR</div><div class="nm">Cash Reserve Ratio</div><div class="ds">Deposits ka hissa jo RBI ke paas rakhna padta hai</div>
+      <div class="viz"><div class="meter"><i style="width: 30%"></i></div></div></div>
+    <div class="tool" style="top: 800px"><div class="ab">SLR</div><div class="nm">Statutory Liquidity Ratio</div><div class="ds">Govt bonds jaise safe assets mein</div>
+      <div class="viz"><div class="meter"><i style="width: 62%"></i></div></div></div>
+    <div class="tool" style="top: 1200px"><div class="ab">OMO</div><div class="nm">Open Market Operations</div><div class="ds">Bonds khareed / bech ke cash badhao ya ghatao</div>
+      <div class="viz"><div class="meter"><i id="omoBar" style="width: 50%"></i></div></div></div>
+  </section>
+
+  <!-- ============== I · PAYMENTS -->
+  <section class="scene" id="sI">
+    <svg id="net" viewBox="0 0 1080 1920"></svg>
+    <div class="hub" style="top: 960px"><div class="disc" id="payHub" style="border-color: var(--teal); box-shadow: 0 0 80px rgba(63,208,189,.35)"><span>RBI</span><small style="color: var(--teal)">OVERSIGHT</small></div></div>
+    <div class="ppill" style="left: 250px; top: 600px">UPI</div>
+    <div class="ppill" style="left: 840px; top: 760px">RTGS</div>
+    <div class="ppill" style="left: 300px; top: 1330px">NEFT</div>
+    <div class="ppill" style="left: 800px; top: 1250px">CARDS</div>
+  </section>
+
+  <!-- ============== J · OUTRO -->
+  <section class="scene" id="sJ">
+    <div class="coin" id="coinJ" style="top: 720px"></div>
+    <div class="lock" id="lock" style="top: 1060px">
+      <h1>THE RESERVE BANK<br>OF INDIA</h1>
+      <div class="rule"></div>
+      <p>EST. 1935 · MUMBAI</p>
+      <div class="follow" id="follow">Follow <span id="followTx"></span></div>
+      <div class="credit">RBI DOCUMENTARY KA MOTION CUT</div>
+    </div>
+  </section>
+
+  <!-- kinetic text layer -->
+  <div class="fill" id="words"></div>
+  <div id="grain"></div>
+  <div id="vignette"></div>
+  <div id="flash"></div>
+  <div id="handle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/></svg><span id="handleTx"></span></div>
+  <div id="progress"></div>
+</div>
+
+<script>
+/* ==================================================================== config */
+const CONFIG = {
+  handle: "@yourhandle",   // <-- your Instagram/YouTube handle: watermark top-right + follow button at the end
+  fps: 30,
+  duration: 48,
+};
+
+/* ==================================================================== setup */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const AVAIL = new Set(window.AVAILABLE_IMAGES || []);
+const imgFor = (slot) => ["jpg", "jpeg", "png", "webp"].map((e) => `${slot}.${e}`).find((f) => AVAIL.has(f));
+let seed = 2024;
+const rnd = () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296);
+const R = (a, b) => a + rnd() * (b - a);
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
+
+$$("[data-slot]").forEach((el) => {
+  const f = imgFor(el.dataset.slot);
+  if (f) { el.style.backgroundImage = `url(images/${f})`; el.dataset.has = "1"; }
+  else el.remove();
+});
+if (CONFIG.handle) {
+  $("#handle").style.display = "flex"; $("#handleTx").textContent = CONFIG.handle;
+  $("#followTx").textContent = CONFIG.handle;
+} else $("#follow").remove();
+
+const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+const cues = [];
+const updaters = [];
+const sfx = (t, name, gain = 1, extra = {}) => cues.push({ t: +Math.max(0, t).toFixed(3), sfx: name, gain, ...extra });
+
+function scene(id, t0, t1) {
+  tl.set(`#${id}`, { visibility: "visible" }, t0);
+  tl.set(`#${id}`, { visibility: "hidden" }, t1);
+}
+
+const W = $("#words");
+function word(html, t, t1, o = {}) {
+  const el = document.createElement("div");
+  el.className = "w";
+  el.innerHTML = html;
+  el.style.fontSize = (o.size || 130) + "px";
+  el.style.top = (o.y ?? 860) + "px";
+  if (o.weight) el.style.fontWeight = o.weight;
+  W.appendChild(el);
+  const from = o.from || { opacity: 0, scale: 1.28, filter: "blur(16px)" };
+  tl.fromTo(el, from, { opacity: 1, scale: 1, y: 0, x: 0, filter: "blur(0px)", duration: o.inDur || 0.26, ease: o.ease || "expo.out" }, t);
+  if (o.drift) tl.to(el, { scale: 1.05, duration: t1 - t, ease: "none" }, t);
+  if (t1 != null) tl.to(el, { opacity: 0, filter: "blur(10px)", scale: 0.94, duration: 0.14, ease: "power2.in" }, t1 - 0.14);
+  if (o.sfx !== false) sfx(t - 0.03, o.sfx || "swish", o.gain ?? 0.5);
+  return el;
+}
+
+function chapter(num, label, t0, t1) {
+  const el = document.createElement("div");
+  el.className = "chap";
+  el.innerHTML = `<b>${num}</b><i></i><span>${label}</span>`;
+  W.appendChild(el);
+  tl.fromTo(el, { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.35 }, t0);
+  tl.fromTo($("i", el), { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power4.out" }, t0 + 0.1);
+  tl.fromTo($("span", el), { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.5, ease: "power2.out" }, t0 + 0.2);
+  tl.to(el, { opacity: 0, duration: 0.15 }, t1 - 0.15);
+  sfx(t0 + 0.2, "key", 0.3); sfx(t0 + 0.32, "key", 0.25); sfx(t0 + 0.44, "key", 0.2);
+}
+
+function glitch(el, t, dur = 0.45, power = 1) {
+  const steps = Math.round(dur / 0.04);
+  for (let i = 0; i < steps; i++) {
+    tl.set(el, {
+      x: R(-18, 18) * power, y: R(-6, 6) * power, skewX: R(-8, 8) * power,
+      filter: `drop-shadow(${R(-20, 20) * power}px 0 rgba(255,0,60,.9)) drop-shadow(${R(-20, 20) * power}px 0 rgba(0,220,255,.85))`,
+      clipPath: rnd() < 0.35 ? `inset(${R(0, 40)}% 0 ${R(0, 40)}% 0)` : "inset(0% 0 0% 0)",
+    }, t + i * 0.04);
+  }
+  tl.set(el, { x: 0, y: 0, skewX: 0, filter: "none", clipPath: "inset(0% 0 0% 0)" }, t + dur);
+}
+function shake(t, dur = 0.35, amp = 22) {
+  const steps = Math.round(dur / 0.033);
+  for (let i = 0; i < steps; i++) {
+    const k = 1 - i / steps;
+    tl.set("#stage", { x: R(-amp, amp) * k, y: R(-amp, amp) * k, rotation: R(-0.7, 0.7) * k }, t + i * 0.033);
+  }
+  tl.set("#stage", { x: 0, y: 0, rotation: 0 }, t + dur);
+}
+function zoomOut(id, t) {
+  tl.fromTo(`#${id}`, { scale: 1, filter: "blur(0px) brightness(1)", opacity: 1 }, { scale: 1.22, filter: "blur(28px) brightness(1.4)", opacity: 0, duration: 0.3, ease: "power2.in", immediateRender: false }, t - 0.3);
+  sfx(t - 0.32, "whoosh", 0.7);
+}
+function zoomIn(id, t) {
+  tl.fromTo(`#${id}`, { scale: 0.86, filter: "blur(24px)", opacity: 0 }, { scale: 1, filter: "blur(0px)", opacity: 1, duration: 0.45, ease: "expo.out" }, t);
+}
+function flash(t, peak = 0.8, dur = 0.35) {
+  tl.fromTo("#flash", { opacity: peak }, { opacity: 0, duration: dur, ease: "power2.out", immediateRender: false }, t);
+}
+function makeCoin(el, rings = 3) {
+  for (let i = 0; i < rings; i++) {
+    const r = document.createElement("div");
+    r.className = "ring";
+    const s = 520 + i * 110;
+    Object.assign(r.style, { width: s + "px", height: s + "px", left: -s / 2 + "px", top: -s / 2 + "px", borderStyle: i === 1 ? "dashed" : "solid", opacity: 0 });
+    el.appendChild(r);
+  }
+  const f = document.createElement("div");
+  f.className = "face";
+  f.textContent = "₹";
+  el.appendChild(f);
+  return { face: f, rings: $$(".ring", el) };
+}
+
+/* ==================================================================== TIMELINE */
+// music bed: low drone + a soft pulse every beat (120 bpm) for momentum
+sfx(0, "drone", 0.22, { dur: 44 });
+for (let t = 3.0; t < 42.3; t += 0.5) sfx(t, (Math.round(t * 2) % 2) ? "tick" : "pop_low", (Math.round(t * 2) % 2) ? 0.08 : 0.16);
+
+/* ---------- 0. SOURCE  0 – 3.0 : the original documentary plays, then breaks ---------- */
+scene("s0", 0, 3.0);
+tl.set("#bg, #grid", { opacity: 0 }, 0);
+const srcs = $$("#s0 .src");
+srcs.forEach((s, i) => {
+  tl.set(s, { opacity: 1 }, 0.05 + i * 0.55);
+  if (i < srcs.length - 1) tl.set(s, { opacity: 0 }, 0.05 + (i + 1) * 0.55);
+  tl.fromTo(s, { scale: 1.0 }, { scale: 1.06, duration: 0.6, ease: "none" }, 0.05 + i * 0.55);
+  if (i) sfx(0.05 + i * 0.55, "shutter", 0.25);
+});
+tl.fromTo("#scrubBar", { scaleX: 0 }, { scaleX: 0.3, duration: 2.3, ease: "none" }, 0);
+updaters.push((t) => {
+  if (t > 3) return;
+  const s = Math.floor(clamp01(t / 2.3) * 0.3 * 125);
+  $("#tc").textContent = `00:${String(s).padStart(2, "0")} / 02:05`;
+});
+word('<span class="sub" style="font-size:60px">2 minute ki documentary…</span>', 0.2, 1.35, { size: 60, y: 340, sfx: false, from: { opacity: 0, y: 30, filter: "blur(8px)" } });
+word('Ab <span class="gold">motion</span> mein.', 1.35, 2.9, { size: 110, y: 330, sfx: "swish", gain: 0.45 });
+sfx(1.4, "riser", 0.55);
+glitch("#monitor", 2.2, 0.55, 1.4);
+sfx(2.2, "glitch", 0.65);
+tl.to("#monitor", { scale: 2.4, filter: "blur(30px) brightness(2)", opacity: 0, duration: 0.25, ease: "power3.in" }, 2.75);
+tl.to("#s0", { backgroundColor: "rgba(5,5,5,0)", duration: 0.25 }, 2.75);
+tl.to("#bg", { opacity: 1, duration: 0.3 }, 2.8);
+tl.to("#grid", { opacity: 0.22, duration: 0.3 }, 2.8);
+
+/* ---------- A. HOOK  3.0 – 7.0 ---------- */
+scene("sA", 3.0, 7.0);
+flash(3.0, 0.85, 0.4);
+sfx(3.0, "boom", 0.9);
+shake(3.0, 0.35, 20);
+const cA = makeCoin($("#coinA"));
+tl.fromTo(cA.face, { rotationY: 900, scale: 0.2, opacity: 0 }, { rotationY: 0, scale: 1, opacity: 1, duration: 1.1, ease: "expo.out" }, 3.0);
+cA.rings.forEach((r, i) => {
+  tl.fromTo(r, { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.8, ease: "expo.out" }, 3.15 + i * 0.12);
+  tl.to(r, { rotation: i % 2 ? -90 : 90, duration: 3.8, ease: "none" }, 3.15);
+});
+word("Har rupaya", 3.15, 3.85, { size: 150, y: 380 });
+word('<span class="thin">jo tumhari jeb mein hai…</span>', 3.85, 4.45, { size: 96, y: 400 });
+word("Har loan", 4.45, 5.05, { size: 150, y: 380 });
+word('<span class="thin">sabke peeche</span>', 5.05, 5.5, { size: 110, y: 400 });
+const one = word('<span class="thin" style="font-size:.45em">sirf</span> <span class="gold">EK</span>', 5.5, 6.25, { size: 300, y: 300, sfx: "hit", gain: 1, inDur: 0.12, from: { opacity: 0, scale: 2.4, filter: "blur(30px)" } });
+shake(5.5, 0.4, 24);
+flash(5.5, 0.3, 0.3);
+tl.to(cA.face, { scale: 1.12, duration: 0.12, yoyo: true, repeat: 1, ease: "power2.out" }, 5.5);
+word("institution.", 6.25, 7.0, { size: 140, y: 380 });
+zoomOut("sA", 7.0);
+
+/* ---------- B. TITLE  7.0 – 9.8 ---------- */
+scene("sB", 7.0, 9.8);
+tl.fromTo("#chB", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 }, 7.05);
+$$("#sB .tline").forEach((el, i) => {
+  const t = 7.1 + i * 0.2;
+  const dir = i % 2 ? 1 : -1;
+  tl.fromTo(el, { opacity: 0, x: dir * 900, skewX: dir * -20 }, { opacity: 1, x: 0, skewX: 0, duration: 0.55, ease: "expo.out" }, t);
+  sfx(t - 0.03, i % 2 ? "whoosh" : "swish", 0.5, { pan: dir * 0.5 });
+});
+tl.fromTo("#chB2", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, 8.1);
+sfx(8.1, "ding", 0.45);
+tl.to("#sB .tline.gold", { textShadow: "0 0 60px rgba(240,185,77,.7)", duration: 0.4, yoyo: true, repeat: 1 }, 8.3);
+zoomOut("sB", 9.8);
+
+/* ---------- C. ORIGINS  9.8 – 15.2 ---------- */
+scene("sC", 9.8, 15.2);
+zoomIn("sC", 9.8);
+chapter("01", "SHURUAAT", 9.9, 15.2);
+const years = $$("#sC .year"), ylabels = $$("#sC .ylabel"), dots = $$("#sC .tl-dot");
+const YT = [10.0, 11.75, 13.5];
+YT.forEach((t, i) => {
+  tl.fromTo(years[i], { opacity: 0, y: 220, rotationX: -70 }, { opacity: 1, y: 0, rotationX: 0, duration: 0.5, ease: "expo.out" }, t);
+  tl.fromTo(ylabels[i], { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.4 }, t + 0.2);
+  tl.set(dots[i], { attr: { class: "tl-dot on" } }, t + 0.1);
+  tl.fromTo(dots[i], { scale: 1 }, { scale: 1.5, duration: 0.15, yoyo: true, repeat: 1 }, t + 0.1);
+  if (i < 2) {
+    tl.to(years[i], { opacity: 0, y: -220, rotationX: 70, duration: 0.3, ease: "power2.in" }, YT[i + 1] - 0.15);
+    tl.to(ylabels[i], { opacity: 0, y: -30, duration: 0.2 }, YT[i + 1] - 0.15);
+  }
+  sfx(t - 0.03, "whoosh", 0.45);
+  sfx(t + 0.1, i === 2 ? "hit" : "pop", i === 2 ? 0.7 : 0.45);
+});
+tl.fromTo("#tlFill", { scaleX: 0 }, { scaleX: 0.5, duration: 1.6, ease: "power1.inOut" }, 10.1);
+tl.to("#tlFill", { scaleX: 1, duration: 1.6, ease: "power1.inOut" }, 11.85);
+// rolling counter ticks between years
+for (let t = 11.4; t < 11.75; t += 0.05) sfx(t, "counter", 0.25);
+for (let t = 13.15; t < 13.5; t += 0.05) sfx(t, "counter", 0.25);
+shake(13.6, 0.25, 10);
+zoomOut("sC", 15.2);
+
+/* ---------- D. MANY HATS  15.2 – 19.8 ---------- */
+scene("sD", 15.2, 19.8);
+zoomIn("sD", 15.2);
+chapter("02", "KAI ROLES", 15.3, 19.8);
+tl.fromTo("#hub .disc", { scale: 0, rotation: -120 }, { scale: 1, rotation: 0, duration: 0.6, ease: "back.out(1.8)" }, 15.35);
+sfx(15.35, "pop_low", 0.6);
+const ROLES = ["Monetary policy", "Currency", "Sarkar ka banker", "Banks ka banker", "Regulator", "Forex ka rakhwala"];
+const NS = "http://www.w3.org/2000/svg";
+ROLES.forEach((r, i) => {
+  const a = (-90 + i * 60) * Math.PI / 180;
+  const rad = i % 3 === 0 ? 470 : 400;
+  const x = 540 + Math.cos(a) * rad * 0.84, y = 1060 + Math.sin(a) * rad;
+  const ln = document.createElementNS(NS, "line");
+  Object.entries({ x1: 540, y1: 1060, x2: x, y2: y, stroke: "rgba(240,185,77,.45)", "stroke-width": 3, "stroke-dasharray": "8 10" }).forEach(([k, v]) => ln.setAttribute(k, v));
+  $("#dLines").appendChild(ln);
+  const p = document.createElement("div");
+  p.className = "pill";
+  p.innerHTML = `<span class="n">0${i + 1}</span>${r}`;
+  Object.assign(p.style, { left: x + "px", top: y + "px" });
+  $("#sD").appendChild(p);
+  const t = 15.8 + i * 0.28;
+  tl.fromTo(ln, { opacity: 0, attr: { x2: 540, y2: 1060 } }, { opacity: 1, attr: { x2: x, y2: y }, duration: 0.3, ease: "power2.out" }, t);
+  tl.fromTo(p, { opacity: 0, left: 540, top: 1060, scale: 0.3 }, { opacity: 1, left: x, top: y, scale: 1, duration: 0.45, ease: "back.out(1.6)" }, t);
+  sfx(t, "pop", 0.45, { pan: Math.cos(a) * 0.6 });
+});
+tl.to("#hub .disc", { rotation: 8, duration: 2.8, ease: "sine.inOut" }, 16.0);
+word('<span class="gold">6</span> kaam. <span class="gold">1</span> bank.', 17.75, 19.75, { size: 120, y: 300, sfx: "hit", gain: 0.6, inDur: 0.14, from: { opacity: 0, scale: 1.8, filter: "blur(20px)" } });
+shake(17.75, 0.25, 10);
+zoomOut("sD", 19.8);
+
+/* ---------- E. MONEY  19.8 – 24.0 ---------- */
+scene("sE", 19.8, 24.0);
+zoomIn("sE", 19.8);
+chapter("03", "NOTE AUR SIKKE", 19.9, 24.0);
+const NOTES = [["₹10", "#d9a77c", "#b9805a"], ["₹50", "#7fd3d0", "#4aa6a9"], ["₹100", "#b8a2e0", "#8b73c4"], ["₹200", "#ffd27a", "#e6a640"], ["₹500", "#c9cfc4", "#9aa391"]];
+NOTES.forEach(([v, c1, c2], i) => {
+  const n = document.createElement("div");
+  n.className = "note";
+  n.style.background = `linear-gradient(120deg, ${c1}, ${c2})`;
+  n.innerHTML = `<div class="tx">RESERVE BANK OF INDIA</div><div class="stripe"></div><div class="wm"></div><div class="v">${v}</div>`;
+  $("#notes").appendChild(n);
+  const t = 20.1 + i * 0.16;
+  const rot = (i - 2) * 7;
+  tl.fromTo(n, { opacity: 0, x: 900, y: -300, rotation: 50 }, { opacity: 1, x: (i - 2) * 30, y: (i - 2) * -14, rotation: rot, duration: 0.55, ease: "expo.out" }, t);
+  tl.to(n, { y: `-=40`, duration: 3.3, ease: "none" }, t + 0.55);
+  sfx(t, "swish", 0.38, { pan: 0.5 });
+  sfx(t + 0.12, "shutter", 0.15);
+});
+tl.fromTo("#tagN", { opacity: 0, x: -200 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, 21.0);
+sfx(21.0, "ding", 0.4);
+const COINS = [["₹1", 210, 1, 1], ["₹2", 390, 0, 1], ["₹5", 570, 1, 0], ["₹10", 750, 0, 0], ["₹20", 900, 1, 0]];
+COINS.forEach(([v, x, silver], i) => {
+  const c = document.createElement("div");
+  c.className = "cn" + (silver ? " silver" : "");
+  c.textContent = v;
+  Object.assign(c.style, { left: x + "px", top: "1400px" });
+  $("#coins").appendChild(c);
+  const t = 22.0 + i * 0.12;
+  tl.fromTo(c, { opacity: 0, y: -700, rotation: R(-180, 180) }, { opacity: 1, y: 0, rotation: 0, duration: 0.6, ease: "bounce.out" }, t);
+  sfx(t + 0.3, "tick", 0.5, { pan: (x - 540) / 600 });
+  sfx(t + 0.45, "tick", 0.3, { pan: (x - 540) / 600 });
+});
+tl.fromTo("#tagC", { opacity: 0, x: 200 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, 22.75);
+sfx(22.75, "pop_high", 0.4);
+zoomOut("sE", 24.0);
+
+/* ---------- F. INFLATION  24.0 – 29.0 ---------- */
+scene("sF", 24.0, 29.0);
+zoomIn("sF", 24.0);
+chapter("04", "MEHANGAI SE JUNG", 24.1, 29.0);
+word('Monetary Policy<br><span class="gold">Committee</span>', 24.2, 26.2, { size: 92, y: 270, sfx: false, from: { opacity: 0, y: 40, filter: "blur(10px)" } });
+const PERSON = `<svg viewBox="0 0 24 24" fill="#0a1a33"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 21c.8-4.6 4.2-7 8.5-7s7.7 2.4 8.5 7z"/></svg>`;
+for (let i = 0; i < 6; i++) {
+  const a = (200 + i * 28) * Math.PI / 180;
+  const x = 540 + Math.cos(a) * 360, y = 690 + Math.sin(a) * 220 + 40;
+  const av = document.createElement("div");
+  av.className = "av " + (i < 3 ? "g" : "t");
+  av.innerHTML = PERSON;
+  Object.assign(av.style, { left: x + "px", top: y + "px" });
+  $("#avs").appendChild(av);
+  const t = 24.5 + i * 0.16;
+  tl.fromTo(av, { opacity: 0, scale: 0, y: 40 }, { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: "back.out(2.5)" }, t);
+  sfx(t, i < 3 ? "pop" : "pop_high", 0.4, { pan: (x - 540) / 600 });
+}
+tl.fromTo("#legend", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35 }, 25.5);
+// gauge
+tl.fromTo("#gArc", { strokeDasharray: "1037 1037", strokeDashoffset: 1037 }, { strokeDashoffset: 0, duration: 0.7, ease: "power2.out" }, 26.0);
+tl.fromTo("#gBand", { strokeDasharray: "519 519", strokeDashoffset: 519, opacity: 0.9 }, { strokeDashoffset: 0, duration: 0.6, ease: "power2.out" }, 26.3);
+tl.fromTo("#gTicks", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 26.4);
+sfx(26.0, "riser_short", 0.45);
+tl.fromTo("#needle", { rotation: -90, opacity: 0, svgOrigin: "540 1340" }, { rotation: 62, opacity: 1, duration: 0.55, ease: "power2.out", svgOrigin: "540 1340" }, 26.4);
+tl.to("#needle", { rotation: 0, duration: 1.1, ease: "elastic.out(1, 0.35)", svgOrigin: "540 1340" }, 26.95);
+sfx(26.95, "whoosh_down", 0.35);
+tl.fromTo("#gaugeNum", { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, 27.3);
+tl.fromTo("#gaugeLbl", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 27.5);
+updaters.push((t) => {
+  if (t < 24 || t > 29) return;
+  const k = clamp01((t - 27.3) / 0.6);
+  $("#gaugeNum").innerHTML = `${(k * 4).toFixed(k < 1 ? 1 : 0)}<span class="gold">%</span>`;
+});
+sfx(27.35, "hit", 0.6);
+shake(27.35, 0.2, 8);
+zoomOut("sF", 29.0);
+
+/* ---------- G. REPO  29.0 – 35.4 ---------- */
+scene("sG", 29.0, 35.4);
+zoomIn("sG", 29.0);
+chapter("05", "REPO RATE", 29.1, 35.4);
+$$("#sG .box").forEach((b, i) => {
+  tl.fromTo(b, { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.8)" }, 29.3 + i * 0.18);
+  sfx(29.3 + i * 0.18, "pop", 0.4);
+});
+$$("#sG .flow").forEach((f, i) => tl.to(f, { scaleX: 1, duration: 0.3, ease: "power2.out" }, 29.7 + i * 0.2));
+$$("#sG .flabel").forEach((f, i) => tl.fromTo(f, { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.3 }, 29.85 + i * 0.2));
+// money particles travelling RBI -> Banks -> You
+for (let i = 0; i < 6; i++) { const d = document.createElement("div"); d.className = "dotp"; $("#dots").appendChild(d); }
+const dps = $$("#dots .dotp");
+updaters.push((t) => {
+  dps.forEach((d, i) => {
+    if (t < 30.0 || t > 35.4) { d.style.opacity = 0; return; }
+    const p = ((t - 30.0) * 0.55 + i / dps.length) % 1;
+    const seg = p < 0.5 ? 340 + (p / 0.5) * 60 : 680 + ((p - 0.5) / 0.5) * 60;
+    d.style.left = seg + "px"; d.style.top = "420px";
+    d.style.opacity = Math.sin(((p % 0.5) / 0.5) * Math.PI);
+  });
+});
+word('<span class="sub" style="font-size:44px">Banks RBI se udhaar lene par jo byaaj dete hain</span>', 30.0, 31.2, { size: 44, y: 620, sfx: false, from: { opacity: 0, y: 20 } });
+function cascade(sel, t0, color, sound) {
+  const col = $(sel);
+  tl.fromTo($(".head", col), { opacity: 0, scale: 1.6, filter: "blur(16px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.25, ease: "expo.out" }, t0);
+  sfx(t0, "hit", 0.75); sfx(t0, sound, 0.4);
+  shake(t0, 0.25, 12);
+  $$(".step", col).forEach((s, i) => {
+    const t = t0 + 0.45 + i * 0.4;
+    tl.fromTo(s, { opacity: 0, y: -40, "--a": 0 }, { opacity: 1, y: 0, "--a": 1, duration: 0.35, ease: "back.out(2)" }, t);
+    sfx(t, "pop_low", 0.45);
+  });
+}
+cascade(".col.r", 31.0, "red", "riser_short");
+cascade(".col.gr", 32.9, "green", "ding");
+tl.to(".col.r .step:last-child", { boxShadow: "0 0 50px rgba(255,84,104,.5)", duration: 0.3, yoyo: true, repeat: 1 }, 32.3);
+tl.to(".col.gr .step:last-child", { boxShadow: "0 0 50px rgba(75,227,143,.5)", duration: 0.3, yoyo: true, repeat: 1 }, 34.2);
+zoomOut("sG", 35.4);
+
+/* ---------- H. TOOLKIT  35.4 – 39.0 ---------- */
+scene("sH", 35.4, 39.0);
+zoomIn("sH", 35.4);
+chapter("06", "AUR HATHIYAAR", 35.5, 39.0);
+$$("#sH .tool").forEach((el, i) => {
+  const t = 35.75 + i * 0.55;
+  tl.fromTo(el, { opacity: 0, x: 1100, rotation: 6 }, { opacity: 1, x: 0, rotation: 0, duration: 0.45, ease: "expo.out" }, t);
+  tl.fromTo($(".ab", el), { scale: 1.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, transformOrigin: "0% 50%" }, t + 0.1);
+  tl.to($(".meter i", el), { scaleX: 1, duration: 0.6, ease: "power2.out" }, t + 0.25);
+  sfx(t - 0.03, "whoosh", 0.5, { pan: 0.6 });
+  sfx(t + 0.2, "hit", 0.5);
+  shake(t + 0.2, 0.18, 8);
+});
+tl.to("#omoBar", { scaleX: 0.4, duration: 0.4, yoyo: true, repeat: 1, ease: "sine.inOut" }, 37.9);
+zoomOut("sH", 39.0);
+
+/* ---------- I. PAYMENTS  39.0 – 42.6 ---------- */
+scene("sI", 39.0, 42.6);
+zoomIn("sI", 39.0);
+chapter("07", "DIGITAL PAYMENTS", 39.1, 42.6);
+const nodes = [];
+for (let i = 0; i < 46; i++) {
+  const a = R(0, Math.PI * 2), r = R(250, 520);
+  nodes.push([540 + Math.cos(a) * r * 0.95, 960 + Math.sin(a) * r * 1.15]);
+}
+const edges = [];
+nodes.forEach((p, i) => {
+  const near = nodes.map((q, j) => [j, Math.hypot(p[0] - q[0], p[1] - q[1])]).filter(([j]) => j !== i).sort((a, b) => a[1] - b[1]).slice(0, 2);
+  near.forEach(([j]) => i < j && edges.push([i, j]));
+  if (i % 5 === 0) edges.push([i, -1]);   // spokes into the hub
+});
+const net = $("#net");
+const P = (i) => (i < 0 ? [540, 960] : nodes[i]);
+edges.forEach(([a, b], k) => {
+  const [x1, y1] = P(a), [x2, y2] = P(b);
+  const l = document.createElementNS(NS, "line");
+  Object.entries({ x1, y1, x2, y2, stroke: b < 0 ? "rgba(63,208,189,.35)" : "rgba(63,208,189,.22)", "stroke-width": 2 }).forEach(([key, v]) => l.setAttribute(key, v));
+  net.appendChild(l);
+  tl.fromTo(l, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 39.2 + k * 0.012);
+});
+nodes.forEach(([x, y], i) => {
+  const c = document.createElementNS(NS, "circle");
+  Object.entries({ cx: x, cy: y, r: R(5, 10), fill: i % 4 ? "#3fd0bd" : "#f0b94d" }).forEach(([k, v]) => c.setAttribute(k, v));
+  net.appendChild(c);
+  tl.fromTo(c, { opacity: 0, scale: 0, svgOrigin: `${x} ${y}` }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(3)", svgOrigin: `${x} ${y}` }, 39.2 + i * 0.015);
+});
+const pulses = [];
+for (let i = 0; i < 26; i++) {
+  const c = document.createElementNS(NS, "circle");
+  c.setAttribute("r", 7); c.setAttribute("fill", "#fff"); c.setAttribute("opacity", 0);
+  c.style.filter = "drop-shadow(0 0 8px #3fd0bd)";
+  net.appendChild(c);
+  pulses.push({ c, e: edges[Math.floor(R(0, edges.length))], off: R(0, 1), sp: R(0.9, 1.8) });
+}
+updaters.push((t) => {
+  pulses.forEach(({ c, e, off, sp }) => {
+    if (t < 39.6 || t > 42.6) { c.setAttribute("opacity", 0); return; }
+    const p = ((t - 39.6) * sp + off) % 1;
+    const [x1, y1] = P(e[0]), [x2, y2] = P(e[1]);
+    c.setAttribute("cx", x1 + (x2 - x1) * p); c.setAttribute("cy", y1 + (y2 - y1) * p);
+    c.setAttribute("opacity", Math.sin(p * Math.PI));
+  });
+});
+tl.fromTo("#payHub", { scale: 0 }, { scale: 1, duration: 0.5, ease: "back.out(2)" }, 39.3);
+sfx(39.3, "pop_low", 0.55);
+$$("#sI .ppill").forEach((p, i) => {
+  const t = 39.8 + i * 0.25;
+  tl.fromTo(p, { opacity: 0, scale: 0.3 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2.5)" }, t);
+  sfx(t, "ding", 0.3, { pan: i % 2 ? 0.5 : -0.5 });
+});
+for (let t = 39.7; t < 42.4; t += 0.16) sfx(t, "counter", 0.12, { pan: R(-0.7, 0.7) });
+word('Har mahine<br><span class="teal">arabon payments.</span>', 40.7, 42.55, { size: 92, y: 1560, sfx: "swish", gain: 0.45 });
+zoomOut("sI", 42.6);
+
+/* ---------- J. OUTRO  42.6 – 48.0 ---------- */
+word('<span class="thin">Chupchaap.</span>', 42.7, 43.3, { size: 140, y: 820, sfx: "pop_low", gain: 0.4 });
+word('<span class="thin">Aksar nazar se door.</span>', 43.3, 44.0, { size: 110, y: 830, sfx: "pop_low", gain: 0.4 });
+word("Ek hi maqsad:", 44.0, 44.5, { size: 130, y: 820 });
+const stable = word('<span class="gold">STABLE<br>PAISA.</span>', 44.5, 45.9, { size: 230, y: 700, sfx: "boom", gain: 1, inDur: 0.12, from: { opacity: 0, scale: 0.4, filter: "blur(30px)" } });
+sfx(44.5, "hit", 0.8);
+shake(44.5, 0.45, 22);
+flash(44.5, 0.4, 0.4);
+glitch(stable, 44.55, 0.2, 0.5);
+sfx(42.7, "pad", 0.7, { dur: 5.3 });
+
+scene("sJ", 45.8, CONFIG.duration + 1);
+const cJ = makeCoin($("#coinJ"), 3);
+tl.fromTo("#sJ", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 45.8);
+tl.fromTo(cJ.face, { scale: 0, rotationY: 540 }, { scale: 0.75, rotationY: 0, duration: 0.9, ease: "expo.out" }, 45.85);
+cJ.rings.forEach((r, i) => {
+  tl.fromTo(r, { scale: 0.4, opacity: 0 }, { scale: 0.75, opacity: 1, duration: 0.8, ease: "expo.out" }, 46.0 + i * 0.1);
+  tl.to(r, { rotation: i % 2 ? -60 : 60, duration: 2.2, ease: "none" }, 46.0);
+});
+sfx(45.85, "whoosh_long", 0.45);
+tl.fromTo("#lock", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6 }, 46.25);
+tl.fromTo("#lock .rule", { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "power4.out" }, 46.5);
+sfx(46.5, "ding", 0.45);
+if ($("#follow")) { tl.fromTo("#follow", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(2.2)" }, 46.8); tl.to("#follow", { scale: 1.05, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 47.3); sfx(46.8, "pop_high", 0.5); }
+tl.to("#stage", { opacity: 0, duration: 0.6, ease: "power1.in" }, CONFIG.duration - 0.6);
+
+/* global */
+tl.fromTo("#progress", { scaleX: 0 }, { scaleX: 1, duration: CONFIG.duration, ease: "none" }, 0);
+tl.set({}, {}, CONFIG.duration);
+
+/* ==================================================================== API */
+const grain = $("#grain"), grid = $("#grid");
+window.REEL = {
+  width: 1080, height: 1920, fps: CONFIG.fps, duration: CONFIG.duration,
+  cues: cues.sort((a, b) => a.t - b.t),
+  seek(t) {
+    tl.seek(t, false);
+    updaters.forEach((fn) => fn(t));
+    const f = Math.floor(t * 24);
+    grain.style.transform = `translate(${(f * 73) % 200 - 100}px, ${(f * 131) % 200 - 100}px)`;
+    grid.style.transform = `translate(${(t * 18) % 60}px, ${(t * -30) % 60}px)`;
+  },
+};
+window.REEL_READY = (async () => {
+  await document.fonts.ready;
+  await Promise.all([...document.querySelectorAll("[data-has]")].map((el) => new Promise((res) => {
+    const img = new Image(); img.onload = img.onerror = res; img.src = el.style.backgroundImage.slice(5, -2);
+  })));
+  REEL.seek(0);
+})();
+</script>
+</body>
+</html>

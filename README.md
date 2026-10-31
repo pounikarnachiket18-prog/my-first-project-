@@ -42,3 +42,4 @@ See [`reels/README.md`](reels/README.md).
 
 ### Documentary → motion graphics
 [`reels/projects/rbi-motion`](reels/projects/rbi-motion/README.md) turns the 2-minute `RBI_Documentary.mp4` into a 48-second vertical motion-graphics reel. Output: `reels/output/rbi-motion.mp4`.
+There's also a Hinglish version with an `@handle` watermark: [`reels/projects/rbi-motion-hinglish`](reels/projects/rbi-motion-hinglish/README.md), output `reels/output/rbi-motion-hinglish.mp4`.
