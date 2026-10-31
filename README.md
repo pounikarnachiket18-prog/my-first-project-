@@ -39,3 +39,6 @@ npm run find-images -- "city night" --tall --count 8   # -> reels/downloads/city
 
 ### Reels
 See [`reels/README.md`](reels/README.md).
+
+### Documentary → motion graphics
+[`reels/projects/rbi-motion`](reels/projects/rbi-motion/README.md) turns the 2-minute `RBI_Documentary.mp4` into a 48-second vertical motion-graphics reel. Output: `reels/output/rbi-motion.mp4`.
