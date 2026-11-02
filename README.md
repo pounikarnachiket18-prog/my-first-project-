@@ -21,6 +21,11 @@ My Progress
 
 I have successfully created my first GitHub repository!
 
+## My first website (3D)
+Open `website/index.html` in Chrome, Edge or Firefox (internet needed for the 3D library and fonts).
+It's a long-scroll 3D page: as you scroll, the camera flies along this repository's real commit graph,
+stopping at a 3D scene for each commit and pull request. Built with Three.js and plain HTML, nothing to install.
+
 ## Content Creation Toolkit
 
 **Setup (once):** `bash setup.sh` installs everything: Node packages (gsap, sharp), Python packages (numpy, scipy, pillow), checks ffmpeg and Playwright, and builds the sound-effects library.
