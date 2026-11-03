@@ -820,6 +820,38 @@ function setupUI(world) {
       if (world) world.burst();
     });
   });
+
+  // Copy-email button (works even where mailto: links can't open an app)
+  const showToast = (msg) => {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  };
+  document.querySelectorAll('[data-copy]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const text = btn.dataset.copy;
+      const selectIt = () => {
+        const addr = btn.parentElement.querySelector('.email-addr');
+        if (!addr) return;
+        const range = document.createRange();
+        range.selectNodeContents(addr);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        showToast('Email selected. Press Ctrl+C (or ⌘+C) to copy.');
+      };
+      try {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('Email copied!');
+          btn.textContent = 'Copied ✓';
+          setTimeout(() => (btn.textContent = 'Copy email'), 2000);
+        }, selectIt);
+      } catch (e) {
+        selectIt();
+      }
+    });
+  });
 }
 
 // ---------------------------------------------------------

@@ -19,7 +19,7 @@ Double-click `index.html`. It opens in Chrome, Edge or Firefox. Nothing to insta
 
 ## Change the text or links
 Everything you read is in `index.html`. Open it in any text editor.
-- **Your real links:** look for comments that say *Replace…*. The YouTube buttons currently search YouTube for "Mindset Mode India". The **Instagram** and **Email** buttons are placeholders (`href="#"`). Put your profile link in place of the `#`, and use `mailto:you@example.com` for email.
+- **Links:** Instagram goes to [@nachiiiket](https://www.instagram.com/nachiiiket/), and Email opens a message to nachiketpounikar15@gmail.com. The address is also shown on the page with a **Copy email** button. The YouTube buttons currently search YouTube for "Mindset Mode India"; put your channel's link there when you want.
 - **Hero words that get typed:** `ROTATING_WORDS` at the top of `src/main.js`.
 - **Film-strip frames:** the `FILM` list in `src/effects.js`.
 - **Pixel icons:** `src/icons.js`. Each icon is a small grid of letters, and each letter is a colour. Pick the icon for a section with `data-icon` in `index.html`.

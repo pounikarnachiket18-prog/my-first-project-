@@ -1169,3 +1169,31 @@ canvas.px { image-rendering: pixelated; image-rendering: crisp-edges; display: i
   .portrait-tag { left: -6px; font-size: 14px; }
   .portrait-px { right: -8px; }
 }
+
+/* ---------- Email line with copy button ---------- */
+.email-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 14px;
+  margin: 22px 0 0;
+}
+.email-addr {
+  font-family: var(--display);
+  font-size: clamp(15px, 2vw, 18px);
+  color: var(--ink);
+  user-select: all;
+  overflow-wrap: anywhere;
+}
+.copy-btn {
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 153, 51, 0.6);
+  background: rgba(255, 153, 51, 0.12);
+  color: var(--ink);
+  font: 600 13px/1 var(--body);
+  cursor: pointer;
+}
+.copy-btn:hover { background: rgba(255, 153, 51, 0.25); }
+.copy-btn:focus-visible { outline: 2px solid var(--saffron); outline-offset: 3px; }
