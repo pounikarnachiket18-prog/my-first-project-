@@ -12,6 +12,7 @@ import { setupEffects } from './effects.js';
 import { createSky, createFireRing, createArrow } from './cinematic.js';
 import { sound } from './sound.js';
 import { setupTandav } from './tandav.js';
+import { tandavFrames } from './sequence.js';
 
 const COLORS = {
   bg: new THREE.Color('#07070d'),
@@ -59,6 +60,52 @@ function createWorld() {
   // Watercolour ink-smoke sky behind everything
   const sky = createSky(isNarrow() ? 3 : 4);
   scene.add(sky.mesh);
+
+  // Full-page background video: the Tandav frames, scrubbed by page scroll
+  // (top of the page = first frame, bottom = last frame). Two neighbouring
+  // frames are blended on a small canvas, which feeds the sky shader.
+  const vidCanvas = document.createElement('canvas');
+  vidCanvas.width = 540;
+  vidCanvas.height = 960;
+  const vidCtx = vidCanvas.getContext('2d');
+  const vidTex = new THREE.CanvasTexture(vidCanvas);
+  vidTex.colorSpace = THREE.SRGBColorSpace;
+  vidTex.minFilter = THREE.LinearFilter;
+  vidTex.generateMipmaps = false;
+  sky.uniforms.uVideo.value = vidTex;
+  let lastVidKey = '';
+  let vidBlocked = false; // true when the browser refuses (e.g. page opened as a file)
+  function updateBackgroundVideo() {
+    if (vidBlocked) return;
+    const seq = tandavFrames;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const p = max > 0 ? Math.min(1, Math.max(0, window.scrollY / max)) : 0;
+    const fi = p * (seq.count - 1);
+    const i0 = Math.floor(fi);
+    const shown = seq.nearest(i0);
+    if (shown < 0) return;
+    const frac = shown === i0 && seq.loaded[i0 + 1] ? fi - i0 : 0;
+    const key = shown + ':' + frac.toFixed(2);
+    if (key === lastVidKey) return;
+    lastVidKey = key;
+    vidCtx.globalAlpha = 1;
+    vidCtx.drawImage(seq.imgs[shown], 0, 0, 540, 960);
+    if (frac > 0.02) {
+      vidCtx.globalAlpha = frac;
+      vidCtx.drawImage(seq.imgs[i0 + 1], 0, 0, 540, 960);
+    }
+    if (sky.uniforms.uHasVideo.value < 0.5) {
+      // check once that the frame can be used as a texture
+      try {
+        vidCtx.getImageData(0, 0, 1, 1);
+      } catch (e) {
+        vidBlocked = true;
+        return;
+      }
+    }
+    vidTex.needsUpdate = true;
+    sky.uniforms.uHasVideo.value = 1;
+  }
   const pointScale = () =>
     (window.innerHeight * pixelRatio * 0.5) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
 
@@ -582,6 +629,12 @@ function createWorld() {
     sky.uniforms.uAmount.value = current.skyAmt;
     sky.uniforms.uTime.value += dt * (0.6 + current.spin * 0.4) * motion;
     sky.uniforms.uScroll.value = (window.scrollY / window.innerHeight) * 0.35;
+    updateBackgroundVideo();
+    // the moon in the video sits behind the glowing core (desktop); centred on phones
+    const halfW = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * current.z * camera.aspect;
+    sky.uniforms.uVideoX.value = isNarrow() ? 0.5 : Math.min(0.78, Math.max(0.22, 0.5 + (current.x / halfW) * 0.5));
+    sky.uniforms.uVideoZoom.value = (isNarrow() ? 1 : 1.12) + (window.scrollY / Math.max(1, document.documentElement.scrollHeight)) * 0.06;
+    sky.uniforms.uVideoY.value = isNarrow() ? 0 : 0.17;
     coreUniforms.uColorA.value.copy(look.core);
 
     // flaming arrow -> ring of fire, every time you enter a "fire" section
@@ -720,6 +773,7 @@ function createWorld() {
     // begin icon morphs once the loader is gone
     reveal() {
       started = true;
+      tandavFrames.load();
     },
     burst: triggerBurst,
   };

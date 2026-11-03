@@ -4,10 +4,7 @@
 // of fire (prabha mandala). Your scroll position is the timeline.
 // =========================================================
 import { sound } from './sound.js';
-import { createSequence } from './sequence.js';
-
-// The Tandav video, as numbered frames in assets/tandav/ (8 frames per second)
-const VIDEO_FRAMES = 207;
+import { tandavFrames } from './sequence.js';
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -97,7 +94,7 @@ export function setupTandav() {
   if (!section || !canvas) return;
   const ctx = canvas.getContext('2d');
   const backdrop = paintBackdrop();
-  const seq = createSequence('assets/tandav', VIDEO_FRAMES);
+  const seq = tandavFrames;
   // start loading frames when the section is getting close
   new IntersectionObserver(
     (entries) => {

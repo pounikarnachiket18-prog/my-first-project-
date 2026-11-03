@@ -18,6 +18,14 @@ export function createSky(octaves) {
     uBg: { value: new THREE.Color('#07070d') },
     uAspect: { value: window.innerWidth / window.innerHeight },
     uScroll: { value: 0 },
+    // background video (Nachiket's Tandav), drawn under the smoke
+    uVideo: { value: null },
+    uHasVideo: { value: 0 },
+    uVideoAspect: { value: 9 / 16 },
+    uVideoX: { value: 0.5 },
+    uVideoZoom: { value: 1 },
+    uVideoDim: { value: 0.9 },
+    uVideoY: { value: 0 },
   };
   const mesh = new THREE.Mesh(
     new THREE.PlaneGeometry(2, 2),
@@ -41,6 +49,13 @@ export function createSky(octaves) {
         uniform vec3 uBg;
         uniform float uAspect;
         uniform float uScroll;
+        uniform sampler2D uVideo;
+        uniform float uHasVideo;
+        uniform float uVideoAspect;
+        uniform float uVideoX;
+        uniform float uVideoZoom;
+        uniform float uVideoDim;
+        uniform float uVideoY;
         varying vec2 vUv;
 
         float hash(vec2 p) {
@@ -75,15 +90,25 @@ export function createSky(octaves) {
                         fbm(p + 2.6 * q + vec2(8.3, 2.8) - t * 0.9));
           float f = fbm(p + 2.4 * r);
 
+          // the video: full height, centred on uVideoX (cropped at the sides on phones)
+          vec3 base = uBg;
+          if (uHasVideo > 0.5) {
+            float vu = (vUv.x - uVideoX) * uAspect / uVideoAspect / uVideoZoom + 0.5;
+            float vv = (vUv.y - 0.5 + uVideoY) / uVideoZoom + 0.5;
+            float inside = smoothstep(0.0, 0.06, vu) * smoothstep(1.0, 0.94, vu) * step(0.0, vv) * step(vv, 1.0);
+            vec3 vid = texture2D(uVideo, vec2(clamp(vu, 0.0, 1.0), clamp(vv, 0.0, 1.0))).rgb;
+            base = mix(uBg, max(uBg, vid * uVideoDim), inside);
+          }
+
           float ink = smoothstep(0.38, 0.85, f);
-          vec3 col = mix(uBg, uColA, ink);
+          vec3 col = mix(base, uColA, ink);
           col = mix(col, uColB, smoothstep(0.55, 0.95, f) * clamp(length(r), 0.0, 1.0) * 0.9);
           // watercolour: pigment pools at the edges of each wash
           float edge = 1.0 - smoothstep(0.0, 0.035, abs(f - 0.5));
           col = mix(col, uColA * 0.45, edge * 0.35);
 
           float vig = smoothstep(1.25, 0.35, length((vUv - 0.5) * vec2(uAspect, 1.0)));
-          col = mix(uBg, col, uAmount * (0.55 + 0.45 * vig));
+          col = mix(base, col, uAmount * (0.55 + 0.45 * vig) * (uHasVideo > 0.5 ? 0.42 : 1.0));
           col += (hash(vUv * 1000.0 + fract(uTime * 0.37)) - 0.5) * 0.012; // paper grain
           gl_FragColor = vec4(col, 1.0);
         }

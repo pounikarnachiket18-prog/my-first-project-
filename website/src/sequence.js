@@ -59,3 +59,8 @@ export function createSequence(base, count) {
 
   return { count, imgs, loaded, load, nearest };
 }
+
+// Nachiket's Tandav video (assets/tandav, 8 frames per second). One shared
+// copy is used by both the full-page background and the Tandav section.
+export const TANDAV_FRAMES = 207;
+export const tandavFrames = createSequence('assets/tandav', TANDAV_FRAMES);
