@@ -2,6 +2,7 @@
 // Motion-graphics effects for the page (HTML/CSS side)
 // =========================================================
 import { drawIcon } from './icons.js';
+import { sound } from './sound.js';
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const rand = (a, b) => a + Math.random() * (b - a);
@@ -129,6 +130,7 @@ function typewriter(words) {
     } else {
       text = word.slice(0, text.length + 1);
       el.textContent = text;
+      sound.play('type');
       if (text === word) {
         deleting = true;
         setTimeout(tick, 1700);
@@ -199,6 +201,67 @@ function buildWaves() {
 }
 
 // ---------------------------------------------------------
+// 7. Ink bleed: text seeps in like ink dropped in water
+// ---------------------------------------------------------
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function prepareInk() {
+  const els = document.querySelectorAll('.ink');
+  if (!els.length || reduceMotion) return;
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('width', '0');
+  svg.setAttribute('height', '0');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.style.position = 'absolute';
+  const defs = document.createElementNS(SVG_NS, 'defs');
+  svg.appendChild(defs);
+  document.body.appendChild(svg);
+  els.forEach((el, i) => {
+    const f = document.createElementNS(SVG_NS, 'filter');
+    f.id = `ink${i}`;
+    ['x', 'y'].forEach((k) => f.setAttribute(k, '-20%'));
+    ['width', 'height'].forEach((k) => f.setAttribute(k, '140%'));
+    f.innerHTML =
+      `<feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="${i + 3}" result="n"/>` +
+      `<feDisplacementMap in="SourceGraphic" in2="n" scale="70" xChannelSelector="R" yChannelSelector="G"/>`;
+    defs.appendChild(f);
+    el.style.filter = `url(#ink${i}) blur(2px)`;
+    el._ink = f.querySelector('feDisplacementMap');
+  });
+}
+function runInk(el) {
+  const map = el._ink;
+  if (!map) return;
+  const delay = parseFloat(el.dataset.inkDelay || 0);
+  const dur = 1900;
+  let t0 = null;
+  const step = (now) => {
+    if (t0 === null) t0 = now + delay;
+    const t = Math.min(1, Math.max(0, (now - t0) / dur));
+    const e = 1 - Math.pow(1 - t, 3);
+    map.setAttribute('scale', (70 * (1 - e)).toFixed(2));
+    el.style.filter = t < 1 ? `url(#${map.parentNode.id}) blur(${(2 * (1 - e)).toFixed(2)}px)` : 'none';
+    if (t < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+// ---------------------------------------------------------
+// 8. Night-sky ending: moon rises, mountains sink (parallax)
+// ---------------------------------------------------------
+function outroParallax() {
+  const outro = document.querySelector('.outro');
+  if (!outro || reduceMotion) return;
+  const update = () => {
+    const r = outro.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const p = Math.min(1, Math.max(0, (vh - r.top) / (vh + r.height)));
+    outro.style.setProperty('--p', p.toFixed(3));
+  };
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+}
+
+// ---------------------------------------------------------
 // Public API
 // ---------------------------------------------------------
 export function setupEffects({ words }) {
@@ -220,6 +283,8 @@ export function setupEffects({ words }) {
   });
   buildFilmStrip();
   buildWaves();
+  prepareInk();
+  outroParallax();
 
   fixGradients();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(fixGradients);
@@ -250,13 +315,23 @@ export function setupEffects({ words }) {
           entries.forEach((e) => {
             if (!e.isIntersecting) return;
             e.target.classList.add('in');
+            const c = e.target.classList;
+            if (c.contains('ink')) runInk(e.target);
+            if (c.contains('ink') && e.target.tagName === 'H2') sound.play('rumble');
+            if (c.contains('kinetic')) sound.play('swoosh');
+            if (c.contains('mark')) sound.play('scribble', 0.9);
+            if (c.contains('edit-timeline')) {
+              sound.play('snip', 1.8);
+              setTimeout(() => sound.play('snip'), 2150);
+            }
+            if (c.contains('outro')) sound.play('bell', 0.9);
             io.unobserve(e.target);
           });
         },
         { threshold: 0.2 }
       );
       document
-        .querySelectorAll('.reveal, .kinetic, .mark, .slice, .edit-timeline, .outro, .film-band')
+        .querySelectorAll('.reveal, .kinetic, .mark, .slice, .edit-timeline, .outro, .film-band, .ink, .signature')
         .forEach((el) => io.observe(el));
       typewriter(words);
     },

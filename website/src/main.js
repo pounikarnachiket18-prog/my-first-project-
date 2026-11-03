@@ -9,6 +9,8 @@ import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPa
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { iconPixels } from './icons.js';
 import { setupEffects } from './effects.js';
+import { createSky, createFireRing, createArrow } from './cinematic.js';
+import { sound } from './sound.js';
 
 const COLORS = {
   bg: new THREE.Color('#07070d'),
@@ -52,6 +54,12 @@ function createWorld() {
 
   const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
   camera.position.set(0, 0, 7);
+
+  // Watercolour ink-smoke sky behind everything
+  const sky = createSky(isNarrow() ? 3 : 4);
+  scene.add(sky.mesh);
+  const pointScale = () =>
+    (window.innerHeight * pixelRatio * 0.5) / Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
 
   // Everything that moves together as "the mind"
   const mind = new THREE.Group();
@@ -153,6 +161,23 @@ function createWorld() {
     mind.add(pivot);
     rings.push({ pivot, satHolder, speed: def.speed });
   });
+
+  // --- 3b. Ring of fire (lit by the flaming arrow) ---
+  const fire = createFireRing(isNarrow() ? 700 : 1200, 2.25);
+  fire.uniforms.uScale.value = pointScale();
+  mind.add(fire.points);
+  let fireOn = false;
+  let fireLevel = 0;
+
+  // --- 3c. Flaming arrow ---
+  const arrowFx = createArrow(520);
+  arrowFx.uniforms.uScale.value = pointScale();
+  scene.add(arrowFx.arrow, arrowFx.trail);
+  let arrowT = -1; // -1 = not flying
+  const arrowStart = new THREE.Vector3();
+  const arrowEnd = new THREE.Vector3();
+  const arrowDir = new THREE.Vector3();
+  const arrowHead = new THREE.Vector3();
 
   // --- 4. Floating wireframe "ideas" ---
   const ideas = [];
@@ -421,6 +446,13 @@ function createWorld() {
     iy: parseFloat(el.dataset.iy || 0),
     is: parseFloat(el.dataset.is || 1),
     bg: new THREE.Color(el.dataset.bg || '#07070d'),
+    // watercolour sky: "colourA,colourB,amount"
+    skyA: new THREE.Color((el.dataset.sky || '#3b1d5c,#ff9933,0.3').split(',')[0]),
+    skyB: new THREE.Color((el.dataset.sky || '#3b1d5c,#ff9933,0.3').split(',')[1]),
+    skyAmt: parseFloat((el.dataset.sky || '#3b1d5c,#ff9933,0.3').split(',')[2]),
+    core: new THREE.Color(el.dataset.core || '#ff9933'),
+    spin: parseFloat(el.dataset.spin || 1),
+    fire: parseFloat(el.dataset.fire || 0),
     center: 0,
   }));
   function measure() {
@@ -431,10 +463,17 @@ function createWorld() {
   }
   measure();
 
-  const target = { x: 0, y: 0, z: 7, amp: 0.18, s: 1, ix: 0, iy: 0, is: 1 };
+  const target = { x: 0, y: 0, z: 7, amp: 0.18, s: 1, ix: 0, iy: 0, is: 1, spin: 1, skyAmt: 0.3 };
   const current = { ...target };
   const targetBg = COLORS.bg.clone();
   const currentBg = COLORS.bg.clone();
+  const look = {
+    skyA: new THREE.Color(), skyB: new THREE.Color(), core: new THREE.Color(),
+    tSkyA: new THREE.Color(), tSkyB: new THREE.Color(), tCore: new THREE.Color(),
+  };
+  look.skyA.copy(sections[0].skyA);
+  look.skyB.copy(sections[0].skyB);
+  look.core.copy(sections[0].core);
   let activeSection = sections[0];
   const smooth = (t) => t * t * (3 - 2 * t);
 
@@ -456,9 +495,14 @@ function createWorld() {
         }
       }
     }
-    for (const k of ['x', 'y', 'z', 'amp', 's', 'ix', 'iy', 'is']) target[k] = a[k] + (b[k] - a[k]) * t;
+    for (const k of ['x', 'y', 'z', 'amp', 's', 'ix', 'iy', 'is', 'spin', 'skyAmt']) target[k] = a[k] + (b[k] - a[k]) * t;
+    look.tSkyA.copy(a.skyA).lerp(b.skyA, t);
+    look.tSkyB.copy(a.skyB).lerp(b.skyB, t);
+    look.tCore.copy(a.core).lerp(b.core, t);
     targetBg.copy(a.bg).lerp(b.bg, t);
     activeSection = t < 0.5 ? a : b;
+    // past the last section (the night-sky ending): the pixel icon bows out
+    if (mid > last.center + window.innerHeight * 0.6) target.is = 0;
     if (isNarrow()) {
       // On phones the mind stays centred and sits a bit higher, behind the text
       target.x = 0;
@@ -480,6 +524,7 @@ function createWorld() {
   window.addEventListener('pointerdown', (e) => {
     if (e.target.closest('a, button, .tilt, input, textarea')) return;
     triggerBurst();
+    sound.play('sparkle');
   });
 
   let lastScrollY = window.scrollY;
@@ -493,6 +538,9 @@ function createWorld() {
     renderer.setSize(w, h);
     composer.setSize(w, h);
     bloom.setSize(w, h);
+    sky.uniforms.uAspect.value = w / h;
+    fire.uniforms.uScale.value = pointScale();
+    arrowFx.uniforms.uScale.value = pointScale();
     measure();
   });
   window.addEventListener('load', measure);
@@ -516,8 +564,62 @@ function createWorld() {
     renderer.setClearColor(currentBg, 1);
     scene.fog.color.copy(currentBg);
 
-    if (started && activeSection.icon !== currentIcon) morphTo(activeSection.icon);
+    if (started && activeSection.icon !== currentIcon) {
+      if (currentIcon) sound.play('whoosh');
+      sound.play('blips');
+      morphTo(activeSection.icon);
+    }
     updateVoxels(dt);
+
+    // painterly sky + core colour follow the section
+    look.skyA.lerp(look.tSkyA, ease * 0.6);
+    look.skyB.lerp(look.tSkyB, ease * 0.6);
+    look.core.lerp(look.tCore, ease * 0.6);
+    sky.uniforms.uColA.value.copy(look.skyA);
+    sky.uniforms.uColB.value.copy(look.skyB);
+    sky.uniforms.uBg.value.copy(currentBg);
+    sky.uniforms.uAmount.value = current.skyAmt;
+    sky.uniforms.uTime.value += dt * (0.6 + current.spin * 0.4) * motion;
+    sky.uniforms.uScroll.value = (window.scrollY / window.innerHeight) * 0.35;
+    coreUniforms.uColorA.value.copy(look.core);
+
+    // flaming arrow -> ring of fire, every time you enter a "fire" section
+    const wantsFire = activeSection.fire > 0;
+    if (!wantsFire) fireOn = false;
+    if (started && wantsFire && !fireOn && arrowT < 0) {
+      if (reduceMotion) fireOn = true;
+      else {
+        arrowT = 0;
+        arrowFx.arrow.visible = true;
+        sound.play('arrow');
+      }
+    }
+    if (arrowT >= 0) {
+      arrowT = Math.min(1, arrowT + dt / 0.95);
+      arrowEnd.copy(mind.position);
+      arrowStart.copy(mind.position).add(isNarrow() ? new THREE.Vector3(-4.5, -6, 2) : new THREE.Vector3(-8, -3.4, 1.5));
+      arrowDir.copy(arrowEnd).sub(arrowStart).normalize();
+      const k = arrowT * arrowT * (2 - arrowT * 0.6);
+      arrowFx.arrow.position.copy(arrowStart).lerp(arrowEnd, Math.min(1, k));
+      arrowFx.arrow.lookAt(arrowEnd);
+      arrowHead.copy(arrowFx.arrow.position).addScaledVector(arrowDir, 0.8);
+      arrowFx.emit(arrowHead, arrowDir.clone().negate(), 9);
+      if (arrowFx.arrow.position.distanceTo(arrowEnd) < 1.25 || arrowT >= 1) {
+        arrowT = -1;
+        arrowFx.arrow.visible = false;
+        if (activeSection.fire > 0) {
+          fireOn = true;
+          triggerBurst();
+          sound.play('impact');
+        }
+      }
+    }
+    arrowFx.update(dt);
+    fireLevel += ((fireOn ? activeSection.fire : 0) - fireLevel) * Math.min(1, dt * 2.2);
+    fire.uniforms.uIntensity.value = fireLevel;
+    fire.uniforms.uTime.value += dt;
+    fire.points.visible = fireLevel > 0.01;
+    sound.setFire(fireLevel);
 
     const sy = window.scrollY;
     scrollVel += ((sy - lastScrollY) * 0.002 - scrollVel) * 0.1;
@@ -526,15 +628,15 @@ function createWorld() {
     mind.position.set(current.x, current.y, 0);
     mind.scale.setScalar(current.s * (1 + Math.sin(time * 1.2) * 0.015 * motion));
 
-    core.rotation.y += dt * 0.25 * motion + scrollVel * 0.5;
+    core.rotation.y += dt * 0.25 * current.spin * motion + scrollVel * 0.5;
     core.rotation.x += dt * 0.08 * motion;
-    shell.rotation.y -= dt * 0.18 * motion + scrollVel * 0.6;
+    shell.rotation.y -= dt * 0.18 * current.spin * motion + scrollVel * 0.6;
     shell.rotation.z += dt * 0.06 * motion;
     shell2.rotation.x += dt * 0.05 * motion;
     shell2.rotation.y += dt * 0.07 * motion - scrollVel * 0.3;
 
     rings.forEach((r, i) => {
-      r.pivot.rotation.z += dt * r.speed * 0.4 * motion;
+      r.pivot.rotation.z += dt * r.speed * 0.4 * current.spin * motion;
       r.satHolder.rotation.z += dt * r.speed * 2.2 * motion;
       r.pivot.rotation.x += Math.sin(time * 0.3 + i) * 0.0008 * motion;
     });
@@ -568,7 +670,7 @@ function createWorld() {
     stars.rotation.y += dt * 0.012 * motion;
     stars.rotation.x = sy * 0.00008;
 
-    coreUniforms.uTime.value += dt * motion;
+    coreUniforms.uTime.value += dt * (0.7 + current.spin * 0.3) * motion;
     coreUniforms.uAmp.value = current.amp;
     coreUniforms.uPulse.value *= Math.pow(0.25, dt);
 
@@ -657,6 +759,7 @@ function setupUI(world) {
   const canHover = window.matchMedia('(hover: hover)').matches;
   if (canHover && !reduceMotion) {
     document.querySelectorAll('.tilt').forEach((card) => {
+      card.addEventListener('pointerenter', () => sound.play('tick'));
       card.addEventListener('pointermove', (e) => {
         const r = card.getBoundingClientRect();
         const px = (e.clientX - r.left) / r.width;
@@ -674,6 +777,25 @@ function setupUI(world) {
       });
     });
   }
+
+  // Sound on/off buttons
+  const soundBtns = document.querySelectorAll('[data-sound-toggle]');
+  const showSound = (on) => {
+    document.body.classList.toggle('sound-on', on);
+    soundBtns.forEach((b) => {
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      const label = b.querySelector('.sound-label');
+      if (label) label.textContent = on ? 'Sound on' : 'Sound off';
+    });
+  };
+  sound.onChange(showSound);
+  soundBtns.forEach((b) =>
+    b.addEventListener('click', () => {
+      sound.toggle();
+      if (sound.isOn()) sound.play('sparkle');
+    })
+  );
+  sound.init();
 
   // Cursor glow
   const glow = document.getElementById('cursorGlow');

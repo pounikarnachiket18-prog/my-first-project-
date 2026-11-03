@@ -11,7 +11,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2307070d'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23ff9933' stroke-width='5'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%2322c55e'/%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&family=Noto+Sans+Devanagari:wght@600;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&family=Noto+Sans+Devanagari:wght@600;800&family=Dancing+Script:wght@600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -25,6 +25,7 @@
   <!-- The 3D world lives on this canvas (drawn by app.js) -->
   <canvas id="scene" aria-hidden="true"></canvas>
   <div class="vignette" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
   <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
   <div class="progress" id="progress" aria-hidden="true"></div>
 
@@ -36,14 +37,20 @@
       <a href="#process">Process</a>
       <a href="#contact">Contact</a>
     </nav>
+    <div class="nav-actions">
+    <button class="sound-btn" type="button" data-sound-toggle aria-pressed="false" aria-label="Sound">
+      <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="sound-label">Sound off</span>
+    </button>
     <!-- Put your real YouTube channel link here -->
     <a class="btn btn-small primary" href="https://www.youtube.com/results?search_query=Mindset+Mode+India" target="_blank" rel="noopener">Subscribe</a>
+    </div>
   </header>
 
   <main>
     <!-- ============ HERO ============ -->
     <section id="home" class="section hero side-left"
-      data-x="1.9" data-y="0" data-z="7" data-amp="0.18" data-s="1" data-icon="bubble" data-bg="#07070d">
+      data-x="1.9" data-y="0" data-z="7" data-amp="0.18" data-s="1" data-icon="bubble" data-bg="#07070d" data-sky="#4a1d5c,#ff9933,0.42">
       <div class="content">
         <p class="eyebrow reveal"><span class="live-dot"></span> Content creator · India</p>
         <h1 class="kinetic" data-split="chars">
@@ -59,6 +66,10 @@
           <a class="btn primary" href="#channel">Explore the channel</a>
           <a class="btn ghost" href="#contact">Say hello</a>
         </div>
+        <button class="sound-hint reveal" type="button" data-sound-toggle aria-pressed="false">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 0 0-9 9v6a3 3 0 0 0 3 3h2v-8H5v-1a7 7 0 0 1 14 0v1h-3v8h2a3 3 0 0 0 3-3v-6a9 9 0 0 0-9-9Z"/></svg>
+          Turn on sound for the full experience
+        </button>
       </div>
       <a class="scroll-hint" href="#about" aria-label="Scroll down">
         <span class="mouse"><span></span></span>
@@ -78,7 +89,7 @@
 
     <!-- ============ ABOUT ============ -->
     <section id="about" class="section side-right"
-      data-x="-2.3" data-y="0.1" data-z="7.6" data-amp="0.32" data-s="0.95" data-icon="bulb" data-bg="#060a17">
+      data-x="-2.3" data-y="0.1" data-z="7.6" data-amp="0.32" data-s="0.95" data-icon="bulb" data-bg="#060a17" data-sky="#0e3a4a,#2dd4bf,0.38">
       <div class="content">
         <p class="section-tag reveal">01 — About me</p>
         <h2 class="kinetic">I'm here to switch India into <em><span class="mark mark-circle mark-green">mindset mode</span></em>.</h2>
@@ -104,7 +115,7 @@
 
     <!-- ============ CHANNEL ============ -->
     <section id="channel" class="section side-left"
-      data-x="2.5" data-y="-0.1" data-z="7.2" data-amp="0.22" data-s="1.1" data-icon="monitor" data-bg="#0d0714">
+      data-x="2.5" data-y="-0.1" data-z="7.2" data-amp="0.22" data-s="1.1" data-icon="monitor" data-bg="#0d0714" data-sky="#2a1245,#a855f7,0.34">
       <div class="content">
         <p class="section-tag reveal">02 — The channel</p>
 
@@ -166,7 +177,7 @@
 
     <!-- ============ PROCESS ============ -->
     <section id="process" class="section side-right"
-      data-x="-2.4" data-y="0" data-z="7.4" data-amp="0.38" data-s="0.9" data-icon="camera" data-bg="#05110b">
+      data-x="-2.4" data-y="0" data-z="7.4" data-amp="0.38" data-s="0.9" data-icon="camera" data-bg="#05110b" data-sky="#0a3320,#22c55e,0.32">
       <div class="content">
         <p class="section-tag reveal">03 — How a video is born</p>
         <h2 class="kinetic">From a small spark to <em><span class="mark mark-underline">your screen</span></em>.</h2>
@@ -229,11 +240,31 @@
       </div>
     </section>
 
+    <!-- ============ THE CHURN ============ -->
+    <section id="churn" class="section side-left churn"
+      data-x="2.4" data-y="0" data-z="7.2" data-amp="0.55" data-s="1" data-icon="kalash"
+      data-bg="#0d0616" data-sky="#3b0f5c,#9333ea,0.95" data-core="#a855f7" data-spin="4">
+      <div class="content">
+        <p class="section-tag reveal">04 — The churn</p>
+        <h2 class="ink">Churn the ocean of <em>your mind</em>.</h2>
+        <p class="ink" data-ink-delay="250">
+          There's an old Indian story about gods and demons churning the ocean.
+          The first thing to rise wasn't treasure. It was <span class="poison">poison</span>.
+        </p>
+        <p class="ink" data-ink-delay="500">
+          Your mind works the same way. Start working on yourself and the doubt, fear and
+          laziness come up first. Most people stop right there. Keep churning, and the
+          <span class="mark mark-underline nectar">nectar</span> comes.
+        </p>
+        <p class="churn-line ink" data-ink-delay="750">Poison first. Nectar after. Don't stop churning.</p>
+      </div>
+    </section>
+
     <!-- ============ QUOTE ============ -->
     <section id="mindset" class="section quote center"
-      data-x="0" data-y="0" data-z="6.4" data-amp="0.55" data-s="1.05" data-icon="remote" data-bg="#170907" data-ix="2.2" data-iy="0.35" data-is="0.68">
+      data-x="0" data-y="0" data-z="6.4" data-amp="0.55" data-s="1.05" data-icon="remote" data-bg="#160604" data-sky="#7f1d1d,#f97316,0.85" data-core="#ff7a1a" data-fire="1" data-ix="2.2" data-iy="0.35" data-is="0.68">
       <div class="content">
-        <p class="section-tag reveal">04 — What I believe</p>
+        <p class="section-tag reveal">05 — What I believe</p>
         <blockquote class="kinetic" data-split="words">
           “Your mindset is the remote control of your life.
           <span class="mark mark-circle"><span class="grad">Pick it up.</span></span>”
@@ -245,9 +276,9 @@
 
     <!-- ============ CONTACT ============ -->
     <section id="contact" class="section center"
-      data-x="0" data-y="-0.4" data-z="12" data-amp="0.16" data-s="0.85" data-icon="envelope" data-bg="#07070d" data-ix="5.1" data-iy="0.6" data-is="1.15">
+      data-x="0" data-y="-0.4" data-z="12" data-amp="0.16" data-s="0.85" data-icon="envelope" data-bg="#050914" data-sky="#0b1a3a,#3b5bdb,0.55" data-ix="5.1" data-iy="0.6" data-is="1.15">
       <div class="content">
-        <p class="section-tag reveal">05 — Let's connect</p>
+        <p class="section-tag reveal">06 — Let's connect</p>
         <h2 class="slice">Let's build something <em><span class="mark mark-underline">meaningful</span></em> together.</h2>
         <p class="reveal">
           Collaborations, brand partnerships, video ideas, or just a hello. I'd love to hear from you.
@@ -272,15 +303,41 @@
     </section>
     <!-- ============ OUTRO ============ -->
     <section class="outro" aria-label="Mindset Mode India">
+      <div class="night" aria-hidden="true">
+        <div class="moon"></div>
+        <svg class="peaks" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMax slice">
+          <defs>
+            <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="7" />
+              <feDisplacementMap in="SourceGraphic" scale="14" />
+            </filter>
+            <linearGradient id="mist" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#060a1c" stop-opacity="0" />
+              <stop offset="1" stop-color="#060a1c" stop-opacity="1" />
+            </linearGradient>
+          </defs>
+          <g filter="url(#rough)">
+            <path fill="#141b38" d="M0 420 L0 300 L120 270 L260 300 L380 240 L520 275 L640 230 L760 262 L900 215 L1040 258 L1180 222 L1300 262 L1440 236 L1440 420 Z" />
+            <path fill="#1e2850" d="M0 420 L0 350 L160 320 L300 336 L430 280 L540 210 L640 130 L705 82 L742 70 L790 96 L860 150 L960 220 L1080 262 L1200 300 L1330 318 L1440 330 L1440 420 Z" />
+            <path fill="#e9eef8" d="M640 130 L705 82 L742 70 L790 96 L860 150 L835 146 L812 170 L780 132 L756 162 L728 122 L700 156 L676 138 L654 160 Z" />
+            <path fill="none" stroke="#b9c6e4" stroke-width="3" stroke-linecap="round" d="M742 74 L748 140 L736 210 M705 86 L690 160 L660 230 M790 100 L820 175 L850 232" />
+          </g>
+          <rect x="0" y="260" width="1440" height="160" fill="url(#mist)" />
+        </svg>
+      </div>
       <p class="outro-word kinetic" data-split="chars" data-far>MINDSET</p>
       <div class="outro-icons" aria-hidden="true">
         <canvas class="px" data-icon="bulb" data-scale="5"></canvas>
         <canvas class="px" data-icon="flame" data-scale="5"></canvas>
+        <canvas class="px" data-icon="kalash" data-scale="4"></canvas>
         <canvas class="px" data-icon="heart" data-scale="6"></canvas>
         <canvas class="px" data-icon="star" data-scale="6"></canvas>
-        <canvas class="px" data-icon="camera" data-scale="4"></canvas>
       </div>
       <p class="outro-word kinetic" data-split="chars" data-far>MODE <span class="grad">INDIA</span></p>
+      <p class="signature">
+        <span class="sig-small">imagined &amp; created by</span>
+        <span class="sig-name">Nachiket</span>
+      </p>
     </section>
   </main>
 
