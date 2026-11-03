@@ -1042,3 +1042,128 @@ canvas.px { image-rendering: pixelated; image-rendering: crisp-edges; display: i
   .sound-label { display: none; }
   .sound-btn { padding: 9px 11px; }
 }
+
+/* ---------- Nachiket's photo ---------- */
+.avatar { position: relative; display: inline-flex; flex: none; }
+.avatar img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--saffron);
+  box-shadow: 0 0 0 3px rgba(255, 153, 51, 0.18);
+}
+.avatar .live-dot { position: absolute; right: -1px; bottom: -1px; border: 2px solid var(--bg); width: 12px; height: 12px; }
+
+.about { justify-content: center; }
+.about-layout {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 600px);
+  align-items: center;
+  gap: 48px;
+}
+.portrait {
+  justify-self: center;
+  position: relative;
+  margin: 0;
+  width: clamp(230px, 27vw, 370px);
+  aspect-ratio: 4 / 5;
+  max-width: 100%;
+  padding: 5px;
+  border-radius: 999px 999px 30px 30px;
+  background: linear-gradient(160deg, var(--saffron), #fff4e6 50%, var(--green));
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 0 70px rgba(255, 153, 51, 0.28);
+}
+.portrait-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px 999px 26px 26px;
+  overflow: hidden;
+  background: #120d14;
+}
+.portrait-inner img,
+.portrait-inner canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.portrait-inner img { object-fit: cover; object-position: 50% 30%; }
+.portrait-inner canvas { image-rendering: pixelated; transition: opacity 0.6s ease; }
+.portrait-inner canvas.done { opacity: 0; }
+.portrait-tag {
+  position: absolute;
+  left: -18px;
+  bottom: 26px;
+  padding: 9px 15px;
+  border-radius: 12px;
+  background: var(--saffron);
+  color: #170b00;
+  font-family: var(--hindi), var(--display);
+  font-weight: 800;
+  font-size: 16px;
+  transform: rotate(-6deg) translateZ(50px);
+  box-shadow: 5px 5px 0 #0b0b12;
+  white-space: nowrap;
+}
+.portrait-px { position: absolute; top: 14%; right: -22px; transform: rotate(10deg) translateZ(40px); }
+
+/* ---------- Shiv Tandav (scroll-driven) ---------- */
+.tandav { position: relative; z-index: 2; height: 360vh; background: #0a0206; }
+.tandav-sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+#tandavCanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.tandav-copy {
+  position: absolute;
+  left: var(--gutter);
+  top: 50%;
+  transform: translateY(-50%);
+  width: min(34vw, 470px);
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.9);
+}
+.t-stack { display: grid; }
+.t-block {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transform: translateY(24px);
+  filter: blur(6px);
+  transition: opacity 0.7s ease, transform 0.7s ease, filter 0.7s ease;
+  pointer-events: none;
+}
+.tandav[data-stage="0"] .t0,
+.tandav[data-stage="1"] .t1,
+.tandav[data-stage="2"] .t2,
+.tandav[data-stage="3"] .t3 { opacity: 1; transform: none; filter: none; }
+.t-sanskrit {
+  font-family: "Tiro Devanagari Sanskrit", var(--hindi), serif;
+  font-size: clamp(30px, 3.6vw, 50px);
+  line-height: 1.35;
+  color: #ffd9a8;
+  margin: 0 0 14px;
+  overflow-wrap: anywhere;
+}
+.t-trans { font-size: clamp(16px, 1.5vw, 19px); color: #f0d9cf; margin: 0; }
+.tandav h2 em { color: #ffb347; }
+.t-credit { margin: 26px 0 0; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 217, 168, 0.55); }
+
+@media (max-width: 860px) {
+  .about-layout { grid-template-columns: 1fr; gap: 34px; }
+  .portrait { width: min(250px, 70vw); }
+  .tandav-copy {
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    transform: none;
+    width: auto;
+    padding: 70px max(16px, var(--gutter)) 36px;
+    background: linear-gradient(transparent, rgba(10, 2, 6, 0.92) 40%);
+  }
+  .t-sanskrit { font-size: 26px; }
+}
+@media (max-width: 520px) {
+  .portrait-tag { left: -6px; font-size: 14px; }
+  .portrait-px { right: -8px; }
+}

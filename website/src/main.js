@@ -11,6 +11,7 @@ import { iconPixels } from './icons.js';
 import { setupEffects } from './effects.js';
 import { createSky, createFireRing, createArrow } from './cinematic.js';
 import { sound } from './sound.js';
+import { setupTandav } from './tandav.js';
 
 const COLORS = {
   bg: new THREE.Color('#07070d'),
@@ -826,6 +827,7 @@ function setupUI(world) {
 // ---------------------------------------------------------
 const startedAt = performance.now();
 const fx = setupEffects({ words: ROTATING_WORDS });
+setupTandav();
 const world = createWorld();
 setupUI(world);
 

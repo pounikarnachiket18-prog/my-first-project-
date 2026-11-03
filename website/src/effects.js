@@ -262,6 +262,56 @@ function outroParallax() {
 }
 
 // ---------------------------------------------------------
+// 9. Photo that assembles from big pixels into a sharp image
+// ---------------------------------------------------------
+function setupPixelReveal() {
+  document.querySelectorAll('.pixel-reveal').forEach((fig) => {
+    const img = fig.querySelector('img');
+    const c = fig.querySelector('canvas');
+    if (!img || !c) return;
+    if (reduceMotion) {
+      c.remove();
+      return;
+    }
+    const g = c.getContext('2d');
+    const tiny = document.createElement('canvas');
+    const tg = tiny.getContext('2d');
+    const drawAt = (cols) => {
+      const w = fig.clientWidth;
+      const h = fig.clientHeight;
+      if (!w || !h || !img.naturalWidth) return;
+      c.width = w;
+      c.height = h;
+      const rows = Math.max(1, Math.round((cols * h) / w));
+      tiny.width = cols;
+      tiny.height = rows;
+      // "cover" crop, focused a little above centre (the face)
+      const ir = img.naturalWidth / img.naturalHeight;
+      const fr = w / h;
+      let sw = img.naturalWidth;
+      let sh = img.naturalHeight;
+      if (ir > fr) sw = sh * fr;
+      else sh = sw / fr;
+      const sx = (img.naturalWidth - sw) / 2;
+      const sy = (img.naturalHeight - sh) * 0.3;
+      tg.imageSmoothingEnabled = true;
+      tg.drawImage(img, sx, sy, sw, sh, 0, 0, cols, rows);
+      g.imageSmoothingEnabled = false;
+      g.drawImage(tiny, 0, 0, cols, rows, 0, 0, w, h);
+    };
+    const ready = img.complete ? Promise.resolve() : new Promise((r) => img.addEventListener('load', r, { once: true }));
+    ready.then(() => drawAt(7));
+    fig._reveal = () =>
+      ready.then(() => {
+        const steps = [7, 10, 14, 20, 28, 40, 58, 84, 130];
+        steps.forEach((n, i) => setTimeout(() => drawAt(n), 350 + i * 130));
+        setTimeout(() => c.classList.add('done'), 350 + steps.length * 130);
+        setTimeout(() => sound.play('blips'), 300);
+      });
+  });
+}
+
+// ---------------------------------------------------------
 // Public API
 // ---------------------------------------------------------
 export function setupEffects({ words }) {
@@ -284,6 +334,7 @@ export function setupEffects({ words }) {
   buildFilmStrip();
   buildWaves();
   prepareInk();
+  setupPixelReveal();
   outroParallax();
 
   fixGradients();
@@ -317,6 +368,7 @@ export function setupEffects({ words }) {
             e.target.classList.add('in');
             const c = e.target.classList;
             if (c.contains('ink')) runInk(e.target);
+            if (e.target._reveal) e.target._reveal();
             if (c.contains('ink') && e.target.tagName === 'H2') sound.play('rumble');
             if (c.contains('kinetic')) sound.play('swoosh');
             if (c.contains('mark')) sound.play('scribble', 0.9);
@@ -331,7 +383,7 @@ export function setupEffects({ words }) {
         { threshold: 0.2 }
       );
       document
-        .querySelectorAll('.reveal, .kinetic, .mark, .slice, .edit-timeline, .outro, .film-band, .ink, .signature')
+        .querySelectorAll('.reveal, .kinetic, .mark, .slice, .edit-timeline, .outro, .film-band, .ink, .signature, .pixel-reveal')
         .forEach((el) => io.observe(el));
       typewriter(words);
     },

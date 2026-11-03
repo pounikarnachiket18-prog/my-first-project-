@@ -304,6 +304,25 @@ const SOUNDS = {
     env(g, t, 0.025, 0.002, 0.04);
     out(g);
   },
+  // damru: two quick skin-drum hits (for the Tandav scene)
+  damru(t) {
+    [0, 0.085].forEach((dt, i) => {
+      const o = tone('sine', 360 + i * 40, t + dt, 0.2);
+      o.frequency.exponentialRampToValueAtTime(150, t + dt + 0.12);
+      const g = ctx.createGain();
+      o.connect(g);
+      env(g, t + dt, 0.32, 0.002, 0.15);
+      out(g, 0.35);
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.value = 1400;
+      bp.Q.value = 1.5;
+      const ng = ctx.createGain();
+      noise(t + dt, 0.05).connect(bp).connect(ng);
+      env(ng, t + dt, 0.12, 0.001, 0.04);
+      out(ng, 0.2);
+    });
+  },
   // temple bell for the finale
   bell(t) {
     const base = SA * 2.4;
@@ -321,7 +340,7 @@ const SOUNDS = {
   },
 };
 
-const MIN_GAP = { type: 0.025, tick: 0.06, whoosh: 0.35, swoosh: 0.15, blips: 0.3, scribble: 0.4 };
+const MIN_GAP = { damru: 0.14, type: 0.025, tick: 0.06, whoosh: 0.35, swoosh: 0.15, blips: 0.3, scribble: 0.4 };
 
 function setEnabled(on) {
   enabled = on;

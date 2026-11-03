@@ -11,7 +11,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2307070d'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23ff9933' stroke-width='5'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%2322c55e'/%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&family=Noto+Sans+Devanagari:wght@600;800&family=Dancing+Script:wght@600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&family=Noto+Sans+Devanagari:wght@600;800&family=Dancing+Script:wght@600&family=Tiro+Devanagari+Sanskrit&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -35,6 +35,7 @@
       <a href="#about">About</a>
       <a href="#channel">Channel</a>
       <a href="#process">Process</a>
+      <a href="#tandav">Tandav</a>
       <a href="#contact">Contact</a>
     </nav>
     <div class="nav-actions">
@@ -52,7 +53,7 @@
     <section id="home" class="section hero side-left"
       data-x="1.9" data-y="0" data-z="7" data-amp="0.18" data-s="1" data-icon="bubble" data-bg="#07070d" data-sky="#4a1d5c,#ff9933,0.42">
       <div class="content">
-        <p class="eyebrow reveal"><span class="live-dot"></span> Content creator · India</p>
+        <p class="eyebrow reveal"><span class="avatar"><img src="assets/nachiket-avatar.jpg" alt="" width="40" height="40" /><span class="live-dot"></span></span> Content creator · India</p>
         <h1 class="kinetic" data-split="chars">
           <span class="namaste no-split" lang="hi">नमस्ते,</span>
           I'm <span class="grad">Nachiket</span>
@@ -88,8 +89,17 @@
     <p class="band film-caption reveal">Every video is one more frame in the story of a <span class="mark mark-circle mark-green">better you</span>.</p>
 
     <!-- ============ ABOUT ============ -->
-    <section id="about" class="section side-right"
-      data-x="-2.3" data-y="0.1" data-z="7.6" data-amp="0.32" data-s="0.95" data-icon="bulb" data-bg="#060a17" data-sky="#0e3a4a,#2dd4bf,0.38">
+    <section id="about" class="section about"
+      data-x="-2.3" data-y="0.1" data-z="7.6" data-amp="0.32" data-s="0.95" data-icon="bulb" data-is="0" data-bg="#060a17" data-sky="#0e3a4a,#2dd4bf,0.38">
+      <div class="about-layout">
+      <figure class="portrait tilt pixel-reveal">
+        <div class="portrait-inner">
+          <img src="assets/nachiket.jpg" alt="Nachiket, smiling, with curly hair, in a black jacket" width="720" height="815" />
+          <canvas aria-hidden="true"></canvas>
+        </div>
+        <figcaption class="portrait-tag">नमस्ते, that's me!</figcaption>
+        <canvas class="px portrait-px" data-icon="heart" data-scale="5" aria-hidden="true"></canvas>
+      </figure>
       <div class="content">
         <p class="section-tag reveal">01 — About me</p>
         <h2 class="kinetic">I'm here to switch India into <em><span class="mark mark-circle mark-green">mindset mode</span></em>.</h2>
@@ -110,6 +120,7 @@
           <li>Proudly Indian</li>
           <li>Always building</li>
         </ul>
+      </div>
       </div>
     </section>
 
@@ -274,11 +285,40 @@
       </div>
     </section>
 
+    <!-- ============ SHIV TANDAV (scroll-driven scene) ============ -->
+    <section class="tandav" id="tandav" aria-label="Shiv Tandav" data-stage="0">
+      <div class="tandav-sticky">
+        <canvas id="tandavCanvas" aria-hidden="true"></canvas>
+        <div class="tandav-copy">
+          <p class="section-tag">06 — Tandav</p>
+          <div class="t-stack">
+            <div class="t-block t0">
+              <h2>The cosmic <em>dance</em>.</h2>
+              <p class="t-trans">Keep scrolling. He dances as you move.</p>
+            </div>
+            <div class="t-block t1">
+              <p class="t-sanskrit" lang="sa">डमड्डमड्डमड्डमन्निनादवड्डमर्वयं</p>
+              <p class="t-trans">The damru thunders: ḍamaḍ, ḍamaḍ, ḍamaḍ…</p>
+            </div>
+            <div class="t-block t2">
+              <p class="t-sanskrit" lang="sa">चकार चण्डताण्डवं तनोतु नः शिवः शिवम्</p>
+              <p class="t-trans">He danced the fierce Tandav. May Shiva bless us all.</p>
+            </div>
+            <div class="t-block t3">
+              <h2>Tandav destroys, so something new can be <em>created</em>.</h2>
+              <p class="t-trans">Break the old habits. Build the new you.</p>
+            </div>
+          </div>
+          <p class="t-credit">Lines from the Shiv Tandav Stotram, verse 1</p>
+        </div>
+      </div>
+    </section>
+
     <!-- ============ CONTACT ============ -->
     <section id="contact" class="section center"
       data-x="0" data-y="-0.4" data-z="12" data-amp="0.16" data-s="0.85" data-icon="envelope" data-bg="#050914" data-sky="#0b1a3a,#3b5bdb,0.55" data-ix="5.1" data-iy="0.6" data-is="1.15">
       <div class="content">
-        <p class="section-tag reveal">06 — Let's connect</p>
+        <p class="section-tag reveal">07 — Let's connect</p>
         <h2 class="slice">Let's build something <em><span class="mark mark-underline">meaningful</span></em> together.</h2>
         <p class="reveal">
           Collaborations, brand partnerships, video ideas, or just a hello. I'd love to hear from you.
