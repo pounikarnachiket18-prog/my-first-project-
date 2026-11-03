@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nachiket · Mindset Mode India</title>
+  <meta name="description" content="Hi, I'm Nachiket, a content creator and the person behind Mindset Mode India, a channel about building a stronger mind, better habits and a life you're proud of." />
+  <meta name="theme-color" content="#07070d" />
+  <meta property="og:title" content="Nachiket · Mindset Mode India" />
+  <meta property="og:description" content="Content creator. Mindset, discipline and self-growth for India." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2307070d'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23ff9933' stroke-width='5'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%2322c55e'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&family=Noto+Sans+Devanagari:wght@600;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Intro loader -->
+  <div class="loader" id="loader" aria-hidden="true">
+    <div class="loader-mark">M<span>M</span>I</div>
+    <div class="loader-bar"><span></span></div>
+    <p class="loader-text">Switching on mindset mode…</p>
+  </div>
+
+  <!-- The 3D world lives on this canvas (drawn by app.js) -->
+  <canvas id="scene" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+
+  <header class="nav" id="nav">
+    <a class="logo" href="#home" aria-label="Back to top">Nachiket<span>.</span></a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#about">About</a>
+      <a href="#channel">Channel</a>
+      <a href="#process">Process</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <!-- Put your real YouTube channel link here -->
+    <a class="btn btn-small primary" href="https://www.youtube.com/results?search_query=Mindset+Mode+India" target="_blank" rel="noopener">Subscribe</a>
+  </header>
+
+  <main>
+    <!-- ============ HERO ============ -->
+    <section id="home" class="section hero side-left"
+      data-x="1.9" data-y="0" data-z="7" data-amp="0.18" data-s="1">
+      <div class="content">
+        <p class="eyebrow reveal"><span class="live-dot"></span> Content creator · India</p>
+        <h1 class="reveal">
+          <span class="namaste" lang="hi">नमस्ते,</span>
+          I'm <span class="grad">Nachiket</span>
+        </h1>
+        <p class="lead reveal">
+          I make videos about
+          <span class="rotator" id="rotator" aria-live="polite">mindset</span><br />
+          on my channel <strong>Mindset Mode India</strong>.
+        </p>
+        <div class="cta reveal">
+          <a class="btn primary" href="#channel">Explore the channel</a>
+          <a class="btn ghost" href="#contact">Say hello</a>
+        </div>
+      </div>
+      <a class="scroll-hint" href="#about" aria-label="Scroll down">
+        <span class="mouse"><span></span></span>
+        Scroll to enter
+      </a>
+    </section>
+
+    <!-- ============ ABOUT ============ -->
+    <section id="about" class="section side-right"
+      data-x="-2.3" data-y="0.1" data-z="7.6" data-amp="0.32" data-s="0.95">
+      <div class="content">
+        <p class="section-tag reveal">01 — About me</p>
+        <h2 class="reveal">I'm here to switch India into <em>mindset mode</em>.</h2>
+        <p class="reveal">
+          I'm Nachiket, a content creator who believes the biggest upgrade you can make
+          isn't a new phone or a new city. It's the way you think. Every video I make is
+          built around one question: <strong>how do we become a little better than yesterday?</strong>
+        </p>
+        <p class="reveal">
+          I talk about discipline, focus, confidence and self-growth in a simple, honest way,
+          the way a friend would explain it over chai. No fake motivation, no shortcuts,
+          just real ideas you can use today.
+        </p>
+        <ul class="chips reveal" aria-label="A few things about me">
+          <li>Content creator</li>
+          <li>Storyteller</li>
+          <li>Lifelong learner</li>
+          <li>Proudly Indian</li>
+          <li>Always building</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============ CHANNEL ============ -->
+    <section id="channel" class="section side-left"
+      data-x="2.5" data-y="-0.1" data-z="7.2" data-amp="0.22" data-s="1.1">
+      <div class="content">
+        <p class="section-tag reveal">02 — The channel</p>
+
+        <article class="channel-card tilt reveal">
+          <div class="card-shine"></div>
+          <div class="channel-top depth-2">
+            <div class="channel-logo" aria-hidden="true">
+              <span>M</span><span>M</span><span>I</span>
+            </div>
+            <div>
+              <h3>Mindset Mode India</h3>
+              <p class="muted">Think better. Live better.</p>
+            </div>
+          </div>
+          <p class="depth-1">
+            A channel for every young Indian who wants more from life and is ready to work
+            for it. Short, sharp videos that help you think clearly, build habits that stick,
+            and stay consistent when motivation runs out.
+          </p>
+          <!-- Replace this link with your real channel URL -->
+          <a class="btn primary depth-3" href="https://www.youtube.com/results?search_query=Mindset+Mode+India" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12a31 31 0 0 0 .5 4.8 3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .5-4.8 31 31 0 0 0-.5-4.8ZM9.8 15.1V8.9l5.4 3.1-5.4 3.1Z"/></svg>
+            Watch on YouTube
+          </a>
+        </article>
+
+        <div class="pillars">
+          <article class="pillar tilt reveal">
+            <span class="pillar-num depth-2">01</span>
+            <h4 class="depth-1">Mindset</h4>
+            <p>Rewire the way you see problems, failure and success.</p>
+          </article>
+          <article class="pillar tilt reveal">
+            <span class="pillar-num depth-2">02</span>
+            <h4 class="depth-1">Discipline</h4>
+            <p>Small daily actions that beat big one-time motivation.</p>
+          </article>
+          <article class="pillar tilt reveal">
+            <span class="pillar-num depth-2">03</span>
+            <h4 class="depth-1">Focus</h4>
+            <p>Win back your attention from screens and distractions.</p>
+          </article>
+          <article class="pillar tilt reveal">
+            <span class="pillar-num depth-2">04</span>
+            <h4 class="depth-1">Growth</h4>
+            <p>Confidence, communication and becoming your best self.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PROCESS ============ -->
+    <section id="process" class="section side-right"
+      data-x="-2.4" data-y="0" data-z="7.4" data-amp="0.38" data-s="0.9">
+      <div class="content">
+        <p class="section-tag reveal">03 — How a video is born</p>
+        <h2 class="reveal">From a small spark to <em>your screen</em>.</h2>
+        <ol class="steps">
+          <li class="step reveal">
+            <span class="step-dot"></span>
+            <div>
+              <h4>Spark</h4>
+              <p>It starts with a real question: something I struggled with, or something you asked.</p>
+            </div>
+          </li>
+          <li class="step reveal">
+            <span class="step-dot"></span>
+            <div>
+              <h4>Script</h4>
+              <p>I cut every idea down to what actually matters, so each minute is worth your time.</p>
+            </div>
+          </li>
+          <li class="step reveal">
+            <span class="step-dot"></span>
+            <div>
+              <h4>Create</h4>
+              <p>Voice, visuals and edits come together to make the idea easy to feel and remember.</p>
+            </div>
+          </li>
+          <li class="step reveal">
+            <span class="step-dot"></span>
+            <div>
+              <h4>Share</h4>
+              <p>It goes out to you, and your comments become the spark for the next one.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <!-- ============ QUOTE ============ -->
+    <section id="mindset" class="section quote center"
+      data-x="0" data-y="0" data-z="6.4" data-amp="0.55" data-s="1.05">
+      <div class="content">
+        <p class="section-tag reveal">04 — What I believe</p>
+        <blockquote class="reveal">
+          “Your mindset is the remote control of your life.
+          <span class="grad">Pick it up.</span>”
+        </blockquote>
+        <p class="quote-by reveal">— Nachiket</p>
+        <p class="tap-hint reveal">Tip: click or tap anywhere on the background to energise the mind.</p>
+      </div>
+    </section>
+
+    <!-- ============ CONTACT ============ -->
+    <section id="contact" class="section center"
+      data-x="0" data-y="-0.4" data-z="12" data-amp="0.16" data-s="0.85">
+      <div class="content">
+        <p class="section-tag reveal">05 — Let's connect</p>
+        <h2 class="reveal">Let's build something <em>meaningful</em> together.</h2>
+        <p class="reveal">
+          Collaborations, brand partnerships, video ideas, or just a hello. I'd love to hear from you.
+        </p>
+        <!-- Replace the # links below with your real profiles / email -->
+        <div class="socials reveal">
+          <a class="social tilt" href="https://www.youtube.com/results?search_query=Mindset+Mode+India" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12a31 31 0 0 0 .5 4.8 3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .5-4.8 31 31 0 0 0-.5-4.8ZM9.8 15.1V8.9l5.4 3.1-5.4 3.1Z"/></svg>
+            <span>YouTube</span>
+          </a>
+          <a class="social tilt" href="#" data-placeholder="Instagram">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2c3.2 0 3.6 0 4.8.1 3.3.1 4.8 1.7 4.9 4.9.1 1.3.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 3.2-1.7 4.8-4.9 4.9-1.3.1-1.6.1-4.8.1s-3.6 0-4.8-.1c-3.3-.1-4.8-1.7-4.9-4.9C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.8C2.4 3.9 3.9 2.4 7.2 2.3c1.2-.1 1.6-.1 4.8-.1ZM12 0C8.7 0 8.3 0 7.1.1 2.7.3.3 2.7.1 7.1 0 8.3 0 8.7 0 12s0 3.7.1 4.9c.2 4.4 2.6 6.8 7 7 1.2.1 1.6.1 4.9.1s3.7 0 4.9-.1c4.4-.2 6.8-2.6 7-7 .1-1.2.1-1.6.1-4.9s0-3.7-.1-4.9c-.2-4.4-2.6-6.8-7-7C15.7 0 15.3 0 12 0Zm0 5.8a6.2 6.2 0 1 0 0 12.4 6.2 6.2 0 0 0 0-12.4ZM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm6.4-11.8a1.4 1.4 0 1 0 0 2.9 1.4 1.4 0 0 0 0-2.9Z"/></svg>
+            <span>Instagram</span>
+          </a>
+          <a class="social tilt" href="#" data-placeholder="Email">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2 5h20a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm1 2.3V17h18V7.3l-9 6.3-9-6.3ZM19.3 7H4.7L12 12.1 19.3 7Z"/></svg>
+            <span>Email me</span>
+          </a>
+        </div>
+        <p class="toast" id="toast" role="status"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© <span id="year">2026</span> Nachiket · Mindset Mode India</p>
+    <p class="muted">Made in India, with a curious mind.</p>
+  </footer>
+
+  <!-- Classic script (not a module), so the site also works when you double-click index.html -->
+  <script src="app.js"></script>
+</body>
+</html>
