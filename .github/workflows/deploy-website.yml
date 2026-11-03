@@ -1,14 +1,10 @@
 # Publishes the website/ folder to GitHub Pages.
-# Runs every time something in website/ changes on the main branch,
-# and can also be started by hand from the Actions tab.
+# Optional backup host. Start it by hand from the Actions tab.
 name: Deploy website
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "website/**"
-      - ".github/workflows/deploy-website.yml"
+  # Manual only: start it from the Actions tab after turning on
+  # Settings -> Pages -> Source: GitHub Actions. (The site is hosted on Netlify.)
   workflow_dispatch:
 
 permissions:
