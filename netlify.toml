@@ -1,0 +1,11 @@
+# Netlify settings: publishes the website/ folder.
+# app.js is already built and committed, so the "build" just copies the site files.
+[build]
+  base = "website"
+  command = "mkdir -p dist && cp -r index.html style.css app.js assets dist/"
+  publish = "dist"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"

@@ -1,0 +1,5 @@
+{
+  "installCommand": "echo skip",
+  "buildCommand": "mkdir -p dist && cp -r index.html style.css app.js assets dist/",
+  "outputDirectory": "dist"
+}

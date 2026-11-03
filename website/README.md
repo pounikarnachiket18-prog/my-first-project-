@@ -36,9 +36,16 @@ Each `<section>` in `index.html` has `data-x / data-y / data-z / data-amp / data
 
 Built with [three.js](https://threejs.org) (bundled into `app.js`, so it works offline apart from Google Fonts).
 
-## Put it online (GitHub Pages)
-The workflow `.github/workflows/deploy-website.yml` publishes this folder automatically.
+## Put it online (Netlify, free)
+`netlify.toml` in the repo root tells Netlify what to publish, so there is nothing to configure.
 
-1. On GitHub, open the repo's **Settings → Pages**. Under **Build and deployment → Source**, choose **GitHub Actions**.
-2. Merge this branch into `main`. Every later change to `website/` on `main` redeploys by itself.
-3. After about a minute the site is live at **https://pounikarnachiket18-prog.github.io/my-first-project-/**. You can follow progress in the **Actions** tab.
+1. Go to **https://app.netlify.com** and sign up with **GitHub**.
+2. Click **Add new project → Import an existing project → GitHub** and pick **my-first-project-**.
+3. Netlify reads the settings by itself. Click **Deploy**.
+4. Open **Project configuration → Change project name** and pick a name, e.g. `mindsetmodeindia`, for **https://mindsetmodeindia.netlify.app**.
+
+Every change pushed to `main` redeploys automatically.
+
+**Vercel instead?** Import the repo at https://vercel.com/new, set **Root Directory** to `website` (the settings come from `website/vercel.json`), and deploy.
+
+**GitHub Pages (optional backup):** turn on Settings → Pages → Source: GitHub Actions, then run **Deploy website** from the Actions tab.
