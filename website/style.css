@@ -1112,7 +1112,7 @@ canvas.px { image-rendering: pixelated; image-rendering: crisp-edges; display: i
 .portrait-px { position: absolute; top: 14%; right: -22px; transform: rotate(10deg) translateZ(40px); }
 
 /* ---------- Shiv Tandav (scroll-driven) ---------- */
-.tandav { position: relative; z-index: 2; height: 360vh; background: #0a0206; }
+.tandav { position: relative; z-index: 2; height: 560vh; background: #000; }
 .tandav-sticky { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
 #tandavCanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .tandav-copy {

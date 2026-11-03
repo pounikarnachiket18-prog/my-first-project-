@@ -4,6 +4,10 @@
 // of fire (prabha mandala). Your scroll position is the timeline.
 // =========================================================
 import { sound } from './sound.js';
+import { createSequence } from './sequence.js';
+
+// The Tandav video, as numbered frames in assets/tandav/ (8 frames per second)
+const VIDEO_FRAMES = 207;
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
@@ -93,6 +97,28 @@ export function setupTandav() {
   if (!section || !canvas) return;
   const ctx = canvas.getContext('2d');
   const backdrop = paintBackdrop();
+  const seq = createSequence('assets/tandav', VIDEO_FRAMES);
+  // start loading frames when the section is getting close
+  new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting) seq.load();
+    },
+    { rootMargin: '200% 0px' }
+  ).observe(section);
+
+  // draw one video frame: full height on the right (desktop) or full screen (phone)
+  function drawVideoFrame(img, desktop, zoom, alpha) {
+    const iw = img.naturalWidth;
+    const ih = img.naturalHeight;
+    const scale = desktop ? (H / ih) * zoom : Math.max(W / iw, H / ih) * zoom;
+    const w = iw * scale;
+    const h = ih * scale;
+    let x = desktop ? W * 0.67 - w / 2 : (W - w) / 2;
+    if (desktop) x = Math.min(x, W - w);
+    ctx.globalAlpha = alpha;
+    ctx.drawImage(img, x, (H - h) / 2, w, h);
+    ctx.globalAlpha = 1;
+  }
   let W = 0;
   let H = 0;
   let dpr = 1;
@@ -426,6 +452,25 @@ export function setupTandav() {
     const cy = desktop ? H * 0.5 : H * 0.36;
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // the video, scrubbed from first frame to last by your scroll
+    const fi = p * (seq.count - 1);
+    const i0 = Math.floor(fi);
+    const shown = seq.nearest(i0);
+    if (shown >= 0) {
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, W, H);
+      const zoom = 1 + p * 0.04;
+      drawVideoFrame(seq.imgs[shown], desktop, zoom, 1);
+      // crossfade into the next frame for smooth scrubbing
+      const frac = fi - i0;
+      if (shown === i0 && frac > 0.02 && seq.loaded[i0 + 1]) drawVideoFrame(seq.imgs[i0 + 1], desktop, zoom, frac);
+      stageAndBeat(p);
+      requestAnimationFrame(frame);
+      return;
+    }
+
+    // frames still loading: show the hand-drawn dancer instead
     // backdrop with a slow Ken Burns zoom
     const z = 1.05 + p * 0.12;
     const bw = Math.max(W / backdrop.width, H / backdrop.height) * z;
@@ -442,15 +487,19 @@ export function setupTandav() {
     updateEmbers(cx, cy, R, ringP, dt, reduceMotion ? 0 : 2);
     drawFigure(cx, cy, R * 0.82, poseAt(p), t);
 
-    // stage the text + damru beats
-    const stage = p < 0.04 ? 0 : p < 0.4 ? 1 : p < 0.7 ? 2 : 3;
+    stageAndBeat(p);
+    requestAnimationFrame(frame);
+  }
+
+  // stage the text + damru beats as you scroll
+  function stageAndBeat(p) {
+    const stage = p < 0.04 ? 0 : p < 0.38 ? 1 : p < 0.7 ? 2 : 3;
     if (section.dataset.stage !== String(stage)) section.dataset.stage = stage;
-    const beat = Math.floor(p * 22);
+    const beat = Math.floor(p * 40);
     if (beat !== lastBeat) {
       if (lastBeat !== -1 && p > 0.01 && p < 0.99) sound.play('damru');
       lastBeat = beat;
     }
-    requestAnimationFrame(frame);
   }
 
   new IntersectionObserver((entries) => {
