@@ -1147,6 +1147,8 @@ canvas.px { image-rendering: pixelated; image-rendering: crisp-edges; display: i
 .t-trans { font-size: clamp(16px, 1.5vw, 19px); color: #f0d9cf; margin: 0; }
 .tandav h2 em { color: #ffb347; }
 .t-credit { margin: 26px 0 0; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255, 217, 168, 0.55); }
+.t-by { margin-top: 8px; }
+.t-by span { color: #ffb347; font-weight: 600; }
 
 @media (max-width: 860px) {
   .about-layout { grid-template-columns: 1fr; gap: 34px; }
