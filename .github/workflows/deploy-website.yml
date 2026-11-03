@@ -1,0 +1,42 @@
+# Publishes the website/ folder to GitHub Pages.
+# Runs every time something in website/ changes on the main branch,
+# and can also be started by hand from the Actions tab.
+name: Deploy website
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "website/**"
+      - ".github/workflows/deploy-website.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      # app.js is already built and committed, so no build step is needed
+      - name: Prepare site files
+        run: |
+          mkdir -p _site
+          cp -r website/index.html website/style.css website/app.js website/assets _site/
+          touch _site/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

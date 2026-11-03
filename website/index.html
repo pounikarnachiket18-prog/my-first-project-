@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Nachiket · Mindset Mode India</title>
+  <meta name="description" content="Hi, I'm Nachiket, a content creator and the person behind Mindset Mode India, a channel about building a stronger mind, better habits and a life you're proud of." />
+  <meta name="theme-color" content="#07070d" />
+  <meta property="og:title" content="Nachiket · Mindset Mode India" />
+  <meta property="og:description" content="Content creator. Mindset, discipline and self-growth for India." />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2307070d'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='%23ff9933' stroke-width='5'/%3E%3Ccircle cx='32' cy='32' r='7' fill='%2322c55e'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&family=Noto+Sans+Devanagari:wght@600;800&family=Dancing+Script:wght@600&family=Tiro+Devanagari+Sanskrit&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Intro loader -->
+  <div class="loader" id="loader" aria-hidden="true">
+    <div class="loader-mark">M<span>M</span>I</div>
+    <div class="loader-bar"><span></span></div>
+    <p class="loader-text">Switching on mindset mode…</p>
+  </div>
+
+  <!-- The 3D world lives on this canvas (drawn by app.js) -->
+  <canvas id="scene" aria-hidden="true"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+
+  <header class="nav" id="nav">
+    <a class="logo" href="#home" aria-label="Back to top">Nachiket<span>.</span></a>
+    <nav class="nav-links" aria-label="Sections">
+      <a href="#about">About</a>
+      <a href="#channel">Channel</a>
+      <a href="#process">Process</a>
+      <a href="#tandav">Tandav</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="nav-actions">
+    <button class="sound-btn" type="button" data-sound-toggle aria-pressed="false" aria-label="Sound">
+      <span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="sound-label">Sound off</span>
+    </button>
+    <!-- Put your real YouTube channel link here -->
+    <a class="btn btn-small primary" href="https://www.youtube.com/results?search_query=Mindset+Mode+India" target="_blank" rel="noopener">Subscribe</a>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ HERO ============ -->
+    <section id="home" class="section hero side-left"
+      data-x="1.9" data-y="0" data-z="7" data-amp="0.18" data-s="1" data-icon="bubble" data-bg="#07070d" data-sky="#4a1d5c,#ff9933,0.42">
+      <div class="content">
+        <p class="eyebrow reveal"><span class="avatar"><img src="assets/nachiket-avatar.jpg" alt="" width="40" height="40" /><span class="live-dot"></span></span> Content creator · India</p>
+        <h1 class="kinetic" data-split="chars">
+          <span class="namaste no-split" lang="hi">नमस्ते,</span>
+          I'm <span class="grad">Nachiket</span>
+        </h1>
+        <p class="lead reveal">
+          I make videos about
+          <span class="rotator" aria-hidden="true"><span id="typed">mindset</span><span class="caret"></span></span><span class="sr-only">mindset, discipline, focus and self-growth</span><br />
+          on my channel <strong>Mindset Mode India</strong>.
+        </p>
+        <div class="cta reveal">
+          <a class="btn primary" href="#channel">Explore the channel</a>
+          <a class="btn ghost" href="#contact">Say hello</a>
+        </div>
+        <button class="sound-hint reveal" type="button" data-sound-toggle aria-pressed="false">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 3a9 9 0 0 0-9 9v6a3 3 0 0 0 3 3h2v-8H5v-1a7 7 0 0 1 14 0v1h-3v8h2a3 3 0 0 0 3-3v-6a9 9 0 0 0-9-9Z"/></svg>
+          Turn on sound for the full experience
+        </button>
+      </div>
+      <a class="scroll-hint" href="#about" aria-label="Scroll down">
+        <span class="mouse"><span></span></span>
+        Scroll to enter
+      </a>
+    </section>
+
+    <!-- ============ FILM STRIP ============ -->
+    <div class="band film-band" aria-hidden="true">
+      <div class="film-stage">
+        <div class="film-tilt">
+          <div class="film-ring" id="filmRing"></div>
+        </div>
+      </div>
+    </div>
+    <p class="band film-caption reveal">Every video is one more frame in the story of a <span class="mark mark-circle mark-green">better you</span>.</p>
+
+    <!-- ============ ABOUT ============ -->
+    <section id="about" class="section about"
+      data-x="-2.3" data-y="0.1" data-z="7.6" data-amp="0.32" data-s="0.95" data-icon="bulb" data-is="0" data-bg="#060a17" data-sky="#0e3a4a,#2dd4bf,0.38">
+      <div class="about-layout">
+      <figure class="portrait tilt pixel-reveal">
+        <div class="portrait-inner">
+          <img src="assets/nachiket.jpg" alt="Nachiket, smiling, with curly hair, in a black jacket" width="720" height="815" />
+          <canvas aria-hidden="true"></canvas>
+        </div>
+        <figcaption class="portrait-tag">नमस्ते, that's me!</figcaption>
+        <canvas class="px portrait-px" data-icon="heart" data-scale="5" aria-hidden="true"></canvas>
+      </figure>
+      <div class="content">
+        <p class="section-tag reveal">01 — About me</p>
+        <h2 class="kinetic">I'm here to switch India into <em><span class="mark mark-circle mark-green">mindset mode</span></em>.</h2>
+        <p class="reveal">
+          I'm Nachiket, a content creator who believes the biggest upgrade you can make
+          isn't a new phone or a new city. It's the way you think. Every video I make is
+          built around one question: <strong>how do we become a little better than yesterday?</strong>
+        </p>
+        <p class="reveal">
+          I talk about discipline, focus, confidence and self-growth in a simple, honest way,
+          the way a friend would explain it over chai. No fake motivation, no shortcuts,
+          just real ideas you can use today.
+        </p>
+        <ul class="chips reveal" aria-label="A few things about me">
+          <li>Content creator</li>
+          <li>Storyteller</li>
+          <li>Lifelong learner</li>
+          <li>Proudly Indian</li>
+          <li>Always building</li>
+        </ul>
+      </div>
+      </div>
+    </section>
+
+    <!-- ============ CHANNEL ============ -->
+    <section id="channel" class="section side-left"
+      data-x="2.5" data-y="-0.1" data-z="7.2" data-amp="0.22" data-s="1.1" data-icon="monitor" data-bg="#0d0714" data-sky="#2a1245,#a855f7,0.34">
+      <div class="content">
+        <p class="section-tag reveal">02 — The channel</p>
+
+        <article class="channel-card tilt reveal">
+          <div class="card-shine"></div>
+          <div class="channel-top depth-2">
+            <div class="channel-logo" aria-hidden="true">
+              <span>M</span><span>M</span><span>I</span>
+            </div>
+            <div>
+              <h3>Mindset Mode India</h3>
+              <p class="muted">Think better. Live better.</p>
+            </div>
+          </div>
+          <p class="depth-1">
+            A channel for every young Indian who wants more from life and is ready to work
+            for it. Short, sharp videos that help you think clearly, build habits that stick,
+            and stay consistent when motivation runs out.
+          </p>
+          <!-- Replace this link with your real channel URL -->
+          <a class="btn primary depth-3" href="https://www.youtube.com/results?search_query=Mindset+Mode+India" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12a31 31 0 0 0 .5 4.8 3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .5-4.8 31 31 0 0 0-.5-4.8ZM9.8 15.1V8.9l5.4 3.1-5.4 3.1Z"/></svg>
+            Watch on YouTube
+          </a>
+        </article>
+
+        <div class="pillars">
+          <article class="pillar tilt reveal">
+            <span class="pillar-num depth-2">01</span>
+            <canvas class="px pillar-icon depth-3" data-icon="bulb" data-scale="3" aria-hidden="true"></canvas>
+            <h4 class="depth-1">Mindset</h4>
+            <p>Rewire the way you see problems, failure and success.</p>
+            <div class="mini dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          </article>
+          <article class="pillar tilt reveal">
+            <span class="pillar-num depth-2">02</span>
+            <canvas class="px pillar-icon depth-3" data-icon="flame" data-scale="3" aria-hidden="true"></canvas>
+            <h4 class="depth-1">Discipline</h4>
+            <p>Small daily actions that beat big one-time motivation.</p>
+            <div class="mini wave" data-wave="22" aria-hidden="true"></div>
+          </article>
+          <article class="pillar tilt reveal">
+            <span class="pillar-num depth-2">03</span>
+            <canvas class="px pillar-icon depth-3" data-icon="camera" data-scale="3" aria-hidden="true"></canvas>
+            <h4 class="depth-1">Focus</h4>
+            <p>Win back your attention from screens and distractions.</p>
+            <div class="mini target" aria-hidden="true"><i></i></div>
+          </article>
+          <article class="pillar tilt reveal">
+            <span class="pillar-num depth-2">04</span>
+            <canvas class="px pillar-icon depth-3" data-icon="star" data-scale="3" aria-hidden="true"></canvas>
+            <h4 class="depth-1">Growth</h4>
+            <p>Confidence, communication and becoming your best self.</p>
+            <div class="mini bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PROCESS ============ -->
+    <section id="process" class="section side-right"
+      data-x="-2.4" data-y="0" data-z="7.4" data-amp="0.38" data-s="0.9" data-icon="camera" data-bg="#05110b" data-sky="#0a3320,#22c55e,0.32">
+      <div class="content">
+        <p class="section-tag reveal">03 — How a video is born</p>
+        <h2 class="kinetic">From a small spark to <em><span class="mark mark-underline">your screen</span></em>.</h2>
+        <ol class="steps">
+          <li class="step reveal">
+            <span class="step-dot"></span>
+            <div>
+              <h4>Spark</h4>
+              <p>It starts with a real question: something I struggled with, or something you asked.</p>
+            </div>
+          </li>
+          <li class="step reveal">
+            <span class="step-dot"></span>
+            <div>
+              <h4>Script</h4>
+              <p>I cut every idea down to what actually matters, so each minute is worth your time.</p>
+            </div>
+          </li>
+          <li class="step reveal">
+            <span class="step-dot"></span>
+            <div>
+              <h4>Create</h4>
+              <p>Voice, visuals and edits come together to make the idea easy to feel and remember.</p>
+            </div>
+          </li>
+          <li class="step reveal">
+            <span class="step-dot"></span>
+            <div>
+              <h4>Share</h4>
+              <p>It goes out to you, and your comments become the spark for the next one.</p>
+            </div>
+          </li>
+        </ol>
+
+        <div class="edit-timeline" aria-hidden="true">
+          <div class="tl-head">
+            <span>mindset_mode_new_video.mp4</span>
+            <span class="tl-time">00:00:24:12</span>
+          </div>
+          <div class="tl-body">
+            <div class="tl-half tl-left">
+              <div class="tl-clips">
+                <span class="clip c1"><canvas class="px" data-icon="bulb" data-scale="2"></canvas>Spark</span>
+                <span class="clip c2"><canvas class="px" data-icon="flame" data-scale="2"></canvas>Script</span>
+              </div>
+              <div class="tl-wave" data-wave="26"></div>
+            </div>
+            <div class="tl-half tl-right">
+              <div class="tl-clips">
+                <span class="clip c3"><canvas class="px" data-icon="camera" data-scale="2"></canvas>Create</span>
+                <span class="clip c4"><canvas class="px" data-icon="heart" data-scale="2"></canvas>Share</span>
+              </div>
+              <div class="tl-wave" data-wave="26"></div>
+            </div>
+            <span class="tl-playhead"></span>
+          </div>
+          <canvas class="px tl-scissors" data-icon="scissors" data-scale="5"></canvas>
+          <p class="tl-note">Every cut makes the idea sharper.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ THE CHURN ============ -->
+    <section id="churn" class="section side-left churn"
+      data-x="2.4" data-y="0" data-z="7.2" data-amp="0.55" data-s="1" data-icon="kalash"
+      data-bg="#0d0616" data-sky="#3b0f5c,#9333ea,0.95" data-core="#a855f7" data-spin="4">
+      <div class="content">
+        <p class="section-tag reveal">04 — The churn</p>
+        <h2 class="ink">Churn the ocean of <em>your mind</em>.</h2>
+        <p class="ink" data-ink-delay="250">
+          There's an old Indian story about gods and demons churning the ocean.
+          The first thing to rise wasn't treasure. It was <span class="poison">poison</span>.
+        </p>
+        <p class="ink" data-ink-delay="500">
+          Your mind works the same way. Start working on yourself and the doubt, fear and
+          laziness come up first. Most people stop right there. Keep churning, and the
+          <span class="mark mark-underline nectar">nectar</span> comes.
+        </p>
+        <p class="churn-line ink" data-ink-delay="750">Poison first. Nectar after. Don't stop churning.</p>
+      </div>
+    </section>
+
+    <!-- ============ QUOTE ============ -->
+    <section id="mindset" class="section quote center"
+      data-x="0" data-y="0" data-z="6.4" data-amp="0.55" data-s="1.05" data-icon="remote" data-bg="#160604" data-sky="#7f1d1d,#f97316,0.85" data-core="#ff7a1a" data-fire="1" data-ix="2.2" data-iy="0.35" data-is="0.68">
+      <div class="content">
+        <p class="section-tag reveal">05 — What I believe</p>
+        <blockquote class="kinetic" data-split="words">
+          “Your mindset is the remote control of your life.
+          <span class="mark mark-circle"><span class="grad">Pick it up.</span></span>”
+        </blockquote>
+        <p class="quote-by reveal">— Nachiket</p>
+        <p class="tap-hint reveal">Tip: click or tap anywhere on the background. The mind sends out a burst of energy and the pixel icon breaks apart and rebuilds itself.</p>
+      </div>
+    </section>
+
+    <!-- ============ SHIV TANDAV (scroll-driven scene) ============ -->
+    <section class="tandav" id="tandav" aria-label="Shiv Tandav" data-stage="0">
+      <div class="tandav-sticky">
+        <canvas id="tandavCanvas" aria-hidden="true"></canvas>
+        <div class="tandav-copy">
+          <p class="section-tag">06 — Tandav</p>
+          <div class="t-stack">
+            <div class="t-block t0">
+              <h2>The cosmic <em>dance</em>.</h2>
+              <p class="t-trans">Keep scrolling. He dances as you move.</p>
+            </div>
+            <div class="t-block t1">
+              <p class="t-sanskrit" lang="sa">डमड्डमड्डमड्डमन्निनादवड्डमर्वयं</p>
+              <p class="t-trans">The damru thunders: ḍamaḍ, ḍamaḍ, ḍamaḍ…</p>
+            </div>
+            <div class="t-block t2">
+              <p class="t-sanskrit" lang="sa">चकार चण्डताण्डवं तनोतु नः शिवः शिवम्</p>
+              <p class="t-trans">He danced the fierce Tandav. May Shiva bless us all.</p>
+            </div>
+            <div class="t-block t3">
+              <h2>Tandav destroys, so something new can be <em>created</em>.</h2>
+              <p class="t-trans">Break the old habits. Build the new you.</p>
+            </div>
+          </div>
+          <p class="t-credit">Lines from the Shiv Tandav Stotram, verse 1</p>
+          <p class="t-credit t-by">Video by <span>Nachiket</span></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONTACT ============ -->
+    <section id="contact" class="section center"
+      data-x="0" data-y="-0.4" data-z="12" data-amp="0.16" data-s="0.85" data-icon="envelope" data-bg="#050914" data-sky="#0b1a3a,#3b5bdb,0.55" data-ix="5.1" data-iy="0.6" data-is="1.15">
+      <div class="content">
+        <p class="section-tag reveal">07 — Let's connect</p>
+        <h2 class="slice">Let's build something <em><span class="mark mark-underline">meaningful</span></em> together.</h2>
+        <p class="reveal">
+          Collaborations, brand partnerships, video ideas, or just a hello. I'd love to hear from you.
+        </p>
+        <!-- Social links -->
+        <div class="socials reveal">
+          <a class="social tilt" href="https://www.youtube.com/results?search_query=Mindset+Mode+India" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2 31 31 0 0 0 .5 12a31 31 0 0 0 .5 4.8 3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1 31 31 0 0 0 .5-4.8 31 31 0 0 0-.5-4.8ZM9.8 15.1V8.9l5.4 3.1-5.4 3.1Z"/></svg>
+            <span>YouTube</span>
+          </a>
+          <a class="social tilt" href="https://www.instagram.com/nachiiiiiiiket/" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2.2c3.2 0 3.6 0 4.8.1 3.3.1 4.8 1.7 4.9 4.9.1 1.3.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 3.2-1.7 4.8-4.9 4.9-1.3.1-1.6.1-4.8.1s-3.6 0-4.8-.1c-3.3-.1-4.8-1.7-4.9-4.9C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.8C2.4 3.9 3.9 2.4 7.2 2.3c1.2-.1 1.6-.1 4.8-.1ZM12 0C8.7 0 8.3 0 7.1.1 2.7.3.3 2.7.1 7.1 0 8.3 0 8.7 0 12s0 3.7.1 4.9c.2 4.4 2.6 6.8 7 7 1.2.1 1.6.1 4.9.1s3.7 0 4.9-.1c4.4-.2 6.8-2.6 7-7 .1-1.2.1-1.6.1-4.9s0-3.7-.1-4.9c-.2-4.4-2.6-6.8-7-7C15.7 0 15.3 0 12 0Zm0 5.8a6.2 6.2 0 1 0 0 12.4 6.2 6.2 0 0 0 0-12.4ZM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm6.4-11.8a1.4 1.4 0 1 0 0 2.9 1.4 1.4 0 0 0 0-2.9Z"/></svg>
+            <span>@nachiiiiiiiket</span>
+          </a>
+          <a class="social tilt" href="mailto:nachiketpounikar15@gmail.com">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M2 5h20a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Zm1 2.3V17h18V7.3l-9 6.3-9-6.3ZM19.3 7H4.7L12 12.1 19.3 7Z"/></svg>
+            <span>Email me</span>
+          </a>
+        </div>
+        <p class="email-line reveal">
+          <span class="email-addr">nachiketpounikar15@gmail.com</span>
+          <button class="copy-btn" type="button" data-copy="nachiketpounikar15@gmail.com">Copy email</button>
+        </p>
+        <p class="toast" id="toast" role="status"></p>
+      </div>
+    </section>
+    <!-- ============ OUTRO ============ -->
+    <section class="outro" aria-label="Mindset Mode India">
+      <div class="night" aria-hidden="true">
+        <div class="moon"></div>
+        <svg class="peaks" viewBox="0 0 1440 420" preserveAspectRatio="xMidYMax slice">
+          <defs>
+            <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="7" />
+              <feDisplacementMap in="SourceGraphic" scale="14" />
+            </filter>
+            <linearGradient id="mist" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#060a1c" stop-opacity="0" />
+              <stop offset="1" stop-color="#060a1c" stop-opacity="1" />
+            </linearGradient>
+          </defs>
+          <g filter="url(#rough)">
+            <path fill="#141b38" d="M0 420 L0 300 L120 270 L260 300 L380 240 L520 275 L640 230 L760 262 L900 215 L1040 258 L1180 222 L1300 262 L1440 236 L1440 420 Z" />
+            <path fill="#1e2850" d="M0 420 L0 350 L160 320 L300 336 L430 280 L540 210 L640 130 L705 82 L742 70 L790 96 L860 150 L960 220 L1080 262 L1200 300 L1330 318 L1440 330 L1440 420 Z" />
+            <path fill="#e9eef8" d="M640 130 L705 82 L742 70 L790 96 L860 150 L835 146 L812 170 L780 132 L756 162 L728 122 L700 156 L676 138 L654 160 Z" />
+            <path fill="none" stroke="#b9c6e4" stroke-width="3" stroke-linecap="round" d="M742 74 L748 140 L736 210 M705 86 L690 160 L660 230 M790 100 L820 175 L850 232" />
+          </g>
+          <rect x="0" y="260" width="1440" height="160" fill="url(#mist)" />
+        </svg>
+      </div>
+      <p class="outro-word kinetic" data-split="chars" data-far>MINDSET</p>
+      <div class="outro-icons" aria-hidden="true">
+        <canvas class="px" data-icon="bulb" data-scale="5"></canvas>
+        <canvas class="px" data-icon="flame" data-scale="5"></canvas>
+        <canvas class="px" data-icon="kalash" data-scale="4"></canvas>
+        <canvas class="px" data-icon="heart" data-scale="6"></canvas>
+        <canvas class="px" data-icon="star" data-scale="6"></canvas>
+      </div>
+      <p class="outro-word kinetic" data-split="chars" data-far>MODE <span class="grad">INDIA</span></p>
+      <p class="signature">
+        <span class="sig-small">imagined &amp; created by</span>
+        <span class="sig-name">Nachiket</span>
+      </p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>© <span id="year">2026</span> Nachiket · Mindset Mode India</p>
+    <p class="muted">Made in India, with a curious mind.</p>
+  </footer>
+
+  <!-- Classic script (not a module), so the site also works when you double-click index.html -->
+  <script src="app.js"></script>
+</body>
+</html>

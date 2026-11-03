@@ -21,6 +21,9 @@ My Progress
 
 I have successfully created my first GitHub repository!
 
+## My 3D website
+Open `website/index.html` to see my 3D self-introduction site (Nachiket · Mindset Mode India). See [`website/README.md`](website/README.md) to edit it.
+
 ## Content Creation Toolkit
 
 **Setup (once):** `bash setup.sh` installs everything: Node packages (gsap, sharp), Python packages (numpy, scipy, pillow), checks ffmpeg and Playwright, and builds the sound-effects library.
