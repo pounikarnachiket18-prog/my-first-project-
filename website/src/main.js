@@ -1,21 +1,23 @@
 // =========================================================
 // Nachiket · Mindset Mode India — 3D scene + page interactions
-// Edit this file, then run `npm run build` to update app.js
+// Edit the files in src/, then run `npm run build` to update app.js
 // =========================================================
 import * as THREE from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
+import { iconPixels } from './icons.js';
+import { setupEffects } from './effects.js';
 
 const COLORS = {
-  bg: 0x07070d,
+  bg: new THREE.Color('#07070d'),
   saffron: new THREE.Color('#ff9933'),
   white: new THREE.Color('#fff4e6'),
   green: new THREE.Color('#22c55e'),
 };
 
-// Words that rotate in the hero line "I make videos about ___"
+// Words typed in the hero line "I make videos about ___"
 const ROTATING_WORDS = ['mindset', 'discipline', 'focus', 'self-growth', 'confidence', 'habits'];
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -42,7 +44,11 @@ function createWorld() {
   renderer.setClearColor(COLORS.bg, 1);
 
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(COLORS.bg, 0.035);
+  scene.fog = new THREE.FogExp2(COLORS.bg.clone(), 0.035);
+  scene.add(new THREE.AmbientLight(0xffffff, 1.2));
+  const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+  sun.position.set(-3, 4, 5);
+  scene.add(sun);
 
   const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
   camera.position.set(0, 0, 7);
@@ -109,13 +115,12 @@ function createWorld() {
   );
   mind.add(core);
 
-  // --- 2. Wireframe "thought shell" ---
+  // --- 2. Wireframe "thought shells" ---
   const shell = new THREE.LineSegments(
     new THREE.EdgesGeometry(new THREE.IcosahedronGeometry(1.75, 1)),
     new THREE.LineBasicMaterial({ color: COLORS.saffron, transparent: true, opacity: 0.35 })
   );
   mind.add(shell);
-
   const shell2 = new THREE.LineSegments(
     new THREE.EdgesGeometry(new THREE.DodecahedronGeometry(2.05, 0)),
     new THREE.LineBasicMaterial({ color: COLORS.white, transparent: true, opacity: 0.12 })
@@ -124,19 +129,19 @@ function createWorld() {
 
   // --- 3. Tricolour orbit rings with little satellites ---
   const rings = [];
-  const ringDefs = [
+  [
     { r: 2.45, color: COLORS.saffron, tilt: [1.2, 0.2, 0], speed: 0.5 },
     { r: 2.75, color: COLORS.white, tilt: [0.4, 1.0, 0.3], speed: -0.35 },
     { r: 3.05, color: COLORS.green, tilt: [-0.9, 0.5, 0.8], speed: 0.28 },
-  ];
-  ringDefs.forEach((def) => {
+  ].forEach((def) => {
     const pivot = new THREE.Group();
     pivot.rotation.set(...def.tilt);
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(def.r, 0.009, 8, 220),
-      new THREE.MeshBasicMaterial({ color: def.color, transparent: true, opacity: 0.75 })
+    pivot.add(
+      new THREE.Mesh(
+        new THREE.TorusGeometry(def.r, 0.009, 8, 220),
+        new THREE.MeshBasicMaterial({ color: def.color, transparent: true, opacity: 0.75 })
+      )
     );
-    pivot.add(ring);
     const sat = new THREE.Mesh(
       new THREE.SphereGeometry(0.075, 16, 16),
       new THREE.MeshBasicMaterial({ color: def.color.clone().multiplyScalar(1.6) })
@@ -149,7 +154,7 @@ function createWorld() {
     rings.push({ pivot, satHolder, speed: def.speed });
   });
 
-  // --- 4. Floating geometric "ideas" around the mind ---
+  // --- 4. Floating wireframe "ideas" ---
   const ideas = [];
   const ideaGeos = [
     new THREE.OctahedronGeometry(0.22, 0),
@@ -158,16 +163,14 @@ function createWorld() {
     new THREE.IcosahedronGeometry(0.2, 0),
   ];
   const palette = [COLORS.saffron, COLORS.white, COLORS.green];
-  for (let i = 0; i < 14; i++) {
+  for (let i = 0; i < 12; i++) {
     const m = new THREE.LineSegments(
       new THREE.EdgesGeometry(ideaGeos[i % ideaGeos.length]),
       new THREE.LineBasicMaterial({ color: palette[i % 3], transparent: true, opacity: 0.55 })
     );
-    const a = (i / 14) * Math.PI * 2;
-    const radius = 3.6 + Math.random() * 2.4;
     m.userData = {
-      a,
-      radius,
+      a: (i / 12) * Math.PI * 2,
+      radius: 3.6 + Math.random() * 2.4,
       y: (Math.random() - 0.5) * 4,
       speed: 0.05 + Math.random() * 0.08,
       spin: 0.3 + Math.random() * 0.8,
@@ -177,7 +180,33 @@ function createWorld() {
     ideas.push(m);
   }
 
-  // --- 5. Star dust / particles ---
+  // --- 5. Confetti cubes drifting through the scene ---
+  const CONFETTI = isNarrow() ? 26 : 44;
+  const confettiColors = ['#ff9933', '#f7f2ea', '#22c55e', '#3b82f6', '#ffd23f', '#ef4444'];
+  const confetti = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(0.12, 0.12, 0.12),
+    new THREE.MeshLambertMaterial(),
+    CONFETTI
+  );
+  const confettiData = [];
+  const tmpObj = new THREE.Object3D();
+  const tmpColor = new THREE.Color();
+  for (let i = 0; i < CONFETTI; i++) {
+    confettiData.push({
+      x: (Math.random() - 0.5) * 18,
+      y: (Math.random() - 0.5) * 14,
+      z: -7 + Math.random() * 7,
+      rx: Math.random() * 6,
+      ry: Math.random() * 6,
+      spin: 0.4 + Math.random() * 1.2,
+      fall: 0.05 + Math.random() * 0.15,
+      s: 0.5 + Math.random() * 1.1,
+    });
+    confetti.setColorAt(i, tmpColor.set(confettiColors[i % confettiColors.length]));
+  }
+  scene.add(confetti);
+
+  // --- 6. Star dust ---
   const dotTexture = (() => {
     const c = document.createElement('canvas');
     c.width = c.height = 64;
@@ -190,7 +219,6 @@ function createWorld() {
     g.fillRect(0, 0, 64, 64);
     return new THREE.CanvasTexture(c);
   })();
-
   const STAR_COUNT = isNarrow() ? 1400 : 2800;
   const starPos = new Float32Array(STAR_COUNT * 3);
   const starCol = new Float32Array(STAR_COUNT * 3);
@@ -203,9 +231,7 @@ function createWorld() {
     starPos[i * 3 + 2] = r * Math.cos(phi);
     const roll = Math.random();
     const c = roll < 0.18 ? COLORS.saffron : roll < 0.3 ? COLORS.green : COLORS.white;
-    starCol[i * 3] = c.r;
-    starCol[i * 3 + 1] = c.g;
-    starCol[i * 3 + 2] = c.b;
+    starCol.set([c.r, c.g, c.b], i * 3);
   }
   const starGeo = new THREE.BufferGeometry();
   starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
@@ -224,11 +250,10 @@ function createWorld() {
   );
   scene.add(stars);
 
-  // --- 6. Energy burst particles (on click / tap) ---
+  // --- 7. Energy burst particles (on click / tap) ---
   const BURST = 260;
   const burstPos = new Float32Array(BURST * 3);
-  const burstVel = [];
-  for (let i = 0; i < BURST; i++) burstVel.push(new THREE.Vector3());
+  const burstVel = Array.from({ length: BURST }, () => new THREE.Vector3());
   const burstGeo = new THREE.BufferGeometry();
   burstGeo.setAttribute('position', new THREE.BufferAttribute(burstPos, 3));
   const burstMat = new THREE.PointsMaterial({
@@ -240,40 +265,148 @@ function createWorld() {
     depthWrite: false,
     blending: THREE.AdditiveBlending,
   });
-  const burst = new THREE.Points(burstGeo, burstMat);
-  mind.add(burst);
+  mind.add(new THREE.Points(burstGeo, burstMat));
   let burstLife = 0;
+
+  // ---------------------------------------------------------
+  // 8. VOXEL ICONS: pixel-art icons built from little cubes.
+  // When the section changes, the cubes fly apart and rebuild
+  // themselves as the next icon. They live in their own scene,
+  // drawn after the glow, so they stay crisp.
+  // ---------------------------------------------------------
+  const iconScene = new THREE.Scene();
+  iconScene.add(new THREE.AmbientLight(0xffffff, 1.5));
+  const iconSun = new THREE.DirectionalLight(0xffffff, 2.4);
+  iconSun.position.set(-2, 3, 4);
+  iconScene.add(iconSun);
+  const iconGroup = new THREE.Group();
+  iconScene.add(iconGroup);
+
+  const VOX = 0.1;
+  const POOL = 220;
+  const vox = new THREE.InstancedMesh(
+    new THREE.BoxGeometry(VOX * 0.94, VOX * 0.94, VOX * 2.2),
+    new THREE.MeshLambertMaterial(),
+    POOL
+  );
+  vox.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  iconGroup.add(vox);
+
+  const V = {
+    pos: [], from: [], mid: [], to: [],
+    col: [], fromC: [], toC: [],
+    scl: new Float32Array(POOL), fromS: new Float32Array(POOL), toS: new Float32Array(POOL),
+    delay: new Float32Array(POOL), axis: [],
+  };
+  for (let i = 0; i < POOL; i++) {
+    const p = new THREE.Vector3().randomDirection().multiplyScalar(2 + Math.random() * 3);
+    V.pos.push(p);
+    V.from.push(p.clone());
+    V.mid.push(new THREE.Vector3());
+    V.to.push(p.clone());
+    V.col.push(new THREE.Color('#ff9933'));
+    V.fromC.push(new THREE.Color());
+    V.toC.push(new THREE.Color());
+    V.axis.push(new THREE.Vector3().randomDirection());
+  }
+  let morphT = 2;
+  let currentIcon = null;
+  const shuffle = (arr) => {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = (Math.random() * (i + 1)) | 0;
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+
+  function morphTo(name, explode = false) {
+    const px = shuffle(iconPixels(name));
+    for (let i = 0; i < POOL; i++) {
+      V.from[i].copy(V.pos[i]);
+      V.fromC[i].copy(V.col[i]);
+      V.fromS[i] = V.scl[i];
+      if (i < px.length) {
+        V.to[i].set(px[i].x * VOX, px[i].y * VOX, 0);
+        V.toC[i].set(px[i].color);
+        V.toS[i] = 1;
+      } else {
+        V.to[i].copy(V.from[i]).add(new THREE.Vector3().randomDirection().multiplyScalar(2));
+        V.toC[i].copy(V.fromC[i]);
+        V.toS[i] = 0;
+      }
+      const spread = explode ? 2.6 + Math.random() * 2.2 : 0.8 + Math.random() * 1.6;
+      V.mid[i]
+        .copy(V.from[i])
+        .lerp(V.to[i], 0.5)
+        .add(new THREE.Vector3().randomDirection().multiplyScalar(spread));
+      V.delay[i] = Math.random() * 0.35;
+    }
+    currentIcon = name;
+    morphT = 0;
+  }
+
+  const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+  const q = new THREE.Quaternion();
+  const m4 = new THREE.Matrix4();
+  const sv = new THREE.Vector3();
+  const a1 = new THREE.Vector3();
+  const a2 = new THREE.Vector3();
+
+  function updateVoxels(dt) {
+    if (morphT > 1.05) return;
+    morphT += dt / (reduceMotion ? 0.4 : 1.5);
+    for (let i = 0; i < POOL; i++) {
+      const lt = Math.min(1, Math.max(0, (morphT - V.delay[i]) / 0.65));
+      const e = easeInOut(lt);
+      // curved flight path: from -> scattered midpoint -> target
+      a1.copy(V.from[i]).lerp(V.mid[i], e);
+      a2.copy(V.mid[i]).lerp(V.to[i], e);
+      V.pos[i].copy(a1).lerp(a2, e);
+      V.col[i].copy(V.fromC[i]).lerp(V.toC[i], e);
+      V.scl[i] = V.fromS[i] + (V.toS[i] - V.fromS[i]) * e;
+      q.setFromAxisAngle(V.axis[i], Math.sin(e * Math.PI) * Math.PI);
+      sv.setScalar(Math.max(V.scl[i], 0.0001));
+      m4.compose(V.pos[i], q, sv);
+      vox.setMatrixAt(i, m4);
+      vox.setColorAt(i, V.col[i]);
+    }
+    vox.instanceMatrix.needsUpdate = true;
+    vox.instanceColor.needsUpdate = true;
+  }
+  // start with every cube hidden, scattered
+  for (let i = 0; i < POOL; i++) {
+    vox.setMatrixAt(i, m4.makeScale(0.0001, 0.0001, 0.0001));
+    vox.setColorAt(i, V.col[i]);
+  }
 
   function triggerBurst() {
     coreUniforms.uPulse.value = 1;
     burstLife = 1;
     for (let i = 0; i < BURST; i++) {
       const v = new THREE.Vector3().randomDirection();
-      burstPos[i * 3] = v.x * 1.2;
-      burstPos[i * 3 + 1] = v.y * 1.2;
-      burstPos[i * 3 + 2] = v.z * 1.2;
+      burstPos.set([v.x * 1.2, v.y * 1.2, v.z * 1.2], i * 3);
       burstVel[i].copy(v).multiplyScalar(2 + Math.random() * 3.5);
     }
     burstGeo.attributes.position.needsUpdate = true;
+    if (currentIcon) morphTo(currentIcon, true);
   }
 
-  // --- Post-processing: bloom glow ---
+  // --- Post-processing: bloom glow, then the crisp voxel icon on top ---
   const composer = new EffectComposer(renderer);
   composer.setPixelRatio(pixelRatio);
   composer.setSize(window.innerWidth, window.innerHeight);
   composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(
-    new THREE.Vector2(window.innerWidth, window.innerHeight),
-    0.7, // strength
-    0.45, // radius
-    0.2 // threshold
-  );
+  const bloom = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.7, 0.45, 0.2);
   composer.addPass(bloom);
+  const iconPass = new RenderPass(iconScene, camera);
+  iconPass.clear = false;
+  iconPass.clearDepth = true;
+  composer.addPass(iconPass);
   composer.addPass(new OutputPass());
 
   // ---------------------------------------------------------
-  // Scroll choreography: each <section> has data-x/y/z/amp/s
-  // telling the 3D mind where to be while that section is in view.
+  // Scroll choreography: each <section> has data-x/y/z/amp/s/icon/bg
+  // telling the 3D scene what to do while that section is in view.
   // ---------------------------------------------------------
   const sections = [...document.querySelectorAll('main .section')].map((el) => ({
     el,
@@ -282,6 +415,12 @@ function createWorld() {
     z: parseFloat(el.dataset.z || 7),
     amp: parseFloat(el.dataset.amp || 0.2),
     s: parseFloat(el.dataset.s || 1),
+    icon: el.dataset.icon || 'bubble',
+    // optional offset/scale of the pixel icon (desktop only)
+    ix: parseFloat(el.dataset.ix || 0),
+    iy: parseFloat(el.dataset.iy || 0),
+    is: parseFloat(el.dataset.is || 1),
+    bg: new THREE.Color(el.dataset.bg || '#07070d'),
     center: 0,
   }));
   function measure() {
@@ -292,8 +431,11 @@ function createWorld() {
   }
   measure();
 
-  const target = { x: 0, y: 0, z: 7, amp: 0.18, s: 1 };
+  const target = { x: 0, y: 0, z: 7, amp: 0.18, s: 1, ix: 0, iy: 0, is: 1 };
   const current = { ...target };
+  const targetBg = COLORS.bg.clone();
+  const currentBg = COLORS.bg.clone();
+  let activeSection = sections[0];
   const smooth = (t) => t * t * (3 - 2 * t);
 
   function computeTarget() {
@@ -301,8 +443,9 @@ function createWorld() {
     let a = sections[0];
     let b = sections[0];
     let t = 0;
-    if (mid >= sections[sections.length - 1].center) {
-      a = b = sections[sections.length - 1];
+    const last = sections[sections.length - 1];
+    if (mid >= last.center) {
+      a = b = last;
     } else if (mid > sections[0].center) {
       for (let i = 0; i < sections.length - 1; i++) {
         if (mid >= sections[i].center && mid < sections[i + 1].center) {
@@ -313,13 +456,16 @@ function createWorld() {
         }
       }
     }
-    const narrow = isNarrow();
-    for (const k of ['x', 'y', 'z', 'amp', 's']) target[k] = a[k] + (b[k] - a[k]) * t;
-    if (narrow) {
+    for (const k of ['x', 'y', 'z', 'amp', 's', 'ix', 'iy', 'is']) target[k] = a[k] + (b[k] - a[k]) * t;
+    targetBg.copy(a.bg).lerp(b.bg, t);
+    activeSection = t < 0.5 ? a : b;
+    if (isNarrow()) {
       // On phones the mind stays centred and sits a bit higher, behind the text
       target.x = 0;
       target.y = target.y * 0.5 + 1.4;
       target.z += 4.5;
+      target.ix = 0;
+      target.iy = 0;
     }
   }
 
@@ -339,7 +485,7 @@ function createWorld() {
   let lastScrollY = window.scrollY;
   let scrollVel = 0;
 
-  function onResize() {
+  window.addEventListener('resize', () => {
     const w = window.innerWidth;
     const h = window.innerHeight;
     camera.aspect = w / h;
@@ -348,8 +494,7 @@ function createWorld() {
     composer.setSize(w, h);
     bloom.setSize(w, h);
     measure();
-  }
-  window.addEventListener('resize', onResize);
+  });
   window.addEventListener('load', measure);
 
   // ---------------------------------------------------------
@@ -358,6 +503,7 @@ function createWorld() {
   const clock = new THREE.Clock();
   const motion = reduceMotion ? 0.15 : 1;
   let firstFrameCb = null;
+  let started = false;
 
   function frame() {
     const dt = Math.min(clock.getDelta(), 0.05);
@@ -366,15 +512,19 @@ function createWorld() {
     computeTarget();
     const ease = 1 - Math.pow(0.0015, dt); // frame-rate independent smoothing
     for (const k in current) current[k] += (target[k] - current[k]) * ease;
+    currentBg.lerp(targetBg, ease * 0.6);
+    renderer.setClearColor(currentBg, 1);
+    scene.fog.color.copy(currentBg);
 
-    // scroll speed adds a little extra spin
+    if (started && activeSection.icon !== currentIcon) morphTo(activeSection.icon);
+    updateVoxels(dt);
+
     const sy = window.scrollY;
     scrollVel += ((sy - lastScrollY) * 0.002 - scrollVel) * 0.1;
     lastScrollY = sy;
 
     mind.position.set(current.x, current.y, 0);
-    const breathe = 1 + Math.sin(time * 1.2) * 0.015 * motion;
-    mind.scale.setScalar(current.s * breathe);
+    mind.scale.setScalar(current.s * (1 + Math.sin(time * 1.2) * 0.015 * motion));
 
     core.rotation.y += dt * 0.25 * motion + scrollVel * 0.5;
     core.rotation.x += dt * 0.08 * motion;
@@ -401,6 +551,20 @@ function createWorld() {
       m.rotation.y += dt * u.spin * 0.7 * motion;
     });
 
+    // confetti falls slowly and drifts the other way when you scroll
+    confettiData.forEach((c, i) => {
+      c.y -= dt * c.fall * motion;
+      c.rx += dt * c.spin * motion;
+      c.ry += dt * c.spin * 0.8 * motion;
+      let y = ((c.y + sy * 0.0025 * (1 + c.z * -0.1) + 7) % 14 + 14) % 14 - 7;
+      tmpObj.position.set(c.x, y, c.z);
+      tmpObj.rotation.set(c.rx, c.ry, 0);
+      tmpObj.scale.setScalar(c.s);
+      tmpObj.updateMatrix();
+      confetti.setMatrixAt(i, tmpObj.matrix);
+    });
+    confetti.instanceMatrix.needsUpdate = true;
+
     stars.rotation.y += dt * 0.012 * motion;
     stars.rotation.x = sy * 0.00008;
 
@@ -423,10 +587,18 @@ function createWorld() {
     // camera drifts with the mouse for a parallax feel
     pointer.sx += (pointer.x - pointer.sx) * 0.05;
     pointer.sy += (pointer.y - pointer.sy) * 0.05;
-    camera.position.x = pointer.sx * 0.7 * motion;
-    camera.position.y = -pointer.sy * 0.45 * motion;
-    camera.position.z = current.z;
+    camera.position.set(pointer.sx * 0.7 * motion, -pointer.sy * 0.45 * motion, current.z);
     camera.lookAt(0, current.y * 0.3, 0);
+
+    // voxel icon floats in front of the glowing core
+    iconGroup.position.set(
+      current.x + current.ix,
+      current.y + current.iy + Math.sin(time * 1.4) * 0.06 * motion,
+      1.9 * current.s
+    );
+    iconGroup.scale.setScalar(current.s * current.is * 0.95);
+    iconGroup.rotation.y = (Math.sin(time * 0.7) * 0.45 + pointer.sx * 0.4) * motion;
+    iconGroup.rotation.x = (Math.sin(time * 0.5) * 0.1 - pointer.sy * 0.25) * motion;
 
     composer.render();
 
@@ -442,6 +614,10 @@ function createWorld() {
       firstFrameCb = onFirstFrame;
       requestAnimationFrame(frame);
     },
+    // begin icon morphs once the loader is gone
+    reveal() {
+      started = true;
+    },
     burst: triggerBurst,
   };
 }
@@ -450,7 +626,6 @@ function createWorld() {
 // PAGE UI
 // ---------------------------------------------------------
 function setupUI(world) {
-  // Footer year
   const year = document.getElementById('year');
   if (year) year.textContent = new Date().getFullYear();
 
@@ -460,8 +635,7 @@ function setupUI(world) {
   const links = [...document.querySelectorAll('.nav-links a')];
   const onScroll = () => {
     const max = document.documentElement.scrollHeight - window.innerHeight;
-    const p = max > 0 ? window.scrollY / max : 0;
-    progress.style.transform = `scaleX(${p})`;
+    progress.style.transform = `scaleX(${max > 0 ? window.scrollY / max : 0})`;
     nav.classList.toggle('scrolled', window.scrollY > 30);
   };
   window.addEventListener('scroll', onScroll, { passive: true });
@@ -478,38 +652,6 @@ function setupUI(world) {
     { rootMargin: '-45% 0px -45% 0px' }
   );
   document.querySelectorAll('main .section').forEach((s) => activeObserver.observe(s));
-
-  // Reveal-on-scroll, with a small stagger inside each section
-  const revealObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add('in');
-        revealObserver.unobserve(entry.target);
-      });
-    },
-    { threshold: 0.15 }
-  );
-  document.querySelectorAll('.section').forEach((section) => {
-    section.querySelectorAll('.reveal').forEach((el, i) => {
-      el.style.transitionDelay = `${Math.min(i * 90, 540)}ms`;
-      revealObserver.observe(el);
-    });
-  });
-
-  // Rotating words in the hero
-  const rotator = document.getElementById('rotator');
-  if (rotator && !reduceMotion) {
-    let i = 0;
-    setInterval(() => {
-      rotator.classList.add('out');
-      setTimeout(() => {
-        i = (i + 1) % ROTATING_WORDS.length;
-        rotator.textContent = ROTATING_WORDS[i];
-        rotator.classList.remove('out');
-      }, 350);
-    }, 2200);
-  }
 
   // 3D tilt cards
   const canHover = window.matchMedia('(hover: hover)').matches;
@@ -560,21 +702,20 @@ function setupUI(world) {
 // ---------------------------------------------------------
 // BOOT
 // ---------------------------------------------------------
-function hideLoader() {
-  const loader = document.getElementById('loader');
-  loader.classList.add('done');
-  document.body.classList.remove('loading');
-  document.body.classList.add('ready');
-}
-
 const startedAt = performance.now();
+const fx = setupEffects({ words: ROTATING_WORDS });
 const world = createWorld();
 setupUI(world);
 
-const finish = () => {
-  const wait = Math.max(0, 900 - (performance.now() - startedAt));
-  setTimeout(hideLoader, wait);
-};
+function hideLoader() {
+  document.getElementById('loader').classList.add('done');
+  document.body.classList.remove('loading');
+  document.body.classList.add('ready');
+  fx.start();
+  if (world) world.reveal();
+}
+
+const finish = () => setTimeout(hideLoader, Math.max(0, 900 - (performance.now() - startedAt)));
 
 if (world) {
   world.start(finish);

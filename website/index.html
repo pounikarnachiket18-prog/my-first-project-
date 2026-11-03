@@ -43,16 +43,16 @@
   <main>
     <!-- ============ HERO ============ -->
     <section id="home" class="section hero side-left"
-      data-x="1.9" data-y="0" data-z="7" data-amp="0.18" data-s="1">
+      data-x="1.9" data-y="0" data-z="7" data-amp="0.18" data-s="1" data-icon="bubble" data-bg="#07070d">
       <div class="content">
         <p class="eyebrow reveal"><span class="live-dot"></span> Content creator · India</p>
-        <h1 class="reveal">
-          <span class="namaste" lang="hi">नमस्ते,</span>
+        <h1 class="kinetic" data-split="chars">
+          <span class="namaste no-split" lang="hi">नमस्ते,</span>
           I'm <span class="grad">Nachiket</span>
         </h1>
         <p class="lead reveal">
           I make videos about
-          <span class="rotator" id="rotator" aria-live="polite">mindset</span><br />
+          <span class="rotator" aria-hidden="true"><span id="typed">mindset</span><span class="caret"></span></span><span class="sr-only">mindset, discipline, focus and self-growth</span><br />
           on my channel <strong>Mindset Mode India</strong>.
         </p>
         <div class="cta reveal">
@@ -66,12 +66,22 @@
       </a>
     </section>
 
+    <!-- ============ FILM STRIP ============ -->
+    <div class="band film-band" aria-hidden="true">
+      <div class="film-stage">
+        <div class="film-tilt">
+          <div class="film-ring" id="filmRing"></div>
+        </div>
+      </div>
+    </div>
+    <p class="band film-caption reveal">Every video is one more frame in the story of a <span class="mark mark-circle mark-green">better you</span>.</p>
+
     <!-- ============ ABOUT ============ -->
     <section id="about" class="section side-right"
-      data-x="-2.3" data-y="0.1" data-z="7.6" data-amp="0.32" data-s="0.95">
+      data-x="-2.3" data-y="0.1" data-z="7.6" data-amp="0.32" data-s="0.95" data-icon="bulb" data-bg="#060a17">
       <div class="content">
         <p class="section-tag reveal">01 — About me</p>
-        <h2 class="reveal">I'm here to switch India into <em>mindset mode</em>.</h2>
+        <h2 class="kinetic">I'm here to switch India into <em><span class="mark mark-circle mark-green">mindset mode</span></em>.</h2>
         <p class="reveal">
           I'm Nachiket, a content creator who believes the biggest upgrade you can make
           isn't a new phone or a new city. It's the way you think. Every video I make is
@@ -94,7 +104,7 @@
 
     <!-- ============ CHANNEL ============ -->
     <section id="channel" class="section side-left"
-      data-x="2.5" data-y="-0.1" data-z="7.2" data-amp="0.22" data-s="1.1">
+      data-x="2.5" data-y="-0.1" data-z="7.2" data-amp="0.22" data-s="1.1" data-icon="monitor" data-bg="#0d0714">
       <div class="content">
         <p class="section-tag reveal">02 — The channel</p>
 
@@ -124,23 +134,31 @@
         <div class="pillars">
           <article class="pillar tilt reveal">
             <span class="pillar-num depth-2">01</span>
+            <canvas class="px pillar-icon depth-3" data-icon="bulb" data-scale="3" aria-hidden="true"></canvas>
             <h4 class="depth-1">Mindset</h4>
             <p>Rewire the way you see problems, failure and success.</p>
+            <div class="mini dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
           </article>
           <article class="pillar tilt reveal">
             <span class="pillar-num depth-2">02</span>
+            <canvas class="px pillar-icon depth-3" data-icon="flame" data-scale="3" aria-hidden="true"></canvas>
             <h4 class="depth-1">Discipline</h4>
             <p>Small daily actions that beat big one-time motivation.</p>
+            <div class="mini wave" data-wave="22" aria-hidden="true"></div>
           </article>
           <article class="pillar tilt reveal">
             <span class="pillar-num depth-2">03</span>
+            <canvas class="px pillar-icon depth-3" data-icon="camera" data-scale="3" aria-hidden="true"></canvas>
             <h4 class="depth-1">Focus</h4>
             <p>Win back your attention from screens and distractions.</p>
+            <div class="mini target" aria-hidden="true"><i></i></div>
           </article>
           <article class="pillar tilt reveal">
             <span class="pillar-num depth-2">04</span>
+            <canvas class="px pillar-icon depth-3" data-icon="star" data-scale="3" aria-hidden="true"></canvas>
             <h4 class="depth-1">Growth</h4>
             <p>Confidence, communication and becoming your best self.</p>
+            <div class="mini bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
           </article>
         </div>
       </div>
@@ -148,10 +166,10 @@
 
     <!-- ============ PROCESS ============ -->
     <section id="process" class="section side-right"
-      data-x="-2.4" data-y="0" data-z="7.4" data-amp="0.38" data-s="0.9">
+      data-x="-2.4" data-y="0" data-z="7.4" data-amp="0.38" data-s="0.9" data-icon="camera" data-bg="#05110b">
       <div class="content">
         <p class="section-tag reveal">03 — How a video is born</p>
-        <h2 class="reveal">From a small spark to <em>your screen</em>.</h2>
+        <h2 class="kinetic">From a small spark to <em><span class="mark mark-underline">your screen</span></em>.</h2>
         <ol class="steps">
           <li class="step reveal">
             <span class="step-dot"></span>
@@ -182,29 +200,55 @@
             </div>
           </li>
         </ol>
+
+        <div class="edit-timeline" aria-hidden="true">
+          <div class="tl-head">
+            <span>mindset_mode_new_video.mp4</span>
+            <span class="tl-time">00:00:24:12</span>
+          </div>
+          <div class="tl-body">
+            <div class="tl-half tl-left">
+              <div class="tl-clips">
+                <span class="clip c1"><canvas class="px" data-icon="bulb" data-scale="2"></canvas>Spark</span>
+                <span class="clip c2"><canvas class="px" data-icon="flame" data-scale="2"></canvas>Script</span>
+              </div>
+              <div class="tl-wave" data-wave="26"></div>
+            </div>
+            <div class="tl-half tl-right">
+              <div class="tl-clips">
+                <span class="clip c3"><canvas class="px" data-icon="camera" data-scale="2"></canvas>Create</span>
+                <span class="clip c4"><canvas class="px" data-icon="heart" data-scale="2"></canvas>Share</span>
+              </div>
+              <div class="tl-wave" data-wave="26"></div>
+            </div>
+            <span class="tl-playhead"></span>
+          </div>
+          <canvas class="px tl-scissors" data-icon="scissors" data-scale="5"></canvas>
+          <p class="tl-note">Every cut makes the idea sharper.</p>
+        </div>
       </div>
     </section>
 
     <!-- ============ QUOTE ============ -->
     <section id="mindset" class="section quote center"
-      data-x="0" data-y="0" data-z="6.4" data-amp="0.55" data-s="1.05">
+      data-x="0" data-y="0" data-z="6.4" data-amp="0.55" data-s="1.05" data-icon="remote" data-bg="#170907" data-ix="2.2" data-iy="0.35" data-is="0.68">
       <div class="content">
         <p class="section-tag reveal">04 — What I believe</p>
-        <blockquote class="reveal">
+        <blockquote class="kinetic" data-split="words">
           “Your mindset is the remote control of your life.
-          <span class="grad">Pick it up.</span>”
+          <span class="mark mark-circle"><span class="grad">Pick it up.</span></span>”
         </blockquote>
         <p class="quote-by reveal">— Nachiket</p>
-        <p class="tap-hint reveal">Tip: click or tap anywhere on the background to energise the mind.</p>
+        <p class="tap-hint reveal">Tip: click or tap anywhere on the background. The mind sends out a burst of energy and the pixel icon breaks apart and rebuilds itself.</p>
       </div>
     </section>
 
     <!-- ============ CONTACT ============ -->
     <section id="contact" class="section center"
-      data-x="0" data-y="-0.4" data-z="12" data-amp="0.16" data-s="0.85">
+      data-x="0" data-y="-0.4" data-z="12" data-amp="0.16" data-s="0.85" data-icon="envelope" data-bg="#07070d" data-ix="5.1" data-iy="0.6" data-is="1.15">
       <div class="content">
         <p class="section-tag reveal">05 — Let's connect</p>
-        <h2 class="reveal">Let's build something <em>meaningful</em> together.</h2>
+        <h2 class="slice">Let's build something <em><span class="mark mark-underline">meaningful</span></em> together.</h2>
         <p class="reveal">
           Collaborations, brand partnerships, video ideas, or just a hello. I'd love to hear from you.
         </p>
@@ -225,6 +269,18 @@
         </div>
         <p class="toast" id="toast" role="status"></p>
       </div>
+    </section>
+    <!-- ============ OUTRO ============ -->
+    <section class="outro" aria-label="Mindset Mode India">
+      <p class="outro-word kinetic" data-split="chars" data-far>MINDSET</p>
+      <div class="outro-icons" aria-hidden="true">
+        <canvas class="px" data-icon="bulb" data-scale="5"></canvas>
+        <canvas class="px" data-icon="flame" data-scale="5"></canvas>
+        <canvas class="px" data-icon="heart" data-scale="6"></canvas>
+        <canvas class="px" data-icon="star" data-scale="6"></canvas>
+        <canvas class="px" data-icon="camera" data-scale="4"></canvas>
+      </div>
+      <p class="outro-word kinetic" data-split="chars" data-far>MODE <span class="grad">INDIA</span></p>
     </section>
   </main>
 
