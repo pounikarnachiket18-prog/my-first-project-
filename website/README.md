@@ -35,3 +35,10 @@ npm run build
 Each `<section>` in `index.html` has `data-x / data-y / data-z / data-amp / data-s` attributes. These set where the 3D mind sits, how far away the camera is, how much the core wobbles, and its size while that section is on screen. `data-icon` picks the pixel icon and `data-bg` sets the background tint. The optional `data-ix / data-iy / data-is` move and resize the icon.
 
 Built with [three.js](https://threejs.org) (bundled into `app.js`, so it works offline apart from Google Fonts).
+
+## Put it online (GitHub Pages)
+The workflow `.github/workflows/deploy-website.yml` publishes this folder automatically.
+
+1. On GitHub, open the repo's **Settings → Pages**. Under **Build and deployment → Source**, choose **GitHub Actions**.
+2. Merge this branch into `main`. Every later change to `website/` on `main` redeploys by itself.
+3. After about a minute the site is live at **https://pounikarnachiket18-prog.github.io/my-first-project-/**. You can follow progress in the **Actions** tab.
