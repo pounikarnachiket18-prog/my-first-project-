@@ -19,7 +19,7 @@ Double-click `index.html`. It opens in Chrome, Edge or Firefox. Nothing to insta
 
 ## Change the text or links
 Everything you read is in `index.html`. Open it in any text editor.
-- **Links:** Instagram goes to [@nachiiiiiiiiket](https://www.instagram.com/nachiiiiiiiiket/), and Email opens a message to nachiketpounikar15@gmail.com. The address is also shown on the page with a **Copy email** button. The YouTube buttons currently search YouTube for "Mindset Mode India"; put your channel's link there when you want.
+- **Links:** Instagram goes to [@nachiiiiiiiket](https://www.instagram.com/nachiiiiiiiket/), and Email opens a message to nachiketpounikar15@gmail.com. The address is also shown on the page with a **Copy email** button. The YouTube buttons currently search YouTube for "Mindset Mode India"; put your channel's link there when you want.
 - **Hero words that get typed:** `ROTATING_WORDS` at the top of `src/main.js`.
 - **Film-strip frames:** the `FILM` list in `src/effects.js`.
 - **Pixel icons:** `src/icons.js`. Each icon is a small grid of letters, and each letter is a colour. Pick the icon for a section with `data-icon` in `index.html`.
