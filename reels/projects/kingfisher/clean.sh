@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Kingfisher reel, CLEAN cut: the animation exactly as made.
-# All 13 clips play in full (96 frames / 4.0 s each) at original speed with
+# All 14 clips play in full (96 frames / 4.0 s each) at original speed with
 # their original audio. No frame blending, no sharpening, no burned captions.
 # Vertical clips are only scaled 3x (360x640 -> 1080x1920); the two landscape
 # clips sit centred on a soft-blurred copy of themselves.
@@ -9,7 +9,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 OUT=../../output/kingfisher-clean.mp4
 
-VERTICAL=(02 03 04 05 06 07 08 09 10 11 12)
+VERTICAL=(01 02 03 04 05 06 07 08 09 10 11 12)
 LANDSCAPE=(tree-landscape outro-logo)
 
 inputs=(); fc=""; n=0
