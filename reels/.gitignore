@@ -14,3 +14,5 @@ __pycache__/
 projects/*/media_sr/
 output/zomato-economy-4k.mp4
 output/zomato-economy-memes-1080p.mp4
+output/zomato-economy-memes-*.mp4
+output/zomato-economy-final.mp4
