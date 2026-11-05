@@ -1,7 +1,17 @@
-# Kingfisher reel: prompts for 5 new opening clips (A–E)
+# Kingfisher reel: prompts for 7 new clips
 
-They play **before clip 1**, in the order A → B → C → D → E → clip 1.
-Each one is 4 seconds and 9:16 vertical. 5 × 4 s = 20 s, so the new total is 19 clips × 4 s = **76 s**, which covers the 75 s voiceover.
+Full order (every clip plays in full, 4 s each, 9:16):
+
+**COLD → A → B → C → D → E → 1 … 12 → tree → logo → LOOP**, then back to COLD.
+
+21 clips × 4 s = **84 s**:
+- 0–4 s: cold open, with the airport chime and the "now boarding" announcement
+- 4–79 s: your 75 s voiceover
+- last 4 s: LOOP, with the chime and the "flight cancelled" announcement
+
+LOOP ends on COLD's first frame, so the reel repeats with no visible restart.
+
+Save the files in `clips/` as `cold.mp4`, `A.mp4` … `E.mp4`, `loop.mp4`. `clean.sh` picks them up automatically.
 
 ## How to get perfect transitions
 Every clip **ends on one flat full-frame colour, and the next clip starts on that same colour.** Your existing clips already join this way.
@@ -13,6 +23,12 @@ Every clip **ends on one flat full-frame colour, and the next clip starts on tha
 > 2D paper-cut stop-motion collage animation, layered matte craft paper with visible paper grain and soft drop shadows, flat colours. Warm cream paper background (#F0ECDA). Palette: Kingfisher red (#CD2628), mustard yellow (#EBBA37), teal (#74BECC), navy blue. Vertical 9:16, 4 seconds, smooth motion. No people, no faces, no extra text or logos except what is described.
 
 ---
+
+## Clip COLD: cold open (make this one FIRST)
+**Start:** a crumpled ball of red paper (#CD2628) lying in the centre of plain cream paper (#F0ECDA), with a soft shadow. Hold still for half a second.
+**Action:** the ball slowly un-crumples as if time runs backwards. It flattens, unfolds and refolds itself into a red paper-cut kingfisher bird with teal and yellow wing feathers. The bird flaps once and flies straight up out of the top of the frame.
+**End frame:** plain cream paper (#F0ECDA) filling the whole frame, with nothing on it.
+*Send this clip to me first. Its first frame becomes the end frame for LOOP.*
 
 ## Clip A: hook ("Ek waqt tha…")
 **Start:** full-frame plain cream paper (#F0ECDA).
@@ -38,3 +54,9 @@ Every clip **ends on one flat full-frame colour, and the next clip starts on tha
 **Start:** full-frame flat plain cream paper (#F0ECDA), extreme close-up on the paper texture.
 **Action:** The camera slowly pulls back. A red paper boarding pass drifts down from the top, spins once and lands on a cream paper gatefold card lying flat in the centre. The card's two panels fold closed over it with a soft paper flap.
 **End frame (use END-FRAME-for-new-clip-E.png):** a closed cream gatefold paper card, centred on cream paper background, left panel wider than the right panel, soft shadow, no other objects.
+
+## Clip LOOP: the ending that loops back to the start
+**Start (use `START-FRAME-for-LOOP-clip.png`):** the last frame of the logo outro, the MINDSET MODE INDIA card on a soft blurred background.
+**Action:** the logo card lifts off the page. Its blue, teal and red paper frame folds inward, and the whole card scrunches up into a crumpled red paper ball that drops and rolls to the centre of plain cream paper.
+**End frame (use `START-FRAME-of-COLD.png`, which I'll make from your cold clip):** a crumpled red paper ball (#CD2628) in the centre of plain cream paper (#F0ECDA), with a soft shadow. This is identical to COLD's first frame.
+
