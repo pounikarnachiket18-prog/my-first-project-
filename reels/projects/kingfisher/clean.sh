@@ -71,7 +71,7 @@ cue 08  0.42 $M/meme10.mp3 0.90      # "dun" sting -> DGCA stamp hits 20 October
 cue 09  3.13 $M/meme03.mp3 0.33      # burst -> scales snap and collapse
 cue 10  0.00 $M/meme04.mp3 0.60 3.6  # empire cracks and shrinks
 cue 10  3.62 $M/meme08.mp3 1.10      # short hit -> the "?" appears
-# meme09 ("Hello chacha...") left out: its title says it ends in a swear word.
+cue 11  0.60 $M/meme09.mp3 0.90      # "Hello? chacha? chacha!" -> right after the "?" pops in (64.6 s)
 m=$((k-n))
 if [ $m -gt 0 ]; then
   fc+="${labels}amix=inputs=$m:normalize=0,apad[ov];[ov]asplit[ov1][ov2];"
