@@ -63,6 +63,10 @@ add audio/announce-close.wav $((end_t + 1)) 1.0
 # --- meme sounds: offsets put each sound's hit on the matching frame ---
 M=audio/memes
 cue B   0.00 $M/meme07.mp3 0.25 4    # luxury reveal (curtains, crown)
+cue C   0.80 $M/new2.mp3   0.30      # loud blast -> yellow paper tears open on "2005" (12.8 s)
+cue D   0.00 $M/new1.mp3   0.55 4    # paper plane through the clouds
+cue 01  0.50 $M/new3.mp3   1.60      # India map, cities and routes pop up
+cue 03  0.00 $M/new4.mp3   0.85 4    # airport, Kingfisher plane at the gate
 cue 04  0.00 $M/meme05.mp3 0.30 4    # luxury cabin
 cue 05  1.08 $M/meme02.mp3 1.00      # Among Us role reveal -> Air Deccan merges (42.2 s)
 cue 06  3.13 $M/meme01.mp3 0.75      # sting -> the "!" slams in
