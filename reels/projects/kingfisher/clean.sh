@@ -15,13 +15,13 @@
 # Run from reels/:  bash projects/kingfisher/clean.sh
 set -euo pipefail
 cd "$(dirname "$0")"
-OUT=../../output/kingfisher-clean.mp4
 
 ORDER=(cold A B C D E 01 02 03 04 05 06 07 08 09 10 11 12 tree-landscape outro-logo)   # loop.mp4 removed: reel ends on the logo
 ENDING_CLIP=loop   # closing chime + announcement go on this clip...
 [ -f clips/loop.mp4 ] || ENDING_CLIP=outro-logo   # ...or on the logo until it exists
 
 inputs=(); fc=""; n=0; t=0; end_t=0; used=(); declare -A START; WMPOS=()
+CLEAN="hqdn3d=1.2:1.2:0:0"; SHARP="cas=0.55"   # clarity: undo source blockiness, crisp edges
 WM=watermark.png; WMS=80   # round logo watermark, diameter in px
 for c in "${ORDER[@]}"; do
   [ -f "clips/$c.mp4" ] || continue
@@ -29,10 +29,10 @@ for c in "${ORDER[@]}"; do
   wh=$(ffprobe -v error -select_streams v -show_entries stream=width,height -of csv=p=0 "clips/$c.mp4")
   if [ "${wh%,*}" -gt "${wh#*,}" ]; then   # landscape -> centred on blurred copy
     fc+="[$n:v]split[x$n][y$n];[x$n]scale=-2:1920,crop=1080:1920,boxblur=30:2[bg$n];"
-    fc+="[y$n]scale=1080:-2:flags=lanczos[fg$n];[bg$n][fg$n]overlay=(W-w)/2:(H-h)/2,setsar=1[c$n];"
+    fc+="[y$n]$CLEAN,scale=1080:-2:flags=lanczos,$SHARP[fg$n];[bg$n][fg$n]overlay=(W-w)/2:(H-h)/2,setsar=1[c$n];"
     wx=979; wy=1162   # corner sparkle of a 640x360 clip, once centred
   else
-    fc+="[$n:v]scale=1080:1920:flags=lanczos,setsar=1[c$n];"
+    fc+="[$n:v]$CLEAN,scale=1080:1920:flags=lanczos,$SHARP,setsar=1[c$n];"
     wx=900; wy=1740   # corner sparkle of a 360x640 clip, scaled 3x
   fi
   WMPOS+=("$wx $wy")
@@ -138,18 +138,13 @@ else
   fc+="[duck][ov2]amix=inputs=2:normalize=0,atrim=0:$t,alimiter=limit=0.95,loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000[a]"
 fi
 
-[ -n "${DUMP_FC:-}" ] && { printf "%s\n" "$fc" > "$DUMP_FC"; printf "%s\n" "${inputs[@]}" > "$DUMP_FC.inputs"; exit 0; }
-ffmpeg -v error -y "${inputs[@]}" -filter_complex "$fc" -map "[v]" -map "[a]" \
-  -c:v libx264 -preset slow -crf 14 -pix_fmt yuv420p -r 24 \
-  -c:a aac -b:a 192k -movflags +faststart "$OUT"
-echo "done -> $OUT"
+TARGET=${TARGET:-70}   # final length in seconds; every frame is kept, frame rate rises, voice pitch unchanged
+k=$(awk "BEGIN{printf \"%.6f\", $t/$TARGET}"); fps=$(awk "BEGIN{printf \"%.4f\", 24*$t/$TARGET}")
+OUT=../../output/kingfisher-${TARGET}s.mp4
+fc+=";[v]setpts=PTS/$k[vf];[a]atempo=$k,atrim=0:$TARGET[af]"
 
-# --- speed-up to a target length: every frame kept (frame rate rises), voice pitch unchanged ---
-TARGET=${TARGET:-70}
-if [ "$TARGET" != "$t" ]; then
-  OUT2=../../output/kingfisher-${TARGET}s.mp4
-  k=$(awk "BEGIN{printf \"%.6f\", $t/$TARGET}"); fps=$(awk "BEGIN{printf \"%.4f\", 24*$t/$TARGET}")
-  ffmpeg -v error -y -i "$OUT" -filter_complex "[0:v]setpts=PTS/$k[v];[0:a]atempo=$k[a]" -map "[v]" -map "[a]" \
-    -r "$fps" -c:v libx264 -preset slow -crf 14 -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart "$OUT2"
-  echo "done -> $OUT2 (${TARGET}s, x$k, ${fps} fps)"
-fi
+[ -n "${DUMP_FC:-}" ] && { printf "%s\n" "$fc" > "$DUMP_FC"; printf "%s\n" "${inputs[@]}" > "$DUMP_FC.inputs"; exit 0; }
+ffmpeg -v error -y "${inputs[@]}" -filter_complex "$fc" -map "[vf]" -map "[af]" \
+  -r "$fps" -c:v libx264 -preset slow -tune animation -crf 12 -pix_fmt yuv420p \
+  -c:a aac -b:a 256k -ar 48000 -movflags +faststart "$OUT"
+echo "done -> $OUT (${TARGET}s from ${t}s, x$k, ${fps} fps)"
