@@ -74,6 +74,10 @@ add audio/announce-close.wav $((end_t + 1)) 1.0
 
 # --- meme sounds: offsets put each sound's hit on the matching frame ---
 M=audio/memes
+# removed on request: meme07 (sad sound at 8 s), new2 ("kaun hai re"), new4 ("kuch toh gadbad hai")
+cue D   0.00 $M/new1.mp3   0.55 4    # paper plane through the clouds
+cue 01  0.50 $M/new3.mp3   1.60      # India map, cities and routes pop up
+cue 04  0.00 $M/meme05.mp3 0.30 4    # luxury cabin
 cue 05  1.08 $M/meme02.mp3 1.00      # Among Us role reveal -> Air Deccan merges (42.2 s)
 cue 06  3.13 $M/meme01.mp3 0.75      # sting -> the "!" slams in
 cue 07  0.00 $M/meme06.mp3 1.50 4    # beeps -> delays, queue, unpaid salary
@@ -125,7 +129,7 @@ else
 fi
 if [ $have_vo = 1 ]; then
   # memes/chime dip under the voice; clip audio dips under everything
-  fc+="[ov][vo1]sidechaincompress=threshold=0.03:ratio=4:attack=10:release=300[ovd];[ovd]asplit[ov1][ov2];"
+  fc+="[ov][vo1]sidechaincompress=threshold=0.06:ratio=1.8:attack=10:release=250[ovd];[ovd]asplit[ov1][ov2];"
   fc+="[ov1][vo2]amix=inputs=2:normalize=0[key];"
   fc+="[clips][key]sidechaincompress=threshold=0.02:ratio=8:attack=15:release=350[duck];"
   fc+="[duck][ov2][vo3]amix=inputs=3:normalize=0,atrim=0:$t,alimiter=limit=0.95,loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000[a]"
@@ -139,3 +143,13 @@ ffmpeg -v error -y "${inputs[@]}" -filter_complex "$fc" -map "[v]" -map "[a]" \
   -c:v libx264 -preset slow -crf 14 -pix_fmt yuv420p -r 24 \
   -c:a aac -b:a 192k -movflags +faststart "$OUT"
 echo "done -> $OUT"
+
+# --- speed-up to a target length: every frame kept (frame rate rises), voice pitch unchanged ---
+TARGET=${TARGET:-70}
+if [ "$TARGET" != "$t" ]; then
+  OUT2=../../output/kingfisher-${TARGET}s.mp4
+  k=$(awk "BEGIN{printf \"%.6f\", $t/$TARGET}"); fps=$(awk "BEGIN{printf \"%.4f\", 24*$t/$TARGET}")
+  ffmpeg -v error -y -i "$OUT" -filter_complex "[0:v]setpts=PTS/$k[v];[0:a]atempo=$k[a]" -map "[v]" -map "[a]" \
+    -r "$fps" -c:v libx264 -preset slow -crf 14 -pix_fmt yuv420p -c:a aac -b:a 192k -movflags +faststart "$OUT2"
+  echo "done -> $OUT2 (${TARGET}s, x$k, ${fps} fps)"
+fi
