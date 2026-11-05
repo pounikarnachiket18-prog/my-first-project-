@@ -57,7 +57,7 @@ cue() {  # cue <clip> <seconds-into-clip> <file> <gain> [max-length] - skipped i
 }
 add audio/chime.wav 0 0.9
 add audio/announce-open.wav 1 1.0
-add audio/chime.wav "$end_t" 0.9
+add audio/chime.wav "$(awk "BEGIN{print $end_t-0.3}")" 0.9   # closing chime, just before the last announcement
 add audio/announce-close.wav $((end_t + 1)) 1.0
 
 # --- meme sounds: offsets put each sound's hit on the matching frame ---
@@ -69,16 +69,60 @@ cue 08  0.42 $M/meme10.mp3 0.90      # "dun" sting -> DGCA stamp hits 20 October
 cue 09  3.13 $M/meme03.mp3 0.33      # burst -> scales snap and collapse
 cue 10  0.00 $M/meme04.mp3 0.60 3.6  # empire cracks and shrinks
 cue 10  3.62 $M/meme08.mp3 1.10      # short hit -> the "?" appears
-cue 11  0.60 $M/meme09.mp3 0.90      # "Hello? chacha? chacha!" -> right after the "?" pops in (64.6 s)
-m=$((k-n))
-if [ $m -gt 0 ]; then
-  fc+="${labels}amix=inputs=$m:normalize=0,apad[ov];[ov]asplit[ov1][ov2];"
-  fc+="[clips][ov1]sidechaincompress=threshold=0.02:ratio=8:attack=15:release=350[duck];"
-  fc+="[duck][ov2]amix=inputs=2:normalize=0,atrim=0:$t,alimiter=limit=0.95,loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000[a]"
-else
-  fc+="[clips]loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000[a]"
+cue 11  1.70 $M/meme09.mp3 0.90 1.0  # "Hello? chacha?" -> in the pause before "lesson kya hai?" (65.7 s)
+
+# --- voiceover: each spoken line of audio/voiceover.mp3 placed on its own scene ---
+#     vo <source-start> <source-end> <timeline-start>
+VO=audio/voiceover.mp3; VOL=()
+vo() { VOL+=("$1 $2 $3"); }
+vo  0.00  4.47  1.00   # Kingfisher flight 2005... boarding (announcement)
+vo  4.87 11.19  5.72   # Ek waqt tha... luxury ki pehchaan thi
+vo 11.90 17.74 12.29   # 2005 mein... naye sapne ke saath
+vo 18.20 20.81 20.00   # Har passenger ke liye... royal safar
+vo 21.38 26.98 24.00   # Sheher se sheher... udne laga
+vo 27.57 34.06 32.00   # Premium seats... badal gaya
+vo 34.67 39.40 39.20   # Phir 2007 mein, Air Deccan... bada ho gaya
+vo 39.94 42.68 44.18   # Lekin expansion... karz bhi badhta gaya
+vo 43.24 47.34 48.00   # Salaries ruk gayi... bharosa toot gaya
+vo 48.14 53.74 52.35   # Phir aaya 20 October 2012... suspend  ("20 October" lands on the stamp)
+vo 54.18 57.83 58.20   # Planes zameen par... licence bhi expire
+vo 58.46 61.96 62.10   # Success ki misaal... failure ki kahaani
+vo 62.74 65.21 66.95   # Is kahaani ka sabse bada lesson kya hai?
+vo 65.72 69.81 69.67   # Sirf bade sapne... financial discipline
+vo 70.33 75.91 74.01   # Kyunki empire banana mushkil hai... zyada mushkil
+vo 76.66 80.20 80.35   # Kingfisher ki yeh flight... cancel (announcement)
+have_vo=0
+if [ -f "$VO" ]; then
+  have_vo=1; inputs+=(-i "$VO"); nv=${#VOL[@]}
+  fc+="[$k:a]aresample=48000,aformat=channel_layouts=stereo,loudnorm=I=-16:TP=-2:LRA=7,aresample=48000,asplit=$nv"
+  for j in $(seq 0 $((nv-1))); do fc+="[vs$j]"; done; fc+=";"; vl=""
+  for j in $(seq 0 $((nv-1))); do
+    read -r a b s <<<"${VOL[$j]}"; ms=$(awk "BEGIN{printf \"%d\", $s*1000}")
+    fc+="[vs$j]atrim=$a:$b,asetpts=PTS-STARTPTS,afade=t=in:d=0.04,afade=t=out:st=$(awk "BEGIN{print $b-$a-0.08}"):d=0.08,adelay=${ms}|${ms}[vl$j];"
+    vl+="[vl$j]"
+  done
+  fc+="${vl}amix=inputs=$nv:normalize=0,aresample=48000:async=1:first_pts=0,apad,atrim=0:$t[vo];[vo]asplit=3[vo1][vo2][vo3];"
+  k=$((k+1))
 fi
 
+m=$((k-n-have_vo))
+if [ $m -gt 0 ]; then
+  fc+="${labels}amix=inputs=$m:normalize=0,apad,atrim=0:$t[ov];"
+else
+  fc+="anullsrc=r=48000:cl=stereo,atrim=0:$t[ov];"
+fi
+if [ $have_vo = 1 ]; then
+  # memes/chime dip under the voice; clip audio dips under everything
+  fc+="[ov][vo1]sidechaincompress=threshold=0.03:ratio=4:attack=10:release=300[ovd];[ovd]asplit[ov1][ov2];"
+  fc+="[ov1][vo2]amix=inputs=2:normalize=0[key];"
+  fc+="[clips][key]sidechaincompress=threshold=0.02:ratio=8:attack=15:release=350[duck];"
+  fc+="[duck][ov2][vo3]amix=inputs=3:normalize=0,atrim=0:$t,alimiter=limit=0.95,loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000[a]"
+else
+  fc+="[ov]asplit[ov1][ov2];[clips][ov1]sidechaincompress=threshold=0.02:ratio=8:attack=15:release=350[duck];"
+  fc+="[duck][ov2]amix=inputs=2:normalize=0,atrim=0:$t,alimiter=limit=0.95,loudnorm=I=-14:TP=-1.5:LRA=11,aresample=48000[a]"
+fi
+
+[ -n "${DUMP_FC:-}" ] && { printf "%s\n" "$fc" > "$DUMP_FC"; printf "%s\n" "${inputs[@]}" > "$DUMP_FC.inputs"; exit 0; }
 ffmpeg -v error -y "${inputs[@]}" -filter_complex "$fc" -map "[v]" -map "[a]" \
   -c:v libx264 -preset slow -crf 14 -pix_fmt yuv420p -r 24 \
   -c:a aac -b:a 192k -movflags +faststart "$OUT"
