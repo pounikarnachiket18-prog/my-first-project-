@@ -5,3 +5,9 @@ output/*.sfx.wav
 output/*.video.mp4
 sfx/*.wav
 downloads/
+
+# zomato-economy: intermediates and the >100MB master render (rebuild with build.py)
+projects/*/build/
+output/zomato-economy.mp4
+__pycache__/
+**/__pycache__/
