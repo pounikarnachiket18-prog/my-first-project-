@@ -17,26 +17,38 @@ set -euo pipefail
 cd "$(dirname "$0")"
 OUT=../../output/kingfisher-clean.mp4
 
-ORDER=(cold A B C D E 01 02 03 04 05 06 07 08 09 10 11 12 tree-landscape outro-logo loop)
+ORDER=(cold A B C D E 01 02 03 04 05 06 07 08 09 10 11 12 tree-landscape outro-logo)   # loop.mp4 removed: reel ends on the logo
 ENDING_CLIP=loop   # closing chime + announcement go on this clip...
 [ -f clips/loop.mp4 ] || ENDING_CLIP=outro-logo   # ...or on the logo until it exists
 
-inputs=(); fc=""; n=0; t=0; end_t=0; used=(); declare -A START
+inputs=(); fc=""; n=0; t=0; end_t=0; used=(); declare -A START; WMPOS=()
+WM=watermark.png; WMS=80   # round logo watermark, diameter in px
 for c in "${ORDER[@]}"; do
   [ -f "clips/$c.mp4" ] || continue
   inputs+=(-i "clips/$c.mp4"); used+=("$c")
   wh=$(ffprobe -v error -select_streams v -show_entries stream=width,height -of csv=p=0 "clips/$c.mp4")
   if [ "${wh%,*}" -gt "${wh#*,}" ]; then   # landscape -> centred on blurred copy
     fc+="[$n:v]split[x$n][y$n];[x$n]scale=-2:1920,crop=1080:1920,boxblur=30:2[bg$n];"
-    fc+="[y$n]scale=1080:-2:flags=lanczos[fg$n];[bg$n][fg$n]overlay=(W-w)/2:(H-h)/2,setsar=1[v$n];"
+    fc+="[y$n]scale=1080:-2:flags=lanczos[fg$n];[bg$n][fg$n]overlay=(W-w)/2:(H-h)/2,setsar=1[c$n];"
+    wx=979; wy=1162   # corner sparkle of a 640x360 clip, once centred
   else
-    fc+="[$n:v]scale=1080:1920:flags=lanczos,setsar=1[v$n];"
+    fc+="[$n:v]scale=1080:1920:flags=lanczos,setsar=1[c$n];"
+    wx=900; wy=1740   # corner sparkle of a 360x640 clip, scaled 3x
   fi
+  WMPOS+=("$wx $wy")
   fc+="[$n:a]atrim=0:4,asetpts=PTS-STARTPTS,aresample=48000,aformat=channel_layouts=stereo[a$n];"
   [ "$c" = "$ENDING_CLIP" ] && end_t=$t
   START[$c]=$t
   n=$((n+1)); t=$((t+4))
 done
+if [ -f "$WM" ]; then
+  fc+="movie=$WM,format=rgba,scale=$WMS:$WMS:flags=lanczos,colorchannelmixer=aa=0.92,split=$n"
+  for i in $(seq 0 $((n-1))); do fc+="[w$i]"; done; fc+=";"
+  for i in $(seq 0 $((n-1))); do read -r wx wy <<<"${WMPOS[$i]}"
+    fc+="[c$i][w$i]overlay=$((wx - WMS/2)):$((wy - WMS/2)):format=auto:eof_action=repeat[v$i];"; done
+else
+  for i in $(seq 0 $((n-1))); do fc+="[c$i]null[v$i];"; done
+fi
 for i in $(seq 0 $((n-1))); do fc+="[v$i][a$i]"; done
 fc+="concat=n=$n:v=1:a=1[v][clips];"
 echo "clips (${#used[@]}, ${t}s): ${used[*]}"
@@ -57,7 +69,7 @@ cue() {  # cue <clip> <seconds-into-clip> <file> <gain> [max-length] - skipped i
 }
 add audio/chime.wav 0 0.9
 add audio/announce-open.wav 1 1.0
-add audio/chime.wav "$(awk "BEGIN{print $end_t-0.3}")" 0.9   # closing chime, just before the last announcement
+# closing chime removed along with the loop clip
 add audio/announce-close.wav $((end_t + 1)) 1.0
 
 # --- meme sounds: offsets put each sound's hit on the matching frame ---
@@ -90,7 +102,7 @@ vo 58.46 61.96 62.10   # Success ki misaal... failure ki kahaani
 vo 62.74 65.21 66.95   # Is kahaani ka sabse bada lesson kya hai?
 vo 65.72 69.81 69.67   # Sirf bade sapne... financial discipline
 vo 70.33 75.91 74.01   # Kyunki empire banana mushkil hai... zyada mushkil
-vo 76.66 80.20 80.35   # Kingfisher ki yeh flight... cancel (announcement)
+# closing announcement (76.66-80.20 in the recording) dropped: no room once the loop clip was removed
 have_vo=0
 if [ -f "$VO" ]; then
   have_vo=1; inputs+=(-i "$VO"); nv=${#VOL[@]}
