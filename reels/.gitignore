@@ -11,3 +11,5 @@ projects/*/build/
 output/zomato-economy.mp4
 __pycache__/
 **/__pycache__/
+projects/*/media_sr/
+output/zomato-economy-4k.mp4

@@ -20,9 +20,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 BUILD = os.path.join(HERE, "build")
 sys.path.insert(0, os.path.abspath(os.path.join(HERE, "..", "..", "tools")))
 import sfx  # noqa: E402  (the repo's synthesised SFX library)
+from timing import sh, END, pause_at, PAUSES, VO_END  # noqa: E402
 
 SR = sfx.SR
-END = 75.7
 N = int(SR * END)
 rng = np.random.default_rng(5)
 t_all = np.arange(N) / SR
@@ -63,10 +63,18 @@ def load_audio(path, start=0.0, dur=None):
 # ---------------------------------------------------------------- music
 BPM = 100
 BEAT = 60 / BPM
-GRID0 = 2.33           # the beat starts on the first cut after the hook
-BREAK = (42.62, 44.61)  # "Lekin ek baat..." - drums out
-BUSY = (52.83, 67.00)   # the numbers - more drive
-OUTRO = 72.13           # brand card - resolve
+GRID0 = 2.33                    # the beat starts on the first cut after the hook
+BREAK = (sh(42.62), sh(44.61))  # "Lekin ek baat..." - drums out
+BUSY = (sh(52.83), sh(67.00))   # the numbers - more drive
+OUTRO = sh(72.13)               # brand card - resolve
+F_AT, G_AT = sh(67.0), sh(69.26)
+MEME = os.path.join(HERE, "media", "memes")
+# meme music beds replace the synth bed in these windows: (file, start, src_in, length)
+MEME_BEDS = [
+    ("myinstants_7.mp3", sh(37.90), 0.0, sh(42.62) - sh(37.90)),          # Zomato Gold
+    ("myinstants_4.mp3", sh(42.62), 0.0, pause_at(2) + 0.85 - sh(42.62)), # sad flute: not all profit
+    ("myinstants_5.mp3", sh(55.00), 0.0, sh(67.00) - sh(55.00)),          # epic theme: the numbers
+]
 
 NOTE = {"A": 55.0, "F": 43.65, "C": 65.41, "G": 49.0, "E": 41.2, "D": 36.71}
 CHORDS = {"Am": ("A", [0, 3, 7]), "F": ("F", [0, 4, 7]), "C": ("C", [0, 4, 7]), "G": ("G", [0, 4, 7])}
@@ -76,9 +84,9 @@ PROG = ["Am", "F", "C", "G"]
 def chord_at(t):
     if t >= OUTRO:
         return "C"
-    if t >= 69.26:
+    if t >= G_AT:
         return "G"
-    if t >= 67.0:
+    if t >= F_AT:
         return "F"
     if t < GRID0:
         return "Am"
@@ -95,9 +103,9 @@ def build_music():
     # --- pad: per-chord blocks with crossfades
     changes = [0.0]
     t = GRID0
-    while t < 67.0:
+    while t < F_AT:
         changes.append(t); t += BEAT * 4
-    changes += [67.0, 69.26, OUTRO, END]
+    changes += [F_AT, G_AT, OUTRO, END]
     changes = sorted(set(round(c, 4) for c in changes if c <= END))
     for a, b in zip(changes[:-1], changes[1:]):
         name = chord_at(a + 0.01)
@@ -163,6 +171,23 @@ def build_music():
     place(drone, dr, 0.0, 0.35)
 
     mus = pad + bass[:, None] + drums + drone
+    mus /= np.sqrt(np.mean(mus[np.abs(mus).sum(1) > 1e-4] ** 2)) / 0.1  # RMS -20 dBFS
+    gate = np.ones(N)
+    beds = np.zeros((N, 2))
+    for f, t0, src, ln in MEME_BEDS:
+        a, b = int(t0 * SR), int(min(END, t0 + ln) * SR)
+        ramp = int(0.25 * SR)
+        gate[a:b] = 0
+        gate[max(0, a - ramp):a] = np.linspace(1, 0, a - max(0, a - ramp))
+        gate[b:b + ramp] = np.minimum(gate[b:b + ramp], np.linspace(0, 1, len(gate[b:b + ramp])))
+        x = load_audio(os.path.join(MEME, f), src, ln + 0.3)
+        x = x / (np.sqrt(np.mean(x ** 2)) + 1e-9) * 0.1                       # same RMS as the bed
+        fi, fo = int(0.15 * SR), int(min(0.6, ln / 3) * SR)
+        x[:fi] *= np.linspace(0, 1, fi)[:, None]
+        x = x[: int(ln * SR) + fo]
+        x[-fo:] *= np.linspace(1, 0, fo)[:, None]
+        place(beds, x, t0, 0.9)
+    mus = mus * gate[:, None] + beds
     # music fades at the very end
     f = int(1.6 * SR)
     mus[-f:] *= np.linspace(1, 0, f)[:, None] ** 1.5
@@ -206,64 +231,99 @@ def shimmer(dur=1.4):
 
 def build_sfx():
     bus = np.zeros((N, 2))
+
+    def cue(x, t, gain=1.0, pan=0.0):  # cue times are on the 75 s grid
+        place(bus, x, sh(t), gain, pan)
     L = {k: sfx.LIBRARY[k]() for k in ["whoosh", "whoosh_down", "whoosh_long", "swish", "pop", "pop_low",
                                         "pop_high", "hit", "boom", "riser", "riser_short", "glitch", "ding"]}
     # hook: note shatters -> ZOMATO slams
-    place(bus, L["glitch"], 0.00, 0.35)
-    place(bus, L["whoosh_long"], 0.55, 0.30, -0.2)
-    place(bus, L["boom"], 2.04, 0.75)
-    place(bus, L["hit"], 2.04, 0.35)
+    cue(L["glitch"], 0.00, 0.35)
+    cue(L["whoosh_long"], 0.55, 0.30, -0.2)
+    cue(L["boom"], 2.04, 0.30)
+    cue(meme("myinstants_3.mp3", 0, 1.42), 2.02, 0.55)                    # meme: bang on ZOMATO
+    cue(L["hit"], 2.04, 0.35)
     cuts = [2.33, 6.93, 9.93, 13.54, 14.78, 16.90, 19.36, 23.30, 25.25, 27.30, 29.20, 31.72, 34.05,
             37.90, 44.61, 48.29, 52.83, 55.00, 60.58, 63.78, 67.00, 69.26]
     for k, c in enumerate(cuts):
-        place(bus, L["swish"] if k % 2 else L["whoosh"], c - 0.12, 0.16, pan=0.3 if k % 2 else -0.3)
-    place(bus, L["pop"], 2.40, 0.25)
-    place(bus, L["hit"], 8.43, 0.30)                      # the "?" appears
-    place(bus, L["pop_high"], 18.40, 0.25)                # zomato logo forms
-    place(bus, slap(), 20.36, 0.55)                       # COMMISSION banner
+        cue(L["swish"] if k % 2 else L["whoosh"], c - 0.12, 0.16, pan=0.3 if k % 2 else -0.3)
+    cue(L["pop"], 2.40, 0.25)
+    cue(L["hit"], 8.43, 0.30)                      # the "?" appears
+    cue(L["pop_high"], 18.40, 0.25)                # zomato logo forms
+    cue(slap(), 20.36, 0.55)                       # COMMISSION banner
     for k, tt in enumerate([23.45, 23.9, 24.3, 24.75]):  # coins fly
-        place(bus, coin(1 + 0.06 * k), tt, 0.22, pan=(-0.3, 0.3)[k % 2])
-    place(bus, L["ding"], 27.36, 0.30)                    # checkout
+        cue(coin(1 + 0.06 * k), tt, 0.22, pan=(-0.3, 0.3)[k % 2])
+    cue(L["ding"], 27.36, 0.30)                    # checkout
     for k, tt in enumerate([29.45, 29.95, 30.95]):        # receipt lines appear
-        place(bus, L["pop_low"], tt, 0.22, pan=0.1 * k)
+        cue(L["pop_low"], tt, 0.22, pan=0.1 * k)
     for tt in [34.6, 35.4, 36.4]:                         # ad cards flip
-        place(bus, L["swish"], tt, 0.14, pan=0.2)
-    place(bus, shimmer(1.6), 38.0, 0.35)                  # Zomato Gold
-    place(bus, L["riser_short"], 39.9, 0.12)
+        cue(L["swish"], tt, 0.14, pan=0.2)
+    cue(shimmer(1.6), 38.0, 0.35)                  # Zomato Gold
+    cue(L["riser_short"], 39.9, 0.12)
     # dramatic sting for the turn (user's meme sound; its hit lands on the cut)
     sting = load_audio(os.path.join(HERE, "media", "sting_dramatic.mp3"))
     sting = sting / (np.max(np.abs(sting)) or 1)
-    place(bus, sting, 42.62 - 1.10, 0.42)
+    cue(sting, 42.62 - 1.10, 0.42)
     for k in range(9):                                    # coins into the jar
-        place(bus, coin(0.9 + 0.05 * (k % 3)), 44.75 + k * 0.16, 0.14, pan=rng.uniform(-0.3, 0.3))
-    place(bus, slap(), 45.86, 0.55)                       # NOT ALL OF IT IS PROFIT
-    place(bus, L["hit"], 45.86, 0.25)
+        cue(coin(0.9 + 0.05 * (k % 3)), 44.75 + k * 0.16, 0.14, pan=rng.uniform(-0.3, 0.3))
+    cue(slap(), 45.86, 0.55)                       # NOT ALL OF IT IS PROFIT
+    cue(L["hit"], 45.86, 0.25)
     for k, tt in enumerate([49.43, 50.56, 51.13]):        # delivery / tech / marketing / ops
-        place(bus, L["swish"], tt - 0.08, 0.18, pan=(-0.3, 0.3)[k % 2])
-    place(bus, L["pop"], 53.02, 0.30)                     # Q2 FY27 tag
-    place(bus, L["riser"], 57.95 - 1.6, 0.18)
-    place(bus, L["hit"], 57.95, 0.55)                     # 11,445
-    place(bus, slap(), 60.64, 0.45)                       # ADJUSTED REVENUE
-    place(bus, L["riser_short"], 61.88 - 0.8, 0.18)
-    place(bus, L["hit"], 61.88, 0.55)                     # 3,879
-    place(bus, L["pop"], 63.92, 0.30)                     # EBITDA tag
-    place(bus, L["hit"], 65.62, 0.55)                     # 627
-    place(bus, doorbell(), 67.05, 0.32)
-    place(bus, L["riser_short"], 69.9, 0.15)
-    place(bus, shimmer(2.0), 70.75, 0.40)                 # gift glows
-    place(bus, L["boom"], 72.13, 0.45)
-    place(bus, L["pop_low"], 72.6, 0.25)                  # brand card lands
+        cue(L["swish"], tt - 0.08, 0.18, pan=(-0.3, 0.3)[k % 2])
+    cue(L["pop"], 53.02, 0.30)                     # Q2 FY27 tag
+    cue(L["riser"], 57.95 - 1.6, 0.18)
+    cue(L["hit"], 57.95, 0.55)                     # 11,445
+    cue(slap(), 60.64, 0.45)                       # ADJUSTED REVENUE
+    cue(L["riser_short"], 61.88 - 0.8, 0.18)
+    cue(L["hit"], 61.88, 0.55)                     # 3,879
+    cue(L["pop"], 63.92, 0.30)                     # EBITDA tag
+    cue(L["hit"], 65.62, 0.55)                     # 627
+    cue(doorbell(), 67.05, 0.32)
+    cue(L["riser_short"], 69.9, 0.15)
+    cue(shimmer(2.0), 70.75, 0.40)                 # gift glows
+    cue(L["boom"], 72.13, 0.45)
+    cue(L["pop_low"], 72.6, 0.25)                  # brand card lands
     # real sound from the chef clip: the sizzle
     sizzle = load_audio(os.path.join(HERE, "media", "chef.mp4"), 0.9, 1.3)
     sizzle = sizzle / (np.max(np.abs(sizzle)) or 1)
     fade = np.minimum(1, np.minimum(np.arange(len(sizzle)), np.arange(len(sizzle))[::-1]) / (0.12 * SR))
-    place(bus, sizzle * fade[:, None], 13.54, 0.30)
+    cue(sizzle * fade[:, None], 13.54, 0.30)
+    return bus
+
+
+def meme(f, start=0.0, dur=None, fade=0.08):
+    x = load_audio(os.path.join(MEME, f), start, dur)
+    x = x / (np.max(np.abs(x)) or 1)
+    fo = int(fade * SR)
+    x[-fo:] *= np.linspace(1, 0, fo)[:, None]
+    return x
+
+
+def build_meme_voices():
+    """Spoken / screamed memes sit in the voiceover pauses, not under words."""
+    bus = np.zeros((N, 2))
+    for f, t, start, dur, g in [
+        ("myinstants_8.mp3", pause_at(0) + 0.03, 0.0, 0.63, 1.0),    # "huh?"
+        ("myinstants_6.mp3", pause_at(1) + 0.02, 0.0, 0.62, 0.8),    # screaming cat
+        ("myinstants_9.mp3", pause_at(2) + 0.02, 0.0, 1.00, 1.0),    # sobbing
+        ("myinstants.mp3",   pause_at(3) + 0.00, 0.18, 1.25, 0.9),   # scream at 11,445 crore
+        ("myinstants_10.mp3", sh(VO_END) + 0.05, 0.63, 1.95, 0.8),   # echo button on the brand card
+    ]:
+        x = meme(f, start, dur, fade=0.12)
+        x = x / (np.sqrt(np.mean(x[np.abs(x).sum(1) > 1e-3] ** 2)) + 1e-9) * 0.125 * g  # ~VO loudness
+        place(bus, x, t)
     return bus
 
 
 # ---------------------------------------------------------------- mix
 def main():
     vo = load_audio(os.path.join(BUILD, "vo_tight.wav"))
+    # open the meme pauses in the voiceover
+    parts, prev = [], 0
+    for at, p in PAUSES:
+        i = int(at * SR)
+        parts += [vo[prev:i], np.zeros((int(p * SR), 2))]
+        prev = i
+    vo = np.vstack(parts + [vo[prev:]])
     vo = vo[:N] if len(vo) >= N else np.vstack([vo, np.zeros((N - len(vo), 2))])
     vo = hp(vo.T, 75).T
     music = build_music()
@@ -285,7 +345,7 @@ def main():
     vo *= 10 ** ((-18 - rms_db(vo)) / 20)
     music *= 10 ** ((-31.5 - rms_db(music)) / 20)
     fx *= 10 ** ((-29 - rms_db(fx)) / 20)
-    mix = vo + music + fx
+    mix = vo + music + fx + build_meme_voices()
     raw = os.path.join(BUILD, "mix_raw.wav")
     wavfile.write(raw, SR, (np.clip(mix, -1, 1) * 32767).astype(np.int16))
     # final loudness for Reels: -14 LUFS, -1 dBTP (two-pass loudnorm)

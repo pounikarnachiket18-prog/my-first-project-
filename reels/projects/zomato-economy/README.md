@@ -1,15 +1,34 @@
 # Zomato Economy — reel
 
-The user's clips and Hindi voiceover, cut into a 75.7 s vertical reel (1080×1920, 30 fps, -14 LUFS).
-Output: `reels/output/zomato-economy.mp4` (plus `-cover.jpg` and `-contact.jpg`).
+The user's clips and Hindi voiceover, cut into an 80 s vertical reel in **4K (2160×3840)**, 30 fps, -14 LUFS.
+Output: `reels/output/zomato-economy-4k.mp4` (plus `zomato-economy-cover.jpg` and `-contact.jpg`).
 
 ```bash
-python3 vo.py      # tighten the voiceover to 75 s (shorter pauses, laugh at the end cut, x1.08 pitch-safe)
-python3 audio.py   # original music bed + sound design + dramatic sting + mix -> build/mix.wav
-python3 build.py   # picture + mux -> ../../output/zomato-economy.mp4
+pip install numpy scipy pillow opencv-python-headless ncnn fonttools
+python3 vo.py        # tighten the voiceover to 75 s (shorter pauses, laugh at the end cut, x1.08 pitch-safe)
+python3 sr_cache.py  # AI-upscale every clip once with Real-ESRGAN (CPU, ~1 h) -> media_sr/
+python3 audio.py     # music bed + meme sounds + sound design + mix -> build/mix.wav
+python3 build.py     # picture + mux -> ../../output/zomato-economy-4k.mp4
 python3 build.py --preview            # 30-frame contact sheet
 python3 build.py --frames 12.5,61.9   # check single frames -> build/check.jpg
 ```
+
+`timing.py` holds the four short pauses opened in the voiceover for the spoken memes;
+all cut and cue times are written on the 75 s voiceover grid and shifted by `sh()`.
+
+## Meme sounds (`media/memes/`)
+| Sound | Where |
+|---|---|
+| `myinstants_3` bang | ZOMATO slam in the hook |
+| `myinstants_8` "huh?" | pause after "…Zomato kitna kamata hai?" |
+| `myinstants_6` screaming cat | pause after "…platform fees" |
+| `myinstants_7` musical bed | under Zomato Gold |
+| `myinstants_2` dramatic sting | "Lekin ek baat…" (`media/sting_dramatic.mp3`) |
+| `myinstants_4` sad flute | under "not all of it is profit" + the costs |
+| `myinstants_9` sobbing | pause after the costs |
+| `myinstants_5` epic theme | under the numbers |
+| `myinstants` scream | pause after "₹11,445 crore" |
+| `myinstants_10` echo | button on the brand card |
 
 ## Story order (English meaning of the Hindi voiceover)
 

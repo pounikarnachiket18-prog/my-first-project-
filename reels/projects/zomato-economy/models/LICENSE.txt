@@ -1,0 +1,1 @@
+realesr-animevideov3 models from Real-ESRGAN (https://github.com/xinntao/Real-ESRGAN), BSD-3-Clause, NCNN format from the realesrgan-ncnn-vulkan release v0.2.5.0.
