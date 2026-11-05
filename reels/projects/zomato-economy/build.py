@@ -29,7 +29,8 @@ BUILD = os.path.join(HERE, "build")
 OUTDIR = os.path.abspath(os.path.join(HERE, "..", "..", "output"))
 FONT_BIG = os.path.join(HERE, "fonts", "Anton-Regular.ttf")
 FONT_SUB = os.path.join(HERE, "fonts", "Oswald-Bold.ttf")
-W, H, FPS = 2160, 3840, 30
+HD = "--hd" in sys.argv  # quick 1080p render from the original clips (no AI upscale needed)
+W, H, FPS = (1080, 1920, 30) if HD else (2160, 3840, 30)
 K = W / 1080
 
 
@@ -182,7 +183,7 @@ def overlays():
     OV["eco"] = banner("THE ZOMATO ECOSYSTEM", "CUSTOMER  ·  RESTAURANT  ·  DELIVERY", 300, "ZOMATO")
     OV["commission"] = banner("COMMISSION", "ON EVERY ORDER", 330, "COMMISSION")
     OV["customers"] = banner("NEW CUSTOMERS", "+ MORE ORDERS", 300, "NEW")
-    OV["profit"] = banner("NOT ALL OF IT IS PROFIT", None, 300, "PROFIT")
+    OV["profit"] = banner("NOT ALL OF IT IS PROFIT", None, 360, "PROFIT")
     OV["costs"] = banner("WHERE THE MONEY GOES", None, 200, "MONEY")
     OV["nov"] = banner("NET ORDER VALUE", "FOOD DELIVERY  ·  Q2 FY27", 540, "NET ORDER")
     OV["rev"] = banner("ADJUSTED REVENUE", None, 250, "REVENUE")
@@ -203,18 +204,18 @@ def timeline():
         T("ecosystem_circle", 16.90, 1.50, 1.00),
         T("owner_orders", 19.36, 0.00, 1.00, ov=[(o["commission"], 0, 0, sh(20.30), "drop")]),
         T("owner_commission", 23.30, 2.40, 0.82, ov=[(o["customers"], 0, 0, None, "static")]),
-        T("mumbai_rider", 25.25, 0.00, 0.93),
+        T("mumbai_rider", 25.25, 0.00, 0.70),
         T("checkout", 27.30, 0.00, 1.00),
         T("rider_night_receipt", 29.20, 5.30, 1.00),                # + screaming-cat pause
         T("hidden_cost", 31.72, 0.00, 0.86),
         T("ads", 34.05, 0.00, 1.03),
         T("gold", 37.90, 0.00, 0.85),
         T("rider_night_receipt", 42.62, 0.00, 0.80),
-        T("coins_jar", 44.61, 0.00, 1.00, ov=[(o["profit"], 0, 0, sh(45.80), "drop")]),
+        T("coins_jar", 44.61, 0.00, 0.84, ov=[(o["profit"], 0, 0, sh(45.80), "drop")]),
         T("expenses", 48.29, 0.00, 0.74, ov=[(o["costs"], 0, 0, None, "static")]),  # + sobbing pause
         T("rider_night_receipt", 52.83, 1.60, 1.00, ov=[(o["q2"], px(70), px(1450), sh(53.00), "slap")]),
         T("map_11445", 55.00, 0.00, 0.62, ov=[(o["nov"], 0, 0, None, "static")]),
-        T("map_11445", 57.95, 3.00, 1.00, drift=1.06, ov=[(o["nov"], 0, 0, None, "static")]),  # + scream pause
+        T("map_11445", 57.95, 3.00, 1.00, drift=1.025, ov=[(o["nov"], 0, 0, None, "static")]),  # + scream pause
         T("bars_3879", 60.58, 1.45, 0.65, ov=[(o["rev"], 0, 0, sh(60.62), "drop")]),
         dict(kind="still", clip="bars_3879", t=sh(61.88), src=3.60, zoom=(1.0, 1.07),
              ov=[(o["patch"], px(30), px(1190), None, "static"), (o["rev"], 0, 0, None, "screen")]),
@@ -226,12 +227,19 @@ def timeline():
 
 
 # ------------------------------------------------------------------ frame sources (streamed)
+def clip_path(clip):
+    sr = os.path.join(MEDIA_SR, clip + ".mp4")
+    return sr if (not HD and os.path.exists(sr)) else os.path.join(MEDIA, clip + ".mp4")
+
+
 def decode(clip, src, sp, nframes, ct=0.0):
-    path = os.path.join(MEDIA_SR, clip + ".mp4")
+    path = clip_path(clip)
+    pre = "hqdn3d=1.0:1.0:2.5:2.5," if path.startswith(MEDIA + os.sep) else ""
     src_dur = nframes / FPS * sp + 0.25
     crop = f"crop=iw*{1-ct:.4f}:ih*{1-ct:.4f}:iw*{ct/2:.4f}:ih*{ct:.4f}," if ct else ""
     fr = "fps=30" if sp >= 0.95 else "framerate=fps=30:interp_start=0:interp_end=255:scene=100"
-    vf = f"setpts=(PTS-STARTPTS)/{sp},{fr},{crop}scale={W}:{H}:flags=lanczos,cas=0.22,format=rgb24"
+    cas = 0.42 if pre else 0.22
+    vf = f"setpts=(PTS-STARTPTS)/{sp},{fr},{pre}{crop}scale={W}:{H}:flags=lanczos,cas={cas},format=rgb24"
     p = subprocess.Popen(["ffmpeg", "-v", "error", "-ss", f"{src:.3f}", "-i", path, "-t", f"{src_dur:.3f}",
                           "-vf", vf, "-an", "-f", "rawvideo", "-"], stdout=subprocess.PIPE,
                          stderr=subprocess.DEVNULL)
@@ -250,14 +258,15 @@ def decode(clip, src, sp, nframes, ct=0.0):
 
 def single(clip, src):
     vf = f"scale={W}:{H}:flags=lanczos,cas=0.22,format=rgb24"
-    raw = subprocess.run(["ffmpeg", "-v", "error", "-ss", f"{src:.3f}", "-i", os.path.join(MEDIA_SR, clip + ".mp4"),
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-ss", f"{src:.3f}", "-i", clip_path(clip),
                           "-frames:v", "1", "-vf", vf, "-f", "rawvideo", "-"], capture_output=True, check=True).stdout
     return np.frombuffer(raw, np.uint8).reshape(H, W, 3).copy()
 
 
 def image_frames(name, nframes, kb):
     z0, z1, dx, dy = kb
-    im = Image.open(os.path.join(MEDIA_SR, name + ".png")).convert("RGB")
+    srp = os.path.join(MEDIA_SR, name + ".png")
+    im = Image.open(srp if (not HD and os.path.exists(srp)) else os.path.join(MEDIA, name + ".jpg")).convert("RGB")
     big = np.array(im.resize((int(W * 1.2), int(W * 1.2 * im.height / im.width)), Image.LANCZOS))
     bh, bw = big.shape[:2]
     b, x, y, _, _ = watermark_cover(0.0, SPARK_IMAGE, bw, bh)
@@ -394,12 +403,13 @@ def render(preview=False, only=None):
         Image.fromarray(np.hstack(shots)).save(p, quality=90); print("check ->", p)
         return
     picks = set(int(x) for x in np.linspace(0, total - 1, 30)) if preview else set()
-    out_path = os.path.join(BUILD, "video4k.mp4")
+    out_path = os.path.join(BUILD, "video1080.mp4" if HD else "video4k.mp4")
     enc = None
     if not preview:
         enc = subprocess.Popen(["ffmpeg", "-v", "error", "-y", "-f", "rawvideo", "-pix_fmt", "rgb24",
                                 "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-", "-c:v", "libx264",
-                                "-preset", "medium", "-crf", "18", "-maxrate", "45M", "-bufsize", "90M",
+                                "-preset", "medium", "-crf", "18" if not HD else "19",
+                                "-maxrate", "45M" if not HD else "16M", "-bufsize", "90M" if not HD else "32M",
                                 "-profile:v", "high", "-level", "5.1", "-pix_fmt", "yuv420p", out_path],
                                stdin=subprocess.PIPE)
     thumbs, prev_tail, fi = [], None, 0
@@ -430,7 +440,7 @@ def render(preview=False, only=None):
         Image.fromarray(sheet).save(p, quality=88); print("contact sheet ->", p)
         return
     enc.stdin.close(); enc.wait()
-    final = os.path.join(OUTDIR, "zomato-economy-4k.mp4")
+    final = os.path.join(OUTDIR, "zomato-economy-memes-1080p.mp4" if HD else "zomato-economy-4k.mp4")
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", out_path, "-i", os.path.join(BUILD, "mix.wav"),
                     "-map", "0:v", "-map", "1:a", "-c:v", "copy", "-c:a", "aac", "-b:a", "320k", "-ar", "48000",
                     "-shortest", "-movflags", "+faststart", final], check=True)
