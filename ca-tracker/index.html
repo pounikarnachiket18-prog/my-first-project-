@@ -4,19 +4,23 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Baloo+2:wght@400;600;800&family=Share+Tech+Mono&display=swap">
 <style>
-/* Layout: a dance stage. Alerts, then the stopwatch beside a pendulum wall clock, the dancer and success ladder,
-   revision reminders, the daily log, and four month boards with a study + mock row per week. */
+/* Layout: a festival-night dance floor. Glass panels float over a slow aurora: alerts, stopwatch + pendulum clock,
+   focus timer + streak, the dancer and success ladder, revisions, daily log, daily news calendar,
+   week boards (quiz-gated study + mock), the mock score chart and the meme soundboard. */
 :root {
-  --stage: #1c1030;        /* deep plum stage floor */
-  --stage-2: #28173f;      /* raised panels */
-  --stage-3: #3a2358;      /* borders, empty states */
-  --ink: #fbf1e3;          /* warm cream text */
-  --ink-dim: #c9b8d9;      /* secondary text */
+  --night: #120a35;        /* page ground, deep indigo */
+  --glass: rgba(34, 18, 78, .74);   /* panels */
+  --glass-2: rgba(20, 10, 52, .7);  /* inset rows */
+  --line: rgba(255, 255, 255, .13); /* borders */
+  --line-2: rgba(255, 255, 255, .22);
+  --ink: #fdf3e6;          /* warm cream text */
+  --ink-dim: #cdbfe6;      /* secondary text */
   --marigold: #ffb627;     /* accent: done, celebration */
+  --marigold-chart: #c98010; /* validated chart line on the dark surface */
   --rani: #ff4f9a;         /* pressure, overdue */
-  --teal: #35d0bf;         /* calm info, revision */
-  --wood: #7a4a2a;         /* pendulum clock case */
-  --wood-2: #5a3319;
+  --teal: #35d0bf;         /* calm, revision */
+  --violet: #8b6bff;
+  --wood: #7a4a2a; --wood-2: #5a3319;
   --display: "Bungee", "Arial Black", Impact, sans-serif;
   --body: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
   --mono: "Share Tech Mono", ui-monospace, "Courier New", monospace;
@@ -24,76 +28,80 @@
 }
 * { box-sizing: border-box; }
 body {
-  background: radial-gradient(1200px 500px at 50% -120px, #3b1f5e 0%, transparent 70%), var(--stage);
-  color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.45;
+  background: var(--night); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.45;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 20px 48px; min-height: 100%;
+  padding-block: 20px 96px; min-height: 100%; position: relative; overflow-x: hidden;
 }
-.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 24px; }
-button, input, textarea { font: inherit; color: inherit; }
-button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+.aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  background: radial-gradient(1px 1px at 20% 30%, #fff8 50%, transparent 51%) 0 0/160px 140px, radial-gradient(1px 1px at 70% 80%, #fff6 50%, transparent 51%) 0 0/220px 190px, linear-gradient(180deg, #170b45 0%, #120a35 45%, #1d0b3a 100%); }
+.aurora i { position: absolute; width: 60vmax; height: 60vmax; border-radius: 50%; filter: blur(90px); opacity: .45; animation: drift 26s ease-in-out infinite alternate; }
+.aurora i:nth-child(1) { background: #ff3d8b; top: -25vmax; left: -15vmax; }
+.aurora i:nth-child(2) { background: #6a4dff; top: 10vmax; right: -25vmax; animation-duration: 32s; opacity: .5; }
+.aurora i:nth-child(3) { background: #ff8a3d; bottom: -30vmax; left: 10vmax; animation-duration: 38s; opacity: .32; }
+.aurora i:nth-child(4) { background: #1fc8b8; bottom: -20vmax; right: -10vmax; animation-duration: 30s; opacity: .28; }
+@keyframes drift { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(8vmax, 6vmax) scale(1.15); } }
+.wrap { max-width: 1160px; margin: 0 auto; display: grid; gap: 22px; position: relative; z-index: 1; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
 a { color: inherit; }
-.panel { background: var(--stage-2); border: 1px solid var(--stage-3); border-radius: 20px; padding: 18px clamp(16px, 3vw, 26px); }
+.panel { background: var(--glass); border: 1px solid var(--line); border-radius: 22px; padding: 18px clamp(16px, 3vw, 26px); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 18px 50px -24px rgba(0,0,0,.7); min-width: 0; }
 .h2 { font-family: var(--display); font-size: clamp(18px, 3vw, 22px); line-height: 1.1; margin: 0; text-wrap: balance; }
 .h2 b { color: var(--marigold); font-weight: 400; }
 .sub { color: var(--ink-dim); font-size: 14px; margin: 4px 0 0; max-width: 70ch; }
 .sec-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 16px; margin-bottom: 14px; }
 .eyebrow { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-dim); }
+.btn { border: 0; border-radius: 999px; padding: 7px 16px; font-weight: 800; font-size: 14px; cursor: pointer; background: var(--teal); color: #062925; }
+.btn:hover { filter: brightness(1.1); }
+.btn.gold { background: var(--marigold); color: #2a1600; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line-2); }
+.btn:disabled { opacity: .45; cursor: default; filter: none; }
+.empty { color: var(--ink-dim); font-size: 14px; padding: 12px; border: 1px dashed var(--line-2); border-radius: 12px; margin: 0; }
+.row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
 
 /* Top bar */
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-.brand { font-family: var(--display); font-size: clamp(18px, 3.4vw, 26px); letter-spacing: .02em; line-height: 1.1; }
-.brand small { display: block; font-family: var(--body); font-weight: 600; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-dim); }
+.brand { font-family: var(--display); font-size: clamp(18px, 3.4vw, 28px); letter-spacing: .02em; line-height: 1.1; text-shadow: 0 2px 20px rgba(255,61,139,.45); }
+.brand small { display: block; font-family: var(--body); font-weight: 600; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-dim); text-shadow: none; }
 .brand b { color: var(--marigold); font-weight: 400; }
 .chips { display: flex; gap: 8px; flex-wrap: wrap; }
-.chip { display: inline-flex; align-items: center; gap: 8px; background: var(--stage-2); border: 1px solid var(--stage-3); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 600; font-size: 14px; }
+.chip { display: inline-flex; align-items: center; gap: 8px; background: var(--glass); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 600; font-size: 14px; backdrop-filter: blur(10px); }
 .chip:hover { border-color: var(--marigold); }
 .chip[aria-pressed="true"] { border-color: var(--teal); }
-.chip .led { width: 8px; height: 8px; border-radius: 50%; background: var(--stage-3); }
+.chip .led { width: 8px; height: 8px; border-radius: 50%; background: var(--line-2); }
 .chip[aria-pressed="true"] .led { background: var(--teal); box-shadow: 0 0 8px var(--teal); }
 .chip.waiting .led { background: var(--marigold); animation: blink 1s steps(2) infinite; }
 @keyframes blink { 50% { opacity: .2; } }
 
 /* Alerts */
 .alerts { display: flex; flex-wrap: wrap; gap: 10px; }
-.alert { display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 12px; font-weight: 600; font-size: 15px; text-decoration: none; border: 1px solid; }
-.alert.due { background: color-mix(in srgb, var(--teal) 16%, transparent); border-color: var(--teal); }
-.alert.late { background: color-mix(in srgb, var(--rani) 16%, transparent); border-color: var(--rani); }
-.alert.ok { background: color-mix(in srgb, var(--marigold) 12%, transparent); border-color: color-mix(in srgb, var(--marigold) 60%, transparent); }
+.alert { display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 12px; font-weight: 600; font-size: 15px; text-decoration: none; border: 1px solid; backdrop-filter: blur(10px); }
+.alert.due { background: rgba(53,208,191,.18); border-color: var(--teal); }
+.alert.late { background: rgba(255,79,154,.2); border-color: var(--rani); }
+.alert.ok { background: rgba(255,182,39,.14); border-color: rgba(255,182,39,.6); }
 .alert .n { font-family: var(--display); font-size: 18px; line-height: 1; }
 
 /* Clock row */
-.clock-row { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 20px; align-items: stretch; }
-.clock {
-  background: linear-gradient(180deg, #120a20, #1a0e2c); border: 2px solid var(--stage-3); border-radius: 20px;
-  padding: 20px clamp(16px, 4vw, 32px) 22px; display: grid; gap: 12px; justify-items: center; align-content: center; text-align: center;
-  box-shadow: 0 0 0 6px #120a20, 0 20px 60px -20px #000; position: relative; overflow: hidden; min-width: 0;
-}
-.clock::before {
-  content: ""; position: absolute; inset: 7px; border-radius: 14px; pointer-events: none;
-  background-image: radial-gradient(circle, #ffd37a 0 2px, transparent 3px); background-size: 22px 22px;
-  -webkit-mask: linear-gradient(#000 0 0) top/100% 10px no-repeat, linear-gradient(#000 0 0) bottom/100% 10px no-repeat;
-          mask: linear-gradient(#000 0 0) top/100% 10px no-repeat, linear-gradient(#000 0 0) bottom/100% 10px no-repeat;
-  opacity: .55; animation: bulbs 1.2s steps(2) infinite;
-}
+.clock-row { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 22px; align-items: stretch; }
+.clock { background: linear-gradient(180deg, rgba(14,6,34,.92), rgba(26,10,52,.92)); border: 2px solid var(--line-2); border-radius: 22px; padding: 20px clamp(16px, 4vw, 32px) 22px; display: grid; gap: 12px; justify-items: center; align-content: center; text-align: center; box-shadow: 0 0 0 6px rgba(14,6,34,.7), 0 20px 60px -20px #000; position: relative; overflow: hidden; min-width: 0; }
+.clock::before { content: ""; position: absolute; inset: 7px; border-radius: 16px; pointer-events: none; background-image: radial-gradient(circle, #ffd37a 0 2px, transparent 3px); background-size: 22px 22px;
+  -webkit-mask: linear-gradient(#000 0 0) top/100% 10px no-repeat, linear-gradient(#000 0 0) bottom/100% 10px no-repeat; mask: linear-gradient(#000 0 0) top/100% 10px no-repeat, linear-gradient(#000 0 0) bottom/100% 10px no-repeat; opacity: .6; animation: bulbs 1.2s steps(2) infinite; }
 @keyframes bulbs { to { background-position: 11px 0; } }
 .clock-label { font-weight: 800; letter-spacing: .16em; text-transform: uppercase; font-size: 13px; color: var(--ink-dim); }
-.digits { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: clamp(40px, 9vw, 104px); line-height: 1; color: var(--marigold); text-shadow: 0 0 18px rgba(255,182,39,.45); white-space: nowrap; }
+.digits { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: clamp(40px, 9vw, 104px); line-height: 1; color: var(--marigold); text-shadow: 0 0 18px rgba(255,182,39,.5); white-space: nowrap; }
 .digits .cs { font-size: .48em; color: var(--ink-dim); text-shadow: none; }
 .digits .sep { opacity: .7; }
 .clock.red .digits { color: var(--rani); text-shadow: 0 0 22px rgba(255,79,154,.6); animation: pulse 1s ease-in-out infinite; }
 @keyframes pulse { 50% { transform: scale(1.025); } }
 .units { display: flex; gap: clamp(18px, 5vw, 60px); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-dim); margin-top: -4px; }
-.bar { width: min(600px, 100%); height: 10px; background: var(--stage-3); border-radius: 999px; overflow: hidden; }
+.bar { width: min(600px, 100%); height: 10px; background: rgba(255,255,255,.1); border-radius: 999px; overflow: hidden; }
 .bar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--rani), var(--marigold)); border-radius: inherit; transition: width .5s linear; }
 .clock-note { font-size: 15px; max-width: 58ch; margin: 0; }
 .clock-note strong { color: var(--marigold); }
-.modes { display: inline-flex; background: var(--stage-2); border: 1px solid var(--stage-3); border-radius: 999px; padding: 3px; }
+.modes { display: inline-flex; background: rgba(255,255,255,.06); border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
 .modes button { border: 0; background: transparent; padding: 5px 14px; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 14px; color: var(--ink-dim); }
 .modes button[aria-pressed="true"] { background: var(--marigold); color: #2a1600; }
-
-.wall { display: grid; justify-items: center; align-content: center; gap: 6px; background: var(--stage-2); border: 1px solid var(--stage-3); border-radius: 20px; padding: 14px; }
+.wall { display: grid; justify-items: center; align-content: center; gap: 6px; padding: 14px; }
 .wall svg { width: 100%; max-width: 190px; height: auto; }
 .wall .time { font-family: var(--mono); font-size: 20px; font-variant-numeric: tabular-nums; }
 .wall .tz { font-size: 12px; color: var(--ink-dim); letter-spacing: .12em; text-transform: uppercase; }
@@ -101,64 +109,107 @@ a { color: inherit; }
 @keyframes swing { 0%, 100% { transform: rotate(16deg); } 50% { transform: rotate(-16deg); } }
 .hand { transition: transform .25s cubic-bezier(.4, 2.2, .5, 1); transform-origin: 100px 84px; }
 
+/* Focus timer */
+.focus { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; align-items: center; }
+.focus svg.dancer { width: 120px; height: auto; }
+.focus-time { font-family: var(--mono); font-size: clamp(44px, 8vw, 64px); line-height: 1; font-variant-numeric: tabular-nums; color: var(--teal); text-shadow: 0 0 16px rgba(53,208,191,.45); }
+.focus-ring { height: 8px; background: rgba(255,255,255,.1); border-radius: 999px; overflow: hidden; margin: 8px 0 12px; }
+.focus-ring i { display: block; height: 100%; width: 0; background: var(--teal); border-radius: inherit; }
+.focus-ctrl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.focus-meta { font-size: 14px; color: var(--ink-dim); margin: 10px 0 0; }
+.focus-meta b { color: var(--ink); }
+
+/* Streak */
+.streak-big { display: flex; align-items: center; gap: 14px; }
+.flame { font-size: 44px; line-height: 1; transition: font-size .4s; filter: drop-shadow(0 0 14px rgba(255,138,61,.7)); }
+.flame.out { filter: grayscale(1) opacity(.45); }
+.streak-num { font-family: var(--display); font-size: 40px; line-height: 1; color: var(--marigold); }
+.streak-txt { font-size: 14px; color: var(--ink-dim); }
+.strip { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-top: 14px; }
+.sday { display: grid; justify-items: center; gap: 2px; padding: 6px 2px; border-radius: 10px; background: var(--glass-2); border: 1px solid var(--line); }
+.sday .e { font-size: 20px; line-height: 1.1; }
+.sday .e.miss { filter: grayscale(1) opacity(.35); }
+.sday small { font-size: 11px; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+.sday.today { border-color: var(--marigold); }
+.float-streak { position: fixed; z-index: 40; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px 8px 10px; border-radius: 999px; text-decoration: none;
+  background: linear-gradient(135deg, rgba(255,61,139,.9), rgba(255,138,61,.92)); color: #fff; font-weight: 800; box-shadow: 0 10px 30px -8px rgba(255,61,139,.7); }
+.float-streak .f { font-size: 24px; line-height: 1; }
+.float-streak.cold { background: rgba(60,50,90,.92); box-shadow: none; }
+.float-streak.cold .f { filter: grayscale(1); }
+.float-streak small { font-weight: 600; opacity: .9; }
+
 /* Stage + ladder */
 .stage { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 22px; align-items: center; }
 .stage-dancer { position: relative; display: grid; place-items: center; }
-.stage-dancer::after { content: ""; position: absolute; bottom: 4px; width: 70%; height: 22px; background: radial-gradient(closest-side, rgba(255,182,39,.35), transparent); }
+.stage-dancer::after { content: ""; position: absolute; bottom: 4px; width: 70%; height: 22px; background: radial-gradient(closest-side, rgba(255,182,39,.4), transparent); }
 .stage-dancer svg { width: 100%; max-width: 190px; height: auto; position: relative; z-index: 1; }
 .stage-info { display: grid; gap: 12px; min-width: 0; }
-.bubble { background: var(--ink); color: #2a1600; border-radius: 16px; padding: 12px 16px; font-weight: 600; position: relative; max-width: 52ch; }
+.bubble { background: var(--ink); color: #2a1600; border-radius: 16px; padding: 12px 16px; font-weight: 600; position: relative; max-width: 54ch; }
 .bubble::before { content: ""; position: absolute; left: -10px; top: 22px; border: 10px solid transparent; border-right-color: var(--ink); border-left: 0; }
 .stats { display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: baseline; }
-.big { font-family: var(--display); font-size: clamp(32px, 6vw, 48px); line-height: 1; color: var(--marigold); font-variant-numeric: tabular-nums; }
+.big { font-family: var(--display); font-size: clamp(30px, 5.5vw, 46px); line-height: 1; color: var(--marigold); font-variant-numeric: tabular-nums; }
 .big span { font-size: .45em; color: var(--ink-dim); }
 .stat-label { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-dim); }
 .pace { font-size: 15px; margin: 0; }
 .pace b { color: var(--teal); }
 .save-note { font-size: 13px; color: var(--ink-dim); margin: 0; }
-.ladder-wrap { margin-top: 18px; border-top: 1px dashed var(--stage-3); padding-top: 14px; }
+.ladder-wrap { margin-top: 18px; border-top: 1px dashed var(--line-2); padding-top: 14px; }
 .ladder-wrap svg { width: 100%; height: auto; display: block; overflow: visible; }
 .ladder-climber { transition: transform .7s cubic-bezier(.5, -0.3, .4, 1.4); }
 .hop { animation: hop .7s ease-out; }
 @keyframes hop { 0% { transform: translateY(0); } 40% { transform: translateY(-46px); } 100% { transform: translateY(0); } }
 
-/* Revision */
+/* Revision + log */
 .two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .list { display: grid; gap: 8px; }
-.rev-item { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 12px; border-radius: 12px; background: var(--stage); border: 1px solid var(--stage-3); }
+.rev-item { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 12px; border-radius: 12px; background: var(--glass-2); border: 1px solid var(--line); }
 .rev-item.late { border-color: var(--rani); }
 .rev-item .what { flex: 1 1 180px; min-width: 0; }
 .rev-item .what b { display: block; }
 .rev-item .what span { font-size: 13px; color: var(--ink-dim); }
 .rev-item.late .what span { color: var(--rani); }
 .swatch { width: 10px; height: 34px; border-radius: 4px; flex: none; }
-.btn { border: 0; border-radius: 999px; padding: 6px 14px; font-weight: 800; font-size: 14px; cursor: pointer; background: var(--teal); color: #062925; }
-.btn:hover { filter: brightness(1.1); }
-.empty { color: var(--ink-dim); font-size: 14px; padding: 12px; border: 1px dashed var(--stage-3); border-radius: 12px; margin: 0; }
 .up-day { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-dim); margin-top: 6px; }
 .up-row { display: flex; gap: 8px; align-items: center; font-size: 14px; }
 .curve { font-size: 13px; color: var(--ink-dim); margin: 12px 0 0; }
 .curve b { color: var(--teal); }
-
-/* Accountability log */
-.log-card { background: var(--stage); border: 1px solid var(--stage-3); border-radius: 14px; padding: 12px; display: grid; gap: 8px; min-width: 0; }
+.log-card { background: var(--glass-2); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: grid; gap: 8px; min-width: 0; }
 .log-card.missing { border-color: var(--rani); }
 .log-top { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: baseline; }
-.log-top b { font-size: 16px; }
 .log-top span { font-size: 13px; color: var(--ink-dim); }
 .log-card.missing .log-top span { color: var(--rani); font-weight: 600; }
-textarea { width: 100%; min-height: 110px; resize: vertical; background: var(--stage-2); border: 1px solid var(--stage-3); border-radius: 10px; padding: 10px; line-height: 1.4; }
-textarea::placeholder { color: color-mix(in srgb, var(--ink-dim) 70%, transparent); }
+textarea { width: 100%; min-height: 110px; resize: vertical; background: rgba(255,255,255,.05); border: 1px solid var(--line-2); border-radius: 10px; padding: 10px; line-height: 1.4; }
+textarea::placeholder, input::placeholder { color: rgba(205,191,230,.6); }
 .acts { display: flex; flex-wrap: wrap; gap: 6px; }
-.act { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--stage-3); }
-.streak { font-family: var(--display); color: var(--marigold); font-size: 18px; }
+.act { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: rgba(255,255,255,.1); }
 details { margin-top: 12px; }
 summary { cursor: pointer; font-weight: 600; color: var(--ink-dim); }
 .hist { display: grid; gap: 6px; margin-top: 8px; }
 .hist div { font-size: 14px; display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 10px; }
 .hist div span:first-child { color: var(--ink-dim); font-variant-numeric: tabular-nums; }
 
-/* Month boards */
+/* Daily calendar */
+.cal { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.cal-month { --m: var(--marigold); background: var(--glass-2); border: 1px solid var(--line); border-radius: 16px; padding: 12px; display: grid; gap: 8px; min-width: 0; }
+.cal-month.full { border-color: var(--m); box-shadow: 0 0 0 1px var(--m), 0 0 24px -8px var(--m); }
+.cal-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.cal-name { font-family: var(--display); font-size: 18px; line-height: 1; }
+.cal-count { font-size: 13px; color: var(--ink-dim); font-variant-numeric: tabular-nums; margin-left: auto; }
+.cal-all { border: 1.5px solid var(--line-2); background: transparent; border-radius: 999px; padding: 2px 10px; font-size: 12px; font-weight: 800; cursor: pointer; }
+.cal-all:hover, .wkbtn:hover, .day:hover { border-color: var(--m); }
+.cal-all.confirm, .wkbtn.confirm { border-color: var(--rani); color: var(--rani); }
+.wkrow { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+.wkbtn { width: 40px; height: 30px; border-radius: 8px; border: 1.5px dashed var(--line-2); background: transparent; font-size: 12px; font-weight: 800; cursor: pointer; flex: none; }
+.wkbtn.on { border: 1.5px solid var(--m); color: var(--m); }
+.day { width: 30px; height: 30px; border-radius: 8px; border: 1.5px solid var(--line); background: rgba(255,255,255,.03); font-size: 13px; font-weight: 600; cursor: pointer; font-variant-numeric: tabular-nums; padding: 0; }
+.day.on { background: var(--m); border-color: var(--m); color: #1a0c33; font-weight: 800; }
+.day.pop, .ico.pop { animation: pop .45s ease-out; }
+@keyframes pop { 40% { transform: scale(1.35) rotate(-8deg); } }
+.cal-prog { height: 6px; background: rgba(255,255,255,.08); border-radius: 999px; overflow: hidden; }
+.cal-prog i { display: block; height: 100%; background: var(--m); border-radius: inherit; }
+
+/* Week boards */
 .months { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .month { --m: var(--marigold); display: grid; gap: 10px; align-content: start; }
 .month.complete { border-color: var(--m); box-shadow: 0 0 0 1px var(--m), 0 0 30px -8px var(--m); }
@@ -167,13 +218,13 @@ summary { cursor: pointer; font-weight: 600; color: var(--ink-dim); }
 .month-name { font-family: var(--display); font-size: 20px; line-height: 1; }
 .month-sub { font-size: 12px; color: var(--ink-dim); letter-spacing: .08em; text-transform: uppercase; }
 .dots { margin-left: auto; display: flex; gap: 4px; }
-.dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--stage-3); }
+.dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--line-2); }
 .dots i.on { background: var(--m); }
 .rows { display: grid; gap: 8px; }
-.cols, .row { display: grid; grid-template-columns: minmax(0, 1fr) 92px 150px 52px; gap: 8px; }
+.cols, .row { display: grid; grid-template-columns: minmax(0, 1fr) 100px 150px 52px; gap: 8px; }
 .cols { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-dim); padding: 0 9px; }
 .cols span:last-child { text-align: center; }
-.row { align-items: center; padding: 8px; border-radius: 12px; background: var(--stage); border: 1px solid var(--stage-3); }
+.row { align-items: center; padding: 8px; border-radius: 12px; background: var(--glass-2); border: 1px solid var(--line); }
 .row-name { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .row-name .ico { width: 34px; height: 34px; color: var(--ink-dim); flex: none; }
 .row.studied .row-name .ico { color: var(--m); }
@@ -181,24 +232,73 @@ summary { cursor: pointer; font-weight: 600; color: var(--ink-dim); }
 .row-name span { font-size: 12px; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
 .ico .check { opacity: 0; transition: opacity .2s; }
 .row.studied .ico .check { opacity: 1; }
-.pill { border: 2px dashed var(--stage-3); background: transparent; border-radius: 999px; padding: 4px 6px; font-weight: 800; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.pill { border: 2px dashed var(--line-2); background: transparent; border-radius: 999px; padding: 4px 6px; font-weight: 800; font-size: 13px; cursor: pointer; white-space: nowrap; }
 .pill:hover { border-color: var(--m); }
 .pill.on { border: 2px solid var(--m); background: var(--m); color: #1c1030; }
 .pill.confirm { border: 2px solid var(--rani); background: transparent; color: var(--rani); }
 .mockbox { display: flex; align-items: center; gap: 6px; }
 .mockbox .pill { flex: 1; }
-.score { width: 46px; background: var(--stage-2); border: 1px solid var(--stage-3); border-radius: 8px; padding: 3px 4px; text-align: center; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
+.score { width: 46px; background: rgba(255,255,255,.05); border: 1px solid var(--line-2); border-radius: 8px; padding: 3px 4px; text-align: center; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
 .score::-webkit-inner-spin-button { -webkit-appearance: none; }
 .score:disabled { opacity: .35; }
 .mockbox small { color: var(--ink-dim); font-size: 12px; }
 .revdots { display: flex; gap: 4px; justify-content: center; }
-.revdots i { width: 11px; height: 11px; border-radius: 3px; border: 2px solid var(--stage-3); }
+.revdots i { width: 11px; height: 11px; border-radius: 3px; border: 2px solid var(--line-2); }
 .revdots i.on { background: var(--teal); border-color: var(--teal); }
 .revdots i.due { border-color: var(--teal); animation: blink 1.2s steps(2) infinite; }
 
+/* Mock score chart */
+.chart-box { position: relative; }
+.chart-box svg { width: 100%; height: auto; display: block; }
+.tip { position: absolute; pointer-events: none; background: var(--ink); color: #1c1030; font-size: 13px; font-weight: 700; padding: 5px 9px; border-radius: 8px; transform: translate(-50%, calc(-100% - 12px)); white-space: nowrap; }
+.chart-meta { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; font-size: 14px; color: var(--ink-dim); margin-top: 8px; }
+.chart-meta b { color: var(--ink); }
+.target-in { width: 56px; background: rgba(255,255,255,.05); border: 1px solid var(--line-2); border-radius: 8px; padding: 3px 6px; text-align: center; }
+table.tbl { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.tbl th, .tbl td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+.tbl-wrap { overflow-x: auto; }
+
+/* Memes */
+.memes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
+.meme { display: grid; gap: 4px; justify-items: center; padding: 12px 8px; border-radius: 14px; border: 1.5px solid var(--line); background: var(--glass-2); cursor: pointer; text-align: center; }
+.meme:hover { border-color: var(--rani); }
+.meme.playing { border-color: var(--rani); box-shadow: 0 0 20px -4px var(--rani); }
+.meme .mi { font-size: 26px; line-height: 1; }
+.meme b { font-size: 14px; line-height: 1.15; overflow-wrap: anywhere; }
+.meme small { font-size: 12px; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+.meme-set { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 22px; margin-top: 10px; }
+.meme-set label { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 170px); gap: 10px; align-items: center; font-size: 14px; }
+select, .name-in { background: rgba(255,255,255,.06); border: 1px solid var(--line-2); border-radius: 8px; padding: 4px 8px; min-width: 0; width: 100%; }
+select option { background: #1c1030; }
+.names { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+
+/* Modal (quiz) */
+.modal[hidden] { display: none; }
+.modal { position: fixed; inset: 0; z-index: 45; display: grid; place-items: center; background: rgba(10,4,30,.78); backdrop-filter: blur(6px);
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.sheet { width: min(620px, 100%); max-height: 100%; overflow: auto; background: #22124a; border: 1px solid var(--line-2); border-radius: 20px; padding: 18px 20px 20px; display: grid; gap: 12px; }
+.sheet-head { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
+.x { border: 0; background: rgba(255,255,255,.08); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 20px; line-height: 1; flex: none; }
+.q-prog { display: flex; gap: 5px; }
+.q-prog i { flex: 1; height: 6px; border-radius: 999px; background: rgba(255,255,255,.12); }
+.q-prog i.ok { background: var(--teal); } .q-prog i.bad { background: var(--rani); } .q-prog i.cur { background: var(--marigold); }
+.q-text { font-size: 18px; font-weight: 700; line-height: 1.35; }
+.opts { display: grid; gap: 8px; }
+.opt { text-align: left; border: 1.5px solid var(--line-2); background: rgba(255,255,255,.04); border-radius: 12px; padding: 10px 12px; cursor: pointer; font-weight: 600; }
+.opt:hover:not(:disabled) { border-color: var(--marigold); }
+.opt.right { border-color: var(--teal); background: rgba(53,208,191,.18); }
+.opt.wrong { border-color: var(--rani); background: rgba(255,79,154,.18); }
+.why { font-size: 14px; color: var(--ink-dim); background: rgba(255,255,255,.05); border-radius: 10px; padding: 8px 10px; margin: 0; }
+.note { font-size: 14px; color: var(--ink-dim); margin: 0; }
+.note.err { color: var(--rani); }
+.acts-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.self-list { display: grid; gap: 8px; }
+.self-list input { background: rgba(255,255,255,.05); border: 1px solid var(--line-2); border-radius: 10px; padding: 8px 10px; width: 100%; }
+.result-big { font-family: var(--display); font-size: 44px; line-height: 1; color: var(--marigold); }
+.toast { position: fixed; left: 50%; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 60; background: var(--ink); color: #1c1030; font-weight: 700; padding: 8px 16px; border-radius: 999px; box-shadow: 0 10px 30px -10px #000; max-width: calc(100% - 32px); text-align: center; }
+.toast[hidden] { display: none; }
+
 /* Dance moves */
-.boogie { animation: boogie .42s ease-in-out 5; }
-@keyframes boogie { 0%,100% { transform: translateY(0) rotate(0) scale(1); } 25% { transform: translateY(-10px) rotate(-18deg) scale(1.15); } 50% { transform: translateY(0) scale(.95); } 75% { transform: translateY(-10px) rotate(18deg) scale(1.15); } }
 .dancer .armL { transform-origin: 74px 116px; }
 .dancer .armR { transform-origin: 126px 116px; }
 .dancer .legL { transform-origin: 88px 182px; }
@@ -209,6 +309,11 @@ summary { cursor: pointer; font-weight: 600; color: var(--ink-dim); }
 .dancer.idle .armR { animation: wave 2.4s ease-in-out infinite; }
 @keyframes idle { 50% { transform: translateY(-4px); } }
 @keyframes wave { 0%, 60%, 100% { transform: rotate(0); } 70% { transform: rotate(-30deg); } 80% { transform: rotate(-10deg); } 90% { transform: rotate(-30deg); } }
+.dancer.reading .armR { animation: readR 3s ease-in-out infinite; }
+.dancer.reading .armL { transform: rotate(95deg); }
+.dancer.reading .head { animation: nod 3s ease-in-out infinite; }
+@keyframes readR { 0%, 100% { transform: rotate(-118deg); } 50% { transform: rotate(-110deg); } }
+@keyframes nod { 0%, 100% { transform: rotate(4deg); } 50% { transform: rotate(9deg) translateY(2px); } }
 .dancer.move-a .whole { animation: bob .42s ease-in-out infinite; }
 .dancer.move-a .armL { animation: pumpL .42s ease-in-out infinite; }
 .dancer.move-a .armR { animation: pumpR .42s ease-in-out infinite; }
@@ -239,11 +344,9 @@ summary { cursor: pointer; font-weight: 600; color: var(--ink-dim); }
 
 /* Party overlay */
 .party[hidden] { display: none; }
-.party {
-  position: fixed; inset: 0; z-index: 50; cursor: pointer; display: grid; place-items: center; text-align: center;
-  background: radial-gradient(600px 520px at 50% 35%, rgba(255,182,39,.28), transparent 70%), rgba(18,10,32,.94);
-  padding: max(20px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
-}
+.party { position: fixed; inset: 0; z-index: 50; cursor: pointer; display: grid; place-items: center; text-align: center;
+  background: radial-gradient(600px 520px at 50% 35%, rgba(255,182,39,.3), transparent 70%), rgba(14,6,38,.94);
+  padding: max(20px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 .party canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .party-inner { position: relative; display: grid; gap: 10px; justify-items: center; }
 .party-inner svg { width: min(290px, 60vw); height: auto; }
@@ -253,24 +356,28 @@ summary { cursor: pointer; font-weight: 600; color: var(--ink-dim); }
 .party-hint { font-size: 13px; color: var(--ink-dim); }
 footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 80ch; margin: 0 auto; }
 
+@media (max-width: 960px) { .cal { grid-template-columns: repeat(2, minmax(0, 1fr)); } .memes, .names { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 860px) {
-  .clock-row { grid-template-columns: minmax(0, 1fr); }
+  .clock-row, .row2, .months, .two, .meme-set { grid-template-columns: minmax(0, 1fr); }
   .wall { grid-template-columns: 110px minmax(0, 1fr); justify-items: start; text-align: left; column-gap: 16px; }
   .wall svg { max-width: 110px; grid-row: span 2; }
-  .months, .two { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 560px) {
+  .cal { grid-template-columns: minmax(0, 1fr); }
+  .memes, .names { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .stage { grid-template-columns: minmax(0, 1fr); justify-items: center; }
   .stage-dancer svg { max-width: 140px; }
   .bubble::before { left: 40px; top: -10px; border: 10px solid transparent; border-bottom-color: var(--ink); border-top: 0; }
   .cols { display: none; }
   .row { grid-template-columns: minmax(0, 1fr) auto; }
   .row .revdots { justify-content: end; }
+  .focus { grid-template-columns: 84px minmax(0, 1fr); }
+  .focus svg.dancer { width: 84px; }
+  .meme-set label { grid-template-columns: minmax(0, 1fr); gap: 4px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .clock::before, .clock.red .digits, .dancer.idle .whole, .dancer.idle .armR, .revdots i.due, .chip.waiting .led { animation: none; }
+  .aurora i, .clock::before, .clock.red .digits, .dancer.idle .whole, .dancer.idle .armR, .revdots i.due, .chip.waiting .led { animation: none; }
   .pendulum { animation-duration: 4s; }
-  .boogie { animation-iteration-count: 1; }
   .dancer.move-a *, .dancer.move-b *, .dancer.move-c * { animation-duration: 1.6s !important; }
 }
 </style>
@@ -290,12 +397,15 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
   </defs>
 </svg>
 
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+
 <div class="wrap">
   <header class="top">
     <div class="brand"><small>SBI Clerk Mains · 23 Nov 2026</small>Current Affairs <b>Dance Floor</b></div>
     <div class="chips">
       <button class="chip" id="calmBtn" type="button" aria-pressed="false"><span class="led"></span><span id="calmLabel">Calm music</span></button>
       <button class="chip" id="songBtn" type="button" aria-pressed="true"><span class="led"></span><span id="songLabel">Party songs on</span></button>
+      <button class="chip" id="memeBtn" type="button" aria-pressed="true"><span class="led"></span><span id="memeLabel">Memes on</span></button>
     </div>
   </header>
 
@@ -313,16 +423,11 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
         <button type="button" id="modeFull" aria-pressed="false">Till exam</button>
       </div>
     </section>
-
-    <section class="wall" aria-label="Pendulum clock, India time">
+    <section class="wall panel" aria-label="Pendulum clock, India time">
       <svg viewBox="0 0 200 300" role="img" aria-label="Pendulum wall clock">
         <path d="M30 60 Q30 14 100 10 Q170 14 170 60 V280 Q170 292 158 292 H42 Q30 292 30 280 Z" fill="var(--wood)" stroke="var(--wood-2)" stroke-width="4"/>
         <rect x="52" y="160" width="96" height="120" rx="10" fill="#120a20" stroke="var(--wood-2)" stroke-width="3"/>
-        <g class="pendulum">
-          <rect x="98" y="168" width="4" height="78" fill="#d8a54a"/>
-          <circle cx="100" cy="252" r="16" fill="#ffb627" stroke="#b77d10" stroke-width="3"/>
-          <circle cx="95" cy="247" r="4" fill="#ffe2a0"/>
-        </g>
+        <g class="pendulum"><rect x="98" y="168" width="4" height="78" fill="#d8a54a"/><circle cx="100" cy="252" r="16" fill="#ffb627" stroke="#b77d10" stroke-width="3"/><circle cx="95" cy="247" r="4" fill="#ffe2a0"/></g>
         <circle cx="100" cy="84" r="60" fill="#fbf1e3" stroke="var(--wood-2)" stroke-width="5"/>
         <g id="ticks"></g>
         <text x="100" y="45" text-anchor="middle" font-family="Bungee, sans-serif" font-size="14" fill="#1c1030">12</text>
@@ -338,6 +443,34 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
     </section>
   </div>
 
+  <div class="row2">
+    <section class="panel" id="focus" aria-labelledby="focusTitle">
+      <div class="sec-head"><div><h2 class="h2" id="focusTitle">Focus <b>timer</b></h2><p class="sub">Chintu reads the newspaper with you. He only dances when the session ends.</p></div></div>
+      <div class="focus">
+        <div id="focusDancer"></div>
+        <div>
+          <div class="focus-time" id="focusTime" aria-live="off">25:00</div>
+          <div class="focus-ring" aria-hidden="true"><i id="focusBar"></i></div>
+          <div class="focus-ctrl">
+            <div class="modes" role="group" aria-label="Session length">
+              <button type="button" id="f25" aria-pressed="true">25 min</button>
+              <button type="button" id="f50" aria-pressed="false">50 min</button>
+            </div>
+            <button type="button" class="btn gold" id="fStart">Start</button>
+            <button type="button" class="btn ghost" id="fReset">Reset</button>
+          </div>
+          <p class="focus-meta" id="focusMeta"></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="streakBox" aria-labelledby="streakTitle">
+      <div class="sec-head"><div><h2 class="h2" id="streakTitle">Your <b>streak</b></h2><p class="sub">A day counts when you tick anything, finish a focus session or write in your log. Miss a day and the fire goes out.</p></div></div>
+      <div class="streak-big"><span class="flame" id="flame" aria-hidden="true">🔥</span><div><div class="streak-num" id="streakNum">0</div><div class="streak-txt" id="streakTxt">days in a row</div></div></div>
+      <div class="strip" id="strip" aria-label="Last 14 days"></div>
+    </section>
+  </div>
+
   <section class="panel" aria-label="Your progress">
     <div class="stage">
       <div class="stage-dancer" id="stageDancer"></div>
@@ -346,7 +479,7 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
         <div class="stats">
           <div><div class="big" id="doneCount">0<span> / 16</span></div><div class="stat-label">weeks studied</div></div>
           <div><div class="big" id="mockCount">0<span> / 16</span></div><div class="stat-label">mocks taken</div></div>
-          <div><div class="big" id="avgScore">–<span> / 50</span></div><div class="stat-label">avg mock score</div></div>
+          <div><div class="big" id="dayCount">0<span> / 184</span></div><div class="stat-label">news days read</div></div>
         </div>
         <p class="pace" id="pace"></p>
         <p class="save-note" id="saveNote">Connecting to your saved progress…</p>
@@ -362,9 +495,7 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
   </section>
 
   <section class="panel" id="revise" aria-labelledby="revTitle">
-    <div class="sec-head">
-      <div><h2 class="h2" id="revTitle">Revision <b>reminders</b></h2><p class="sub">You forget a week fastest in the first few days. Each week you study comes back for revision 1, 3 and 7 days later.</p></div>
-    </div>
+    <div class="sec-head"><div><h2 class="h2" id="revTitle">Revision <b>reminders</b></h2><p class="sub">You forget a week fastest in the first few days. Each week you study comes back for revision 1, 3 and 7 days later.</p></div></div>
     <div class="two">
       <div><div class="eyebrow" style="margin-bottom:8px">Revise today</div><div class="list" id="dueList"></div></div>
       <div><div class="eyebrow" style="margin-bottom:8px">Coming up</div><div class="list" id="upList"></div></div>
@@ -373,28 +504,54 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
   </section>
 
   <section class="panel" id="log" aria-labelledby="logTitle">
-    <div class="sec-head">
-      <div><h2 class="h2" id="logTitle">Daily <b>accountability</b></h2><p class="sub">Write what you actually studied. Be honest, even if it's "nothing". Your ticks for the day show under each note.</p></div>
-      <div class="streak" id="streak">0-day streak</div>
-    </div>
+    <div class="sec-head"><div><h2 class="h2" id="logTitle">Daily <b>accountability</b></h2><p class="sub">Write what you actually studied. Be honest, even if it's "nothing". Your ticks for the day show under each note.</p></div></div>
     <div class="two">
-      <div class="log-card" id="yCard">
-        <div class="log-top"><b>Yesterday</b><span id="yDate"></span></div>
-        <textarea id="logYesterday" placeholder="What did you study yesterday? Which months, which sources, how long?"></textarea>
-        <div class="acts" id="yActs"></div>
-      </div>
-      <div class="log-card" id="tCard">
-        <div class="log-top"><b>Today</b><span id="tDate"></span></div>
-        <textarea id="logToday" placeholder="For example: Finished August Week 2 from the monthly PDF, made notes on banking news, took the mock, 2.5 hours."></textarea>
-        <div class="acts" id="tActs"></div>
-      </div>
+      <div class="log-card" id="yCard"><div class="log-top"><b>Yesterday</b><span id="yDate"></span></div>
+        <textarea id="logYesterday" placeholder="What did you study yesterday? Which months, which sources, how long?"></textarea><div class="acts" id="yActs"></div></div>
+      <div class="log-card" id="tCard"><div class="log-top"><b>Today</b><span id="tDate"></span></div>
+        <textarea id="logToday" placeholder="For example: Read 1–7 Aug news, finished August Week 1 quiz and mock, 2 focus sessions."></textarea><div class="acts" id="tActs"></div></div>
     </div>
     <details><summary>Earlier days</summary><div class="hist" id="hist"></div></details>
   </section>
 
-  <section class="months" id="months" aria-label="July to October, week by week"></section>
+  <section class="panel" id="calendar" aria-labelledby="calTitle">
+    <div class="sec-head"><div><h2 class="h2" id="calTitle">Daily news <b>calendar</b></h2><p class="sub">Tap a date when you've read that day's news. Tap W1–W4 to mark the whole week, or "All" for the whole month. May to October, every day.</p></div>
+      <div class="eyebrow" id="calTotal">0 of 184 days</div></div>
+    <div class="cal" id="cal"></div>
+  </section>
 
-  <footer>Weeks follow calendar dates: W1 is 1–7, W2 is 8–14, W3 is 15–21, W4 is 22 to month end. Mock scores are out of 50, the size of the General/Financial Awareness section. Tap a filled button twice to undo it. All music is original and made in your browser.</footer>
+  <section id="weeks" aria-labelledby="weeksTitle">
+    <div class="sec-head" style="padding: 0 4px"><div><h2 class="h2" id="weeksTitle">Weekly <b>study + mock</b></h2><p class="sub">To mark a week as studied, pass its 5-question quiz first. No quiz, no dance.</p></div></div>
+    <div class="months" id="months"></div>
+  </section>
+
+  <section class="panel" id="chart" aria-labelledby="chartTitle">
+    <div class="sec-head"><div><h2 class="h2" id="chartTitle">Mock <b>scores</b></h2><p class="sub">Your General/Financial Awareness mock score (out of 50) for each week, in order.</p></div></div>
+    <div class="chart-box" id="chartBox"><svg id="chartSvg" viewBox="0 0 760 280" role="img" aria-label="Mock scores by week"></svg><div class="tip" id="tip" hidden></div></div>
+    <div class="chart-meta">
+      <label>Target <input class="target-in" id="target" type="number" min="0" max="50" inputmode="numeric"> /50</label>
+      <span id="chartSummary"></span>
+    </div>
+    <details><summary>Show as table</summary><div class="tbl-wrap"><table class="tbl" id="chartTable"></table></div></details>
+  </section>
+
+  <section class="panel" id="memes" aria-labelledby="memeTitle">
+    <div class="sec-head"><div><h2 class="h2" id="memeTitle">Meme <b>soundboard</b></h2><p class="sub">Your 10 sounds. Tap one to play it. Choose below which meme plays for each moment, and rename them so you remember which is which.</p></div></div>
+    <div class="memes" id="memeGrid"></div>
+    <details open><summary>Which meme plays when</summary><div class="meme-set" id="memeSet"></div></details>
+    <details><summary>Rename memes</summary><div class="names" id="memeNames"></div></details>
+  </section>
+
+  <footer>Weeks follow calendar dates: W1 is 1–7, W2 is 8–14, W3 is 15–21, W4 is 22 to month end. Mock scores are out of 50, the size of the General/Financial Awareness section. Tap a filled button twice to undo it. The party songs and calm music are original and made in your browser.</footer>
+</div>
+
+<a class="float-streak cold" id="floatStreak" href="#streakBox" aria-label="Your streak"><span class="f">🔥</span><span id="floatNum">0</span><small id="floatTxt">day streak</small></a>
+
+<div class="modal" id="quiz" hidden role="dialog" aria-modal="true" aria-labelledby="quizTitle">
+  <div class="sheet">
+    <div class="sheet-head"><div><div class="eyebrow">Prove it before you tick it</div><h2 class="h2" id="quizTitle">Quiz</h2></div><button type="button" class="x" id="quizClose" aria-label="Close quiz">×</button></div>
+    <div id="quizBody" style="display:grid; gap:12px"></div>
+  </div>
 </div>
 
 <div class="party" id="party" hidden role="dialog" aria-modal="true" aria-labelledby="partyTitle">
@@ -407,9 +564,13 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
     <div class="party-hint">Tap anywhere to get back to work</div>
   </div>
 </div>
+<div class="toast" id="toast" hidden role="status"></div>
 
 <script>
 (() => {
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
   // ---------- Character (inlined so every limb can animate) ----------
   const DANCER = `
     <ellipse cx="100" cy="246" rx="52" ry="8" fill="rgba(0,0,0,.35)"/>
@@ -417,8 +578,6 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
       <g class="legL"><path d="M88 182 L80 236" stroke="#2b2f6b" stroke-width="16" stroke-linecap="round" fill="none"/><ellipse cx="76" cy="238" rx="13" ry="7" fill="#ff4f9a"/></g>
       <g class="legR"><path d="M112 182 L120 236" stroke="#2b2f6b" stroke-width="16" stroke-linecap="round" fill="none"/><ellipse cx="124" cy="238" rx="13" ry="7" fill="#ff4f9a"/></g>
       <g class="armL"><path d="M74 116 L52 160" stroke="#ffb627" stroke-width="14" stroke-linecap="round" fill="none"/><circle cx="50" cy="164" r="9" fill="#a8653a"/></g>
-      <g class="armR"><path d="M126 116 L148 160" stroke="#ffb627" stroke-width="14" stroke-linecap="round" fill="none"/><circle cx="150" cy="164" r="9" fill="#a8653a"/>
-        <g transform="translate(138 160) rotate(-18)"><rect x="0" y="-26" width="34" height="28" rx="3" fill="#fbf1e3" stroke="#2a1600" stroke-width="2"/><path d="M5 -20 H29 M5 -14 H29 M5 -8 H20" stroke="#2a1600" stroke-width="2.4" stroke-linecap="round"/></g></g>
       <path d="M72 112 Q100 100 128 112 L134 188 Q100 198 66 188 Z" fill="#ffb627"/>
       <path d="M100 108 V150" stroke="#c97f00" stroke-width="3" stroke-linecap="round"/>
       <circle cx="100" cy="128" r="2.8" fill="#c97f00"/><circle cx="100" cy="140" r="2.8" fill="#c97f00"/>
@@ -434,16 +593,17 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
         <path d="M88 86 Q100 96 112 86" stroke="#1d1030" stroke-width="3.4" fill="none" stroke-linecap="round"/>
         <circle cx="78" cy="84" r="4" fill="#ff4f9a" opacity=".5"/><circle cx="122" cy="84" r="4" fill="#ff4f9a" opacity=".5"/>
       </g>
+      <g class="armR"><path d="M126 116 L148 160" stroke="#ffb627" stroke-width="14" stroke-linecap="round" fill="none"/><circle cx="150" cy="164" r="9" fill="#a8653a"/>
+        <g transform="translate(138 160) rotate(-18)"><rect x="0" y="-26" width="34" height="28" rx="3" fill="#fbf1e3" stroke="#2a1600" stroke-width="2"/><path d="M5 -20 H29 M5 -14 H29 M5 -8 H20" stroke="#2a1600" stroke-width="2.4" stroke-linecap="round"/></g></g>
     </g>`;
-  document.getElementById("stageDancer").innerHTML = `<svg class="dancer idle" id="stageSvg" viewBox="0 0 200 260" role="img" aria-label="Chintu, your study buddy">${DANCER}</svg>`;
-  document.getElementById("partyDancerBox").innerHTML = `<svg class="dancer move-a" id="partyDancer" viewBox="0 0 200 260" aria-hidden="true">${DANCER}</svg>`;
+  $("stageDancer").innerHTML = `<svg class="dancer idle" id="stageSvg" viewBox="0 0 200 260" role="img" aria-label="Chintu, your study buddy">${DANCER}</svg>`;
+  $("partyDancerBox").innerHTML = `<svg class="dancer move-a" id="partyDancer" viewBox="0 0 200 260" aria-hidden="true">${DANCER}</svg>`;
+  $("focusDancer").innerHTML = `<svg class="dancer idle" id="focusSvg" viewBox="0 0 200 260" aria-hidden="true">${DANCER}</svg>`;
 
   // ---------- Dates (IST = UTC+5:30) ----------
   const IST_OFF = 5.5 * 3600000;
   const IST = (y, m, d, h = 0, min = 0) => Date.UTC(y, m - 1, d, h, min) - IST_OFF;
-  const EXAM = IST(2026, 11, 23);
-  const SPRINT_START = EXAM - 10 * 86400000;
-  const REVISION_FROM = IST(2026, 11, 21);
+  const EXAM = IST(2026, 11, 23), SPRINT_START = EXAM - 10 * 86400000, REVISION_FROM = IST(2026, 11, 21);
   const LAST_REV_DAY = "2026-11-22";
   const istDay = ts => new Date(ts + IST_OFF).toISOString().slice(0, 10);
   const parseDay = s => { const [y, m, d] = s.split("-").map(Number); return Date.UTC(y, m - 1, d); };
@@ -465,20 +625,38 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
   const monthOf = id => MONTHS.find(m => m.key === id.split("-")[0]);
   const label = id => `${monthOf(id).name} W${id.slice(-1)}`;
   const REV_OFFSETS = [1, 3, 7];
+  const CAL = [
+    { m: 5, name: "May", color: "#ffd166", last: 31 }, { m: 6, name: "June", color: "#7bdff2", last: 30 },
+    { m: 7, name: "July", color: "#35d0bf", last: 31 }, { m: 8, name: "August", color: "#ff8a3d", last: 31 },
+    { m: 9, name: "September", color: "#b48cff", last: 30 }, { m: 10, name: "October", color: "#ff4f9a", last: 31 },
+  ];
+  const calKey = (m, d) => `2026-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  const CAL_TOTAL = CAL.reduce((a, c) => a + c.last, 0);
+
+  // ---------- Memes ----------
+  const MEMES = [
+    { id: "m1", dur: 2.0, name: "Meme 1" }, { id: "m2", dur: 4.6, name: "Among Us reveal" }, { id: "m3", dur: 1.5, name: "Meme 3" },
+    { id: "m4", dur: 10.7, name: "Meme 4" }, { id: "m5", dur: 12.4, name: "Meme 5" }, { id: "m6", dur: 12.0, name: "Meme 6" },
+    { id: "m7", dur: 7.3, name: "Meme 7" }, { id: "m8", dur: 0.7, name: "Meme 8" }, { id: "m9", dur: 1.8, name: "Chacha?" }, { id: "m10", dur: 5.0, name: "Meme 10" },
+  ];
+  const MEME_ICONS = ["😂", "🕵️", "🤣", "🙀", "🎺", "🥁", "😎", "💥", "📞", "🔔"];
+  const TRIGGERS = [
+    ["weekDone", "Week passed and studied", "m2"], ["quizFail", "Quiz failed", "m9"], ["mockDone", "Mock taken", "m10"],
+    ["monthDone", "Month cleared", "m4"], ["focusDone", "Focus session done", "m3"], ["revisionDone", "Revision done", "m1"],
+    ["dayTick", "News day ticked", "m8"], ["finale", "All 16 weeks done", "m5"],
+  ];
 
   // ---------- State + saving ----------
-  // done: {id: iso}, mocks: {id: {at, score}}, revs: {id: [iso,...]}, log: {day: text}, activity: {day: [text]}
-  let S = { done: {}, mocks: {}, revs: {}, log: {}, activity: {} };
+  let S = {};
+  const blank = () => ({ done: {}, mocks: {}, revs: {}, log: {}, activity: {}, quiz: {}, notes: {}, days: {}, focus: {}, target: 35, memeNames: {}, memeMap: {} });
+  const clean = d => { const b = blank(); for (const k in b) if (d && d[k] !== undefined && d[k] !== null) b[k] = d[k]; return b; };
+  S = blank();
   let ref = null, writing = false, pendingWrite = false;
-  const saveNote = document.getElementById("saveNote");
-  const LS_KEY = "ca-dance-floor-v2";
-  const clean = d => ({ done: d?.done || {}, mocks: d?.mocks || {}, revs: d?.revs || {}, log: d?.log || {}, activity: d?.activity || {} });
+  const saveNote = $("saveNote"), LS_KEY = "ca-dance-floor-v2";
   function lsRead() {
     try {
-      const v2 = JSON.parse(localStorage.getItem(LS_KEY) || "null");
-      if (v2) return clean(v2);
-      const v1 = JSON.parse(localStorage.getItem("ca-dance-floor-v1") || "null");
-      if (v1) return clean({ done: v1 });
+      const v2 = JSON.parse(localStorage.getItem(LS_KEY) || "null"); if (v2) return clean(v2);
+      const v1 = JSON.parse(localStorage.getItem("ca-dance-floor-v1") || "null"); if (v1) return clean({ done: v1 });
     } catch {}
     return null;
   }
@@ -495,8 +673,7 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
     } catch { saveNote.textContent = "Couldn't save to your account just now. Everything is kept in this browser."; }
     finally { writing = false; }
   }
-  function logActivity(text) { const d = today(); S.activity[d] = [...(S.activity[d] || []), text].slice(-30); }
-
+  function logActivity(text) { const d = today(); S.activity[d] = [...(S.activity[d] || []), text].slice(-40); }
   async function connect() {
     const local = lsRead();
     if (local) { S = local; renderAll(); }
@@ -510,11 +687,15 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
       ref.onSnapshot(snap => {
         if (!snap.metadata.fromCache) { settled = true; clearTimeout(timer); }
         if (snap.exists) { S = clean(JSON.parse(JSON.stringify(snap.data()))); lsWrite(); renderAll(); }
-        else if (!snap.metadata.fromCache && (Object.keys(S.done).length || Object.keys(S.log).length || Object.keys(S.mocks).length)) persist();
+        else if (!snap.metadata.fromCache && (Object.keys(S.done).length || Object.keys(S.log).length || Object.keys(S.days).length || Object.keys(S.mocks).length)) persist();
         if (settled) saveNote.textContent = SAVED;
       }, () => { settled = true; clearTimeout(timer); ref = null; saveNote.textContent = "Account saving stopped. Everything is kept in this browser."; });
     } catch { saveNote.textContent = "Progress is saved in this browser only."; }
   }
+
+  // ---------- Toast ----------
+  let toastT = null;
+  function toast(msg) { const t = $("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600); }
 
   // ---------- Revision schedule ----------
   function dueFor(id, step) {
@@ -536,34 +717,31 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
     return { due: items.filter(x => x.due <= t), up: items.filter(x => x.due > t) };
   }
 
-  // ---------- Board ----------
-  const monthsEl = document.getElementById("months");
+  // ---------- Week board ----------
+  const monthsEl = $("months");
   function buildBoard() {
     monthsEl.innerHTML = "";
     for (const m of MONTHS) {
       const card = document.createElement("article");
       card.className = "month panel"; card.style.setProperty("--m", m.color); card.dataset.month = m.key;
       card.innerHTML = `
-        <div class="month-head">
-          <svg aria-hidden="true"><use href="#${m.sym}"/></svg>
+        <div class="month-head"><svg aria-hidden="true"><use href="#${m.sym}"/></svg>
           <div><div class="month-name">${m.name}</div><div class="month-sub">${m.theme}</div></div>
-          <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-        </div>
+          <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div>
         <div class="cols" aria-hidden="true"><span>Week</span><span>Study</span><span>Mock · score</span><span>Revise</span></div>
         <div class="rows"></div>`;
       const rows = card.querySelector(".rows");
       WEEKS.forEach(([a, b], i) => {
-        const id = `${m.key}-${i + 1}`;
-        const row = document.createElement("div");
+        const id = `${m.key}-${i + 1}`, row = document.createElement("div");
         row.className = "row"; row.dataset.id = id;
         row.innerHTML = `
           <div class="row-name"><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#paper"/><g class="check"><circle cx="36" cy="36" r="10" fill="#1c1030" stroke="currentColor" stroke-width="3"/><path d="M31 36 l4 4 l7 -8" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
             <div><b>Week ${i + 1}</b><span>${a}–${b ?? m.last} ${short[m.key]}</span></div></div>
-          <button type="button" class="pill study">Study</button>
+          <button type="button" class="pill study">Take quiz</button>
           <div class="mockbox"><button type="button" class="pill mock">Mock</button>
             <input class="score" id="score-${id}" type="number" inputmode="numeric" min="0" max="50" placeholder="–" aria-label="${m.name} week ${i + 1} mock score out of 50"><small>/50</small></div>
           <div class="revdots" aria-label="Revision rounds"><i></i><i></i><i></i></div>`;
-        row.querySelector(".study").addEventListener("click", e => onStudy(e.currentTarget, row, m, i));
+        row.querySelector(".study").addEventListener("click", e => onStudy(e.currentTarget, row));
         row.querySelector(".mock").addEventListener("click", e => onMock(e.currentTarget, row, m, i));
         const sc = row.querySelector(".score");
         sc.addEventListener("change", () => {
@@ -579,29 +757,34 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
       monthsEl.appendChild(card);
     }
   }
-
-  function withConfirm(btn, isOn, doUndo) {
+  function withConfirm(btn, isOn, doUndo, text = "Undo?") {
     if (!isOn) return false;
     if (btn.classList.contains("confirm")) { clearTimeout(btn._t); btn.classList.remove("confirm"); doUndo(); return true; }
-    monthsEl.querySelectorAll(".pill.confirm").forEach(b => b.classList.remove("confirm"));
-    btn.classList.add("confirm"); btn.textContent = "Undo?";
+    document.querySelectorAll(".confirm").forEach(b => b.classList.remove("confirm"));
+    btn.classList.add("confirm"); btn._label = btn.textContent; btn.textContent = text;
     clearTimeout(btn._t); btn._t = setTimeout(() => { btn.classList.remove("confirm"); renderAll(); }, 3000);
     return true;
   }
-  function wiggle(el) { el.classList.remove("boogie"); void el.getBoundingClientRect(); el.classList.add("boogie"); el.addEventListener("animationend", () => el.classList.remove("boogie"), { once: true }); }
+  function wiggle(el, cls = "pop") { el.classList.remove(cls); void el.getBoundingClientRect(); el.classList.add(cls); el.addEventListener("animationend", () => el.classList.remove(cls), { once: true }); }
 
-  function onStudy(btn, row, m, i) {
+  function onStudy(btn, row) {
     const id = row.dataset.id;
     if (withConfirm(btn, !!S.done[id], () => { delete S.done[id]; delete S.revs[id]; renderAll(); persist(); })) return;
+    openQuiz(id);
+  }
+  function markStudied(id, result) {
+    const m = monthOf(id), i = Number(id.slice(-1)) - 1;
     S.done[id] = new Date().toISOString();
-    logActivity(`Studied ${label(id)}`);
-    renderAll(); persist(); wiggle(row.querySelector(".ico"));
+    S.quiz[id] = { ...result, at: new Date().toISOString() };
+    logActivity(`Studied ${label(id)} (quiz ${result.score}/${result.total})`);
+    renderAll(); persist();
+    const ico = monthsEl.querySelector(`[data-id="${id}"] .ico`); if (ico) wiggle(ico);
     const count = ALL.filter(k => S.done[k]).length, left = 16 - count;
     const monthDone = WEEKS.every((_, k) => S.done[`${m.key}-${k + 1}`]);
-    if (count === 16) return party("finale", "All 16 weeks done!", "July to October covered. Finish your revision rounds and mocks before 23 Nov.", "move-c");
-    if (monthDone) return party("anthem", `All of ${m.name} cleared!`, `${left} weeks left in total. Take ${m.name}'s mocks if any are open.`, "move-b");
-    const subs = [`${left} weeks to go. Now take this week's mock.`, `${left} left. Chintu climbed a step for you.`, `Only ${left} more. Round 1 revision is tomorrow.`];
-    party(nextSong(), `${m.name} Week ${i + 1} done!`, subs[(Math.random() * subs.length) | 0]);
+    if (count === 16) return party("finale", "All 16 weeks done!", "July to October covered. Finish your revision rounds and mocks before 23 Nov.", "move-c", "finale");
+    if (monthDone) return party("anthem", `All of ${m.name} cleared!`, `${left} weeks left in total. Take ${m.name}'s mocks if any are open.`, "move-b", "monthDone");
+    const subs = [`Quiz ${result.score}/${result.total}. ${left} weeks to go. Now take this week's mock.`, `${left} left. Chintu climbed a step for you.`, `Only ${left} more. Round 1 revision is tomorrow.`];
+    party(nextSong(), `${m.name} Week ${i + 1} done!`, subs[(Math.random() * subs.length) | 0], null, "weekDone");
   }
   function onMock(btn, row, m, i) {
     const id = row.dataset.id;
@@ -610,14 +793,128 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
     logActivity(`Mock ${label(id)}`);
     renderAll(); persist();
     const n = ALL.filter(k => S.mocks[k]).length;
-    party(nextSong(), `Mock for ${short[m.key]} W${i + 1} done!`, `${n} of 16 mocks taken. Type your score out of 50 next to it.`);
+    party(nextSong(), `Mock for ${short[m.key]} W${i + 1} done!`, `${n} of 16 mocks taken. Type your score out of 50 next to it.`, null, "mockDone");
   }
   function onRevise(id) {
     const step = (S.revs[id] || []).length;
     S.revs[id] = [...(S.revs[id] || []), new Date().toISOString()];
     logActivity(`Revised ${label(id)} (round ${step + 1})`);
     renderAll(); persist();
-    party("ding", `${label(id)} revised!`, step === 2 ? "All 3 rounds done. This week is locked in." : `Round ${step + 1} of 3 done. Round ${step + 2} is on ${niceDay(dueFor(id, step + 1))}.`, "move-b");
+    party("ding", `${label(id)} revised!`, step === 2 ? "All 3 rounds done. This week is locked in." : `Round ${step + 1} of 3 done. Round ${step + 2} is on ${niceDay(dueFor(id, step + 1))}.`, "move-b", "revisionDone");
+  }
+
+  // ---------- Quiz (gate before a week counts) ----------
+  let sampleFn = null, sampleState = "loading"; // loading | ready | off
+  const quizEl = $("quiz"), qBody = $("quizBody");
+  let Q = null; // { id, questions, idx, right, answers: [] }
+  window.claude?.use?.("sample").then(s => { sampleFn = s; sampleState = s ? "ready" : "off"; }).catch(() => { sampleState = "off"; });
+  setTimeout(() => { if (sampleState === "loading") sampleState = "off"; }, 10000);
+  function openQuiz(id) {
+    Q = { id, questions: null, idx: 0, right: 0, answers: [] };
+    $("quizTitle").textContent = `${label(id)} quiz`;
+    quizEl.hidden = false;
+    quizNotes();
+  }
+  function closeQuiz() { quizEl.hidden = true; Q = null; abortQ?.abort(); }
+  $("quizClose").addEventListener("click", closeQuiz);
+  quizEl.addEventListener("click", e => { if (e.target === quizEl) closeQuiz(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !quizEl.hidden) closeQuiz(); });
+  let abortQ = null;
+  function quizNotes(msg = "", err = false) {
+    const id = Q.id, m = monthOf(id), w = WEEKS[Number(id.slice(-1)) - 1];
+    const canAI = sampleState !== "off";
+    qBody.innerHTML = `
+      <p class="note">Paste your notes for <b>${w[0]}–${w[1] ?? m.last} ${short[m.key]}</b>: headlines, schemes, appointments, numbers. Claude makes 5 questions only from what you wrote. Score 4 or 5 to unlock the dance.</p>
+      <textarea id="qNotes" style="min-height:160px" placeholder="For example: RBI kept the repo rate at … ; New scheme launched for … ; … appointed as …"></textarea>
+      <div class="acts-row">
+        ${canAI ? `<button type="button" class="btn gold" id="qMake">Make my quiz</button>` : ""}
+        <button type="button" class="btn ghost" id="qSelf">${canAI ? "Do a self-check instead" : "Start the self-check"}</button>
+      </div>
+      <p class="note ${err ? "err" : ""}" id="qMsg">${esc(msg || (canAI ? "Your notes are saved with this week so you can revise from them later." : "Claude quizzes aren't available here, so you'll write 5 facts from memory instead."))}</p>`;
+    const ta = $("qNotes"); ta.value = S.notes[id] || ""; setTimeout(() => ta.focus(), 30);
+    ta.addEventListener("input", () => { S.notes[id] = ta.value.slice(0, 5000); lsWrite(); });
+    ta.addEventListener("change", persist);
+    $("qMake")?.addEventListener("click", makeQuiz);
+    $("qSelf").addEventListener("click", selfCheck);
+  }
+  async function makeQuiz() {
+    const notes = ($("qNotes").value || "").trim();
+    S.notes[Q.id] = notes.slice(0, 5000); persist();
+    if (notes.length < 80) { $("qMsg").textContent = "Write a bit more first (a few lines of real points), so there's enough for 5 questions."; $("qMsg").className = "note err"; return; }
+    const btn = $("qMake"); btn.disabled = true; btn.textContent = "Making your quiz…";
+    $("qMsg").className = "note"; $("qMsg").textContent = "Claude is reading your notes.";
+    abortQ = new AbortController();
+    const prompt = `You are quizzing a student preparing for the SBI Clerk Mains exam (General/Financial Awareness section, current affairs).
+Write exactly 5 multiple-choice questions using ONLY facts stated in the student's notes below. Do not add any fact, number, name or date that is not in the notes. If the notes support fewer than 5 good questions, write as many as you can (at least 1).
+Each question has 4 short options with exactly one correct answer. Vary which position holds the correct answer. "why" quotes or paraphrases the line in the notes that gives the answer.
+Reply with only JSON in this shape: {"questions":[{"q":"Question?","options":["A","B","C","D"],"answer":0,"why":"From your notes: ..."}]}
+
+Notes for ${label(Q.id)} (${short[monthOf(Q.id).key]} 2026):
+"""
+${notes.slice(0, 5000)}
+"""`;
+    try {
+      const data = await sampleFn.json(prompt, { signal: abortQ.signal, modelTier: "quick", cache: false });
+      if (!Q) return;
+      const qs = (data && Array.isArray(data.questions) ? data.questions : []).filter(q => q && typeof q.q === "string" && Array.isArray(q.options) && q.options.length >= 2 && Number.isInteger(q.answer) && q.answer >= 0 && q.answer < q.options.length).slice(0, 5);
+      if (!qs.length) { quizNotes("Claude couldn't make questions from these notes. Add clearer points and try again.", true); return; }
+      Q.questions = qs; Q.idx = 0; Q.right = 0; Q.answers = [];
+      askQuestion();
+    } catch (e) {
+      if (!Q || e?.code === "cancelled") return;
+      const off = ["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"];
+      if (off.includes(e?.code)) { sampleState = "off"; quizNotes("Claude quizzes aren't allowed on this page, so do the self-check instead.", true); return; }
+      const msg = e?.code === "rate_limited" ? "Too many quizzes right now. Wait a few minutes, or do the self-check." :
+        e?.code === "session_expired" ? "Please sign in to claude.ai again, then try." :
+        e?.code === "invalid_json" ? "The quiz came back garbled. Press Make my quiz again." : "Couldn't make the quiz just now. Try again in a moment, or do the self-check.";
+      quizNotes(msg, true);
+    }
+  }
+  function progBar() { return `<div class="q-prog">${Q.questions.map((_, k) => `<i class="${k < Q.answers.length ? (Q.answers[k] ? "ok" : "bad") : k === Q.idx ? "cur" : ""}"></i>`).join("")}</div>`; }
+  function askQuestion() {
+    const q = Q.questions[Q.idx];
+    qBody.innerHTML = `${progBar()}<div class="eyebrow">Question ${Q.idx + 1} of ${Q.questions.length}</div>
+      <div class="q-text">${esc(q.q)}</div>
+      <div class="opts">${q.options.map((o, k) => `<button type="button" class="opt" data-k="${k}">${String.fromCharCode(65 + k)}. ${esc(o)}</button>`).join("")}</div>
+      <div id="qAfter"></div>`;
+    qBody.querySelectorAll(".opt").forEach(b => b.addEventListener("click", () => {
+      const k = Number(b.dataset.k), ok = k === q.answer;
+      qBody.querySelectorAll(".opt").forEach(x => { x.disabled = true; if (Number(x.dataset.k) === q.answer) x.classList.add("right"); });
+      if (!ok) b.classList.add("wrong");
+      Q.answers.push(ok); if (ok) Q.right++;
+      qBody.querySelector(".q-prog").outerHTML = progBar();
+      const last = Q.idx === Q.questions.length - 1;
+      $("qAfter").innerHTML = `${q.why ? `<p class="why">${esc(q.why)}</p>` : ""}<div class="acts-row" style="margin-top:10px"><button type="button" class="btn gold" id="qNext">${last ? "See result" : "Next question"}</button></div>`;
+      $("qNext").addEventListener("click", () => { if (last) quizResult(); else { Q.idx++; askQuestion(); } });
+      $("qNext").focus();
+    }));
+  }
+  function quizResult() {
+    const total = Q.questions.length, need = Math.ceil(total * 0.8), pass = Q.right >= need, id = Q.id;
+    qBody.innerHTML = `${progBar()}<div class="result-big">${Q.right} / ${total}</div>
+      <p class="note">${pass ? "Passed! This week counts now." : `You need ${need} to pass. Read your notes again, then retry. A new set of questions comes each time.`}</p>
+      <div class="acts-row">${pass ? `<button type="button" class="btn gold" id="qDone">Mark studied and dance</button>` : `<button type="button" class="btn gold" id="qRetry">Read notes and retry</button><button type="button" class="btn ghost" id="qLater">Later</button>`}</div>`;
+    if (pass) $("qDone").addEventListener("click", () => { const r = { score: Q.right, total, mode: "ai" }; closeQuiz(); markStudied(id, r); });
+    else {
+      playMemeFor("quizFail"); stageDance();
+      logActivity(`Quiz ${label(id)}: ${Q.right}/${total}, retry needed`); persist(); renderLog();
+      $("qRetry").addEventListener("click", () => quizNotes());
+      $("qLater").addEventListener("click", closeQuiz);
+    }
+  }
+  function selfCheck() {
+    if ($("qNotes")) { S.notes[Q.id] = $("qNotes").value.slice(0, 5000); persist(); }
+    qBody.innerHTML = `<p class="note">Without looking at your notes, write 5 facts you remember from this week. Each needs at least a few words.</p>
+      <div class="self-list">${[1, 2, 3, 4, 5].map(n => `<input id="sf${n}" type="text" maxlength="200" placeholder="Fact ${n}">`).join("")}</div>
+      <div class="acts-row"><button type="button" class="btn gold" id="sfDone" disabled>I remembered 5 facts</button><button type="button" class="btn ghost" id="sfBack">Back</button></div>`;
+    const ins = [1, 2, 3, 4, 5].map(n => $("sf" + n)), done = $("sfDone");
+    const check = () => { done.disabled = !ins.every(i => i.value.trim().length >= 12); };
+    ins.forEach(i => i.addEventListener("input", check)); setTimeout(() => ins[0].focus(), 30);
+    $("sfBack").addEventListener("click", () => quizNotes());
+    done.addEventListener("click", () => {
+      const id = Q.id; S.notes[id] = ((S.notes[id] || "") + "\n\nRecalled: " + ins.map(i => i.value.trim()).join(" | ")).trim().slice(0, 5000);
+      closeQuiz(); markStudied(id, { score: 5, total: 5, mode: "self" });
+    });
   }
 
   // ---------- Rendering ----------
@@ -631,7 +928,7 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
         if (on) mc++;
         row.classList.toggle("studied", on);
         const st = row.querySelector(".study"), mb = row.querySelector(".mock"), sc = row.querySelector(".score");
-        if (!st.classList.contains("confirm")) st.textContent = on ? "Studied" : "Study";
+        if (!st.classList.contains("confirm")) st.textContent = on ? (S.quiz[id] ? `Quiz ${S.quiz[id].score}/${S.quiz[id].total}` : "Studied") : "Take quiz";
         st.classList.toggle("on", on); st.setAttribute("aria-pressed", on);
         if (!mb.classList.contains("confirm")) mb.textContent = mk ? "Mock done" : "Mock";
         mb.classList.toggle("on", !!mk); mb.setAttribute("aria-pressed", !!mk);
@@ -645,68 +942,60 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
       card.classList.toggle("complete", mc === 4);
     }
   }
-
   function renderStats() {
-    const count = ALL.filter(k => S.done[k]).length;
-    const mocks = ALL.filter(k => S.mocks[k]);
-    const scored = mocks.map(k => S.mocks[k].score).filter(v => typeof v === "number");
-    document.getElementById("doneCount").innerHTML = `${count}<span> / 16</span>`;
-    document.getElementById("mockCount").innerHTML = `${mocks.length}<span> / 16</span>`;
-    document.getElementById("avgScore").innerHTML = `${scored.length ? (scored.reduce((a, b) => a + b, 0) / scored.length).toFixed(1) : "–"}<span> / 50</span>`;
-    const next = ALL.find(k => !S.done[k]);
-    const openMock = ALL.find(k => S.done[k] && !S.mocks[k]);
-    const bubble = document.getElementById("bubble");
+    const count = ALL.filter(k => S.done[k]).length, mocks = ALL.filter(k => S.mocks[k]);
+    const daysRead = Object.keys(S.days).filter(k => S.days[k]).length;
+    $("doneCount").innerHTML = `${count}<span> / 16</span>`;
+    $("mockCount").innerHTML = `${mocks.length}<span> / 16</span>`;
+    $("dayCount").innerHTML = `${daysRead}<span> / ${CAL_TOTAL}</span>`;
+    const next = ALL.find(k => !S.done[k]), openMock = ALL.find(k => S.done[k] && !S.mocks[k]), bubble = $("bubble");
     if (!next) bubble.textContent = openMock ? `Every week is studied! Take the mock for ${label(openMock)} next.` : "All 16 weeks and mocks done. Keep revising until the exam.";
-    else if (openMock) bubble.textContent = `You studied ${label(openMock)} but haven't taken its mock yet. Take it, then start ${label(next)}.`;
-    else bubble.textContent = count === 0 ? `Start with ${label(next)}. Tick it when you finish and I'll dance for you.` : `Nice, ${count} down. Next up: ${label(next)}. Finish it so I can dance again.`;
-    updatePace(count);
-    renderLadder(count);
+    else if (openMock) bubble.textContent = `You passed ${label(openMock)} but haven't taken its mock yet. Take it, then start ${label(next)}.`;
+    else bubble.textContent = count === 0 ? `Start with ${label(next)}. Read the news, pass the quiz, and I'll dance for you.` : `Nice, ${count} down. Next up: ${label(next)}. Pass its quiz so I can dance again.`;
+    updatePace(count); renderLadder(count);
   }
-
   function updatePace(count) {
-    const left = 16 - count, days = (REVISION_FROM - Date.now()) / 86400000, pace = document.getElementById("pace");
+    const left = 16 - count, days = (REVISION_FROM - Date.now()) / 86400000, pace = $("pace");
     if (left === 0) { pace.innerHTML = "<b>Coverage complete.</b> Keep up with the revision rounds."; return; }
     if (days <= 0) { pace.innerHTML = `Revision days are here and <b>${left} week${left > 1 ? "s" : ""}</b> are still open. Pick the ones with the most banking and economy news.`; return; }
     const per = left / days;
     pace.innerHTML = `To finish by 20 Nov night you need <b>${per.toFixed(1)} week${per >= 1.05 ? "s" : ""} a day</b> (${left} left in ${days.toFixed(1)} days). 21–22 Nov stay free for revision.`;
   }
 
-  // Ladder: 16 steps rising left to right
-  const ladder = document.getElementById("ladder");
-  const STEP_W = 46, STEP_H = 13, X0 = 40, GROUND = 286;
-  const stepTop = k => GROUND - k * STEP_H;
+  // Ladder
+  const ladder = $("ladder"), STEP_W = 46, STEP_H = 13, X0 = 40, GROUND = 286, stepTop = k => GROUND - k * STEP_H;
   let ladderBuilt = false, lastLadder = -1;
   function buildLadder() {
-    let h = `<rect x="0" y="${GROUND}" width="840" height="4" rx="2" fill="var(--stage-3)"/>`;
+    let h = `<rect x="0" y="${GROUND}" width="840" height="4" rx="2" fill="rgba(255,255,255,.18)"/>`;
     ALL.forEach((id, k) => {
       const x = X0 + (k + 1) * STEP_W, y = stepTop(k + 1), m = monthOf(id);
-      h += `<g data-step="${k}"><rect class="st" x="${x}" y="${y}" width="${STEP_W - 3}" height="${GROUND - y}" rx="4" fill="var(--stage-3)" data-color="${m.color}"/>
-        <text x="${x + (STEP_W - 3) / 2}" y="${GROUND - 3}" text-anchor="middle" font-size="11" font-weight="800" fill="var(--ink)" opacity=".8" font-family="Baloo 2, sans-serif">${short[m.key][0]}${id.slice(-1)}</text>
+      h += `<g data-step="${k}"><rect class="st" x="${x}" y="${y}" width="${STEP_W - 3}" height="${GROUND - y}" rx="4" fill="rgba(255,255,255,.1)" data-color="${m.color}"/>
+        <text x="${x + (STEP_W - 3) / 2}" y="${GROUND - 3}" text-anchor="middle" font-size="11" font-weight="800" fill="var(--ink)" opacity=".85" font-family="Baloo 2, sans-serif">${short[m.key][0]}${id.slice(-1)}</text>
         <path class="star" d="M${x + 21} ${y - 22} l4 8 9 1 -7 6 2 9 -8 -5 -8 5 2 -9 -7 -6 9 -1 z" fill="var(--marigold)" opacity="0"/></g>`;
     });
     const px = X0 + 17 * STEP_W - 10, py = stepTop(16);
     h += `<path d="M${px} ${py} V${py - 56}" stroke="var(--ink)" stroke-width="3"/><path d="M${px} ${py - 56} l-30 9 30 9 z" fill="var(--rani)"/>
-      <text x="${px}" y="${py - 62}" text-anchor="end" font-family="Bungee, sans-serif" font-size="13" fill="var(--marigold)">23 NOV</text>`;
-    h += `<g class="ladder-climber" id="climber"><g id="climberHop"><svg class="dancer idle" x="-30" y="-76" width="60" height="78" viewBox="0 0 200 260">${DANCER}</svg></g></g>`;
+      <text x="${px}" y="${py - 62}" text-anchor="end" font-family="Bungee, sans-serif" font-size="13" fill="var(--marigold)">23 NOV</text>
+      <g class="ladder-climber" id="climber"><g id="climberHop"><svg class="dancer idle" x="-30" y="-76" width="60" height="78" viewBox="0 0 200 260">${DANCER}</svg></g></g>`;
     ladder.innerHTML = h; ladderBuilt = true;
   }
   function renderLadder(count) {
     if (!ladderBuilt) buildLadder();
     ALL.forEach((id, k) => {
       const g = ladder.querySelector(`[data-step="${k}"]`), st = g.querySelector(".st");
-      st.setAttribute("fill", k < count ? st.dataset.color : "var(--stage-3)");
+      st.setAttribute("fill", k < count ? st.dataset.color : "rgba(255,255,255,.1)");
       g.querySelector(".star").setAttribute("opacity", S.mocks[id] ? "1" : "0");
     });
     const x = count === 0 ? X0 - 4 : X0 + count * STEP_W + (STEP_W - 3) / 2, y = stepTop(count);
-    document.getElementById("climber").style.transform = `translate(${x}px, ${y}px)`;
-    if (lastLadder !== -1 && count > lastLadder) { const hop = document.getElementById("climberHop"); hop.classList.remove("hop"); void hop.getBoundingClientRect(); hop.classList.add("hop"); }
+    $("climber").style.transform = `translate(${x}px, ${y}px)`;
+    if (lastLadder !== -1 && count > lastLadder) wiggle($("climberHop"), "hop");
     lastLadder = count;
-    document.getElementById("ladderStep").textContent = `Step ${count} of 16`;
+    $("ladderStep").textContent = `Step ${count} of 16`;
   }
 
   function renderRevisions() {
-    const { due, up } = revisionPlan(), dl = document.getElementById("dueList"), ul = document.getElementById("upList");
-    dl.innerHTML = due.length ? "" : `<p class="empty">Nothing to revise today. Study a week and its first revision shows up here tomorrow.</p>`;
+    const { due, up } = revisionPlan(), dl = $("dueList"), ul = $("upList");
+    dl.innerHTML = due.length ? "" : `<p class="empty">Nothing to revise today. Pass a week's quiz and its first revision shows up here tomorrow.</p>`;
     for (const it of due) {
       const el = document.createElement("div");
       el.className = "rev-item" + (it.late > 0 ? " late" : "");
@@ -726,37 +1015,60 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
     }
   }
 
-  const logY = document.getElementById("logYesterday"), logT = document.getElementById("logToday");
+  // Log + streak
+  const logY = $("logYesterday"), logT = $("logToday");
   const hasDay = d => !!((S.log[d] || "").trim() || (S.activity[d] || []).length);
-  function renderLog() {
+  function streakInfo() {
     const t = today(), y = addDays(t, -1);
-    document.getElementById("tDate").textContent = niceDay(t);
-    const yMissing = !hasDay(y);
-    document.getElementById("yDate").textContent = yMissing ? `${niceDay(y)} · nothing logged` : niceDay(y);
-    document.getElementById("yCard").classList.toggle("missing", yMissing);
+    let d = hasDay(t) ? t : y, n = 0;
+    while (hasDay(d)) { n++; d = addDays(d, -1); }
+    return { n, todayDone: hasDay(t), alive: n > 0 };
+  }
+  function renderLog() {
+    const t = today(), y = addDays(t, -1), yMissing = !hasDay(y);
+    $("tDate").textContent = niceDay(t);
+    $("yDate").textContent = yMissing ? `${niceDay(y)} · nothing logged` : niceDay(y);
+    $("yCard").classList.toggle("missing", yMissing);
     if (document.activeElement !== logY) logY.value = S.log[y] || "";
     if (document.activeElement !== logT) logT.value = S.log[t] || "";
     const acts = (el, d) => { el.innerHTML = ""; (S.activity[d] || []).forEach(a => { const s = document.createElement("span"); s.className = "act"; s.textContent = a; el.appendChild(s); }); };
-    acts(document.getElementById("yActs"), y); acts(document.getElementById("tActs"), t);
-    let d = hasDay(t) ? t : y, n = 0;
-    while (hasDay(d)) { n++; d = addDays(d, -1); }
-    document.getElementById("streak").textContent = `${n}-day streak`;
-    const hist = document.getElementById("hist"); hist.innerHTML = "";
+    acts($("yActs"), y); acts($("tActs"), t);
+    const hist = $("hist"); hist.innerHTML = "";
     const days = [...new Set([...Object.keys(S.log), ...Object.keys(S.activity)])].filter(x => x < y).sort().reverse().slice(0, 14);
     if (!days.length) hist.innerHTML = `<p class="empty">Older notes will appear here.</p>`;
     for (const day of days) {
-      const row = document.createElement("div");
-      const a = document.createElement("span"); a.textContent = niceDay(day);
-      const b = document.createElement("span"); b.textContent = (S.log[day] || "").trim() || (S.activity[day] || []).join(", ") || "Nothing logged";
+      const row = document.createElement("div"), a = document.createElement("span"), b = document.createElement("span");
+      a.textContent = niceDay(day); b.textContent = (S.log[day] || "").trim() || (S.activity[day] || []).join(", ") || "Nothing logged";
       row.append(a, b); hist.appendChild(row);
     }
+    renderStreak();
+  }
+  function renderStreak() {
+    const { n, todayDone } = streakInfo(), t = today();
+    const flame = $("flame");
+    flame.classList.toggle("out", n === 0);
+    flame.style.fontSize = `${Math.min(84, 40 + n * 4)}px`;
+    $("streakNum").textContent = n;
+    $("streakTxt").textContent = n === 0 ? "The fire is out. Do one thing today to light it." : todayDone ? `day${n > 1 ? "s" : ""} in a row. Today is counted.` : `day${n > 1 ? "s" : ""} in a row. Do something today or it goes out at midnight.`;
+    const strip = $("strip"); strip.innerHTML = "";
+    for (let k = 13; k >= 0; k--) {
+      const d = addDays(t, -k), on = hasDay(d), el = document.createElement("div");
+      el.className = "sday" + (k === 0 ? " today" : "");
+      const dt = new Date(parseDay(d));
+      el.innerHTML = `<span class="e ${on ? "" : "miss"}" aria-hidden="true">${on ? "🔥" : k === 0 ? "⏳" : "💨"}</span><small>${DOW[dt.getUTCDay()][0]} ${dt.getUTCDate()}</small>`;
+      el.title = `${niceDay(d)}: ${on ? "kept" : k === 0 ? "not yet" : "missed"}`;
+      strip.appendChild(el);
+    }
+    const fs = $("floatStreak");
+    fs.classList.toggle("cold", n === 0);
+    $("floatNum").textContent = n;
+    $("floatTxt").textContent = n === 0 ? "fire's out" : todayDone ? `day streak` : `day streak · keep it alive`;
   }
   let logTimer = null;
   function onLogInput(el, which) {
     clearTimeout(logTimer);
     logTimer = setTimeout(() => {
-      const d = which === "t" ? today() : addDays(today(), -1);
-      const v = el.value.slice(0, 4000);
+      const d = which === "t" ? today() : addDays(today(), -1), v = el.value.slice(0, 4000);
       if ((S.log[d] || "") === v) return;
       if (v.trim()) S.log[d] = v; else delete S.log[d];
       persist(); renderLog(); renderAlerts();
@@ -765,32 +1077,114 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
   logY.addEventListener("input", () => onLogInput(logY, "y"));
   logT.addEventListener("input", () => onLogInput(logT, "t"));
 
+  // Daily calendar
+  const calEl = $("cal");
+  function weekDays(c, w) { const [a, b] = WEEKS[w]; const out = []; for (let d = a; d <= (b ?? c.last); d++) out.push(calKey(c.m, d)); return out; }
+  function buildCalendar() {
+    calEl.innerHTML = "";
+    for (const c of CAL) {
+      const card = document.createElement("div");
+      card.className = "cal-month"; card.style.setProperty("--m", c.color); card.dataset.m = c.m;
+      card.innerHTML = `<div class="cal-head"><span class="cal-name">${c.name}</span><button type="button" class="cal-all">All</button><span class="cal-count">0/${c.last}</span></div>
+        <div class="cal-prog"><i style="width:0"></i></div>
+        ${WEEKS.map((_, w) => `<div class="wkrow" data-w="${w}"><button type="button" class="wkbtn" aria-label="${c.name} week ${w + 1}">W${w + 1}</button>${weekDays(c, w).map(k => `<button type="button" class="day" data-day="${k}" aria-label="${Number(k.slice(-2))} ${c.name}">${Number(k.slice(-2))}</button>`).join("")}</div>`).join("")}`;
+      card.querySelectorAll(".day").forEach(b => b.addEventListener("click", () => toggleDay(b, c)));
+      card.querySelectorAll(".wkbtn").forEach((b, w) => b.addEventListener("click", () => setRange(b, weekDays(c, w), c, `${c.name} W${w + 1}`)));
+      const all = card.querySelector(".cal-all");
+      all.addEventListener("click", () => setRange(all, WEEKS.flatMap((_, w) => weekDays(c, w)), c, `all of ${c.name}`));
+      calEl.appendChild(card);
+    }
+  }
+  function monthFull(c) { return WEEKS.every((_, w) => weekDays(c, w).every(k => S.days[k])); }
+  function toggleDay(btn, c) {
+    const k = btn.dataset.day, was = monthFull(c);
+    if (S.days[k]) delete S.days[k];
+    else { S.days[k] = 1; logActivity(`Read news: ${Number(k.slice(-2))} ${c.name.slice(0, 3)}`); wiggle(btn); playMemeFor("dayTick"); }
+    renderAll(); persist();
+    if (!was && monthFull(c)) party("anthem", `All of ${c.name} read!`, `Every day's news from ${c.name} is done.`, "move-b", "monthDone");
+  }
+  function setRange(btn, keys, c, name) {
+    const allOn = keys.every(k => S.days[k]);
+    if (allOn) { if (withConfirm(btn, true, () => { keys.forEach(k => delete S.days[k]); renderAll(); persist(); }, "Clear?")) return; }
+    const was = monthFull(c);
+    keys.forEach(k => S.days[k] = 1);
+    logActivity(`Read news: ${name}`);
+    renderAll(); persist();
+    keys.forEach(k => { const el = calEl.querySelector(`[data-day="${k}"]`); if (el) wiggle(el); });
+    if (!was && monthFull(c)) party("anthem", `All of ${c.name} read!`, `Every day's news from ${c.name} is done.`, "move-b", "monthDone");
+    else { playMemeFor("dayTick"); toast(`Marked ${name} as read`); }
+  }
+  function renderCalendar() {
+    let total = 0;
+    for (const c of CAL) {
+      const card = calEl.querySelector(`[data-m="${c.m}"]`);
+      let n = 0;
+      card.querySelectorAll(".day").forEach(b => { const on = !!S.days[b.dataset.day]; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); if (on) n++; });
+      card.querySelectorAll(".wkrow").forEach(r => { const b = r.querySelector(".wkbtn"); const on = weekDays(c, Number(r.dataset.w)).every(k => S.days[k]); b.classList.toggle("on", on); if (!b.classList.contains("confirm")) b.textContent = `W${Number(r.dataset.w) + 1}`; });
+      const all = card.querySelector(".cal-all"); if (!all.classList.contains("confirm")) all.textContent = "All";
+      card.querySelector(".cal-count").textContent = `${n}/${c.last}`;
+      card.querySelector(".cal-prog i").style.width = `${n / c.last * 100}%`;
+      card.classList.toggle("full", n === c.last);
+      total += n;
+    }
+    $("calTotal").textContent = `${total} of ${CAL_TOTAL} days`;
+  }
+
+  // Mock score chart
+  const chartSvg = $("chartSvg"), tip = $("tip"), targetIn = $("target");
+  const CW = 760, CH = 280, PL = 40, PR = 16, PT = 16, PB = 34;
+  const cx = i => PL + (i + 0.5) * (CW - PL - PR) / 16, cy = v => PT + (1 - v / 50) * (CH - PT - PB);
+  function renderChart() {
+    const target = Number.isFinite(S.target) ? S.target : 35;
+    if (document.activeElement !== targetIn) targetIn.value = target;
+    const pts = ALL.map((id, i) => ({ id, i, v: S.mocks[id] && typeof S.mocks[id].score === "number" ? S.mocks[id].score : null })).filter(p => p.v !== null);
+    let h = "";
+    for (let v = 0; v <= 50; v += 10) h += `<line x1="${PL}" x2="${CW - PR}" y1="${cy(v)}" y2="${cy(v)}" stroke="rgba(255,255,255,${v === 0 ? .25 : .08})"/><text x="${PL - 8}" y="${cy(v) + 4}" text-anchor="end" font-size="12" fill="var(--ink-dim)" font-family="Baloo 2, sans-serif">${v}</text>`;
+    ALL.forEach((id, i) => { h += `<text x="${cx(i)}" y="${CH - 12}" text-anchor="middle" font-size="12" fill="var(--ink-dim)" font-family="Baloo 2, sans-serif">${short[monthOf(id).key][0]}${id.slice(-1)}</text>`; });
+    h += `<line x1="${PL}" x2="${CW - PR}" y1="${cy(target)}" y2="${cy(target)}" stroke="var(--ink-dim)" stroke-width="1.5" stroke-dasharray="6 5"/>
+      <text x="${CW - PR}" y="${cy(target) - 6}" text-anchor="end" font-size="12" font-weight="800" fill="var(--ink)" font-family="Baloo 2, sans-serif">Target ${target}</text>`;
+    if (pts.length > 1) h += `<polyline points="${pts.map(p => `${cx(p.i)},${cy(p.v)}`).join(" ")}" fill="none" stroke="var(--marigold-chart)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+    pts.forEach((p, k) => {
+      h += `<circle cx="${cx(p.i)}" cy="${cy(p.v)}" r="5" fill="var(--marigold-chart)" stroke="#24164a" stroke-width="2"/>`;
+      if (k === pts.length - 1) h += `<text x="${cx(p.i)}" y="${cy(p.v) - 12}" text-anchor="middle" font-size="13" font-weight="800" fill="var(--ink)" font-family="Baloo 2, sans-serif">${p.v}</text>`;
+      h += `<circle class="hit" data-k="${k}" cx="${cx(p.i)}" cy="${cy(p.v)}" r="16" fill="transparent" style="cursor:pointer"/>`;
+    });
+    if (!pts.length) h += `<text x="${CW / 2}" y="${CH / 2}" text-anchor="middle" font-size="15" fill="var(--ink-dim)" font-family="Baloo 2, sans-serif">Take a mock and type its score to start your graph.</text>`;
+    chartSvg.innerHTML = h;
+    chartSvg.querySelectorAll(".hit").forEach(c => {
+      const p = pts[Number(c.dataset.k)];
+      const show = () => { const r = chartSvg.getBoundingClientRect(), s = r.width / CW; tip.style.left = `${cx(p.i) * s}px`; tip.style.top = `${cy(p.v) * s}px`; tip.textContent = `${label(p.id)} · ${p.v}/50${p.v >= target ? " · on target" : ` · ${target - p.v} below target`}`; tip.hidden = false; };
+      c.addEventListener("pointerenter", show); c.addEventListener("pointerdown", show); c.addEventListener("pointerleave", () => tip.hidden = true);
+    });
+    const above = pts.filter(p => p.v >= target).length;
+    $("chartSummary").innerHTML = pts.length ? `<b>${pts.length}</b> scored · average <b>${(pts.reduce((a, p) => a + p.v, 0) / pts.length).toFixed(1)}</b> · best <b>${Math.max(...pts.map(p => p.v))}</b> · on target <b>${above} of ${pts.length}</b>` : "No scores yet.";
+    $("chartTable").innerHTML = `<thead><tr><th>Week</th><th>Score /50</th><th>vs target</th></tr></thead><tbody>${ALL.map(id => { const s = S.mocks[id]?.score; return `<tr><td>${label(id)}</td><td>${typeof s === "number" ? s : "–"}</td><td>${typeof s === "number" ? (s >= target ? "on target" : `${target - s} below`) : ""}</td></tr>`; }).join("")}</tbody>`;
+  }
+  targetIn.addEventListener("change", () => { const v = Math.max(0, Math.min(50, Math.round(Number(targetIn.value)))); if (!Number.isNaN(v)) { S.target = v; renderChart(); persist(); } });
+  $("chartBox").addEventListener("pointerleave", () => tip.hidden = true);
+
+  // Alerts
   function renderAlerts() {
     const { due } = revisionPlan(), late = due.filter(x => x.late > 0).length, onTime = due.length - late;
-    const t = today(), y = addDays(t, -1);
-    const el = document.getElementById("alerts"); el.innerHTML = "";
+    const t = today(), y = addDays(t, -1), el = $("alerts"); el.innerHTML = "";
     const add = (cls, n, text, href) => { const a = document.createElement("a"); a.className = "alert " + cls; a.href = href; a.innerHTML = (n !== null ? `<span class="n">${n}</span>` : "") + `<span>${text}</span>`; el.appendChild(a); };
     if (late) add("late", late, `revision${late > 1 ? "s" : ""} overdue`, "#revise");
     if (onTime) add("due", onTime, `revision${onTime > 1 ? "s" : ""} due today`, "#revise");
     if (!hasDay(y)) add("late", null, `You didn't log yesterday (${niceDay(y)}). Write what you studied.`, "#log");
     const openMocks = ALL.filter(k => S.done[k] && !S.mocks[k]).length;
-    if (openMocks) add("due", openMocks, `mock${openMocks > 1 ? "s" : ""} waiting for weeks you studied`, "#months");
+    if (openMocks) add("due", openMocks, `mock${openMocks > 1 ? "s" : ""} waiting for weeks you passed`, "#weeks");
     if (!(S.log[t] || "").trim()) add("ok", null, "Tonight, write what you studied today.", "#log");
   }
 
-  function renderAll() { renderBoard(); renderStats(); renderRevisions(); renderLog(); renderAlerts(); }
+  function renderAll() { renderBoard(); renderStats(); renderRevisions(); renderLog(); renderAlerts(); renderCalendar(); renderChart(); renderMemes(); renderFocusMeta(); }
 
-  // ---------- Audio ----------
+  // ---------- Audio core ----------
   let actx = null;
-  function ctx() {
-    try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume(); return actx; }
-    catch { return null; }
-  }
+  function ctx() { try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume(); return actx; } catch { return null; } }
   const C5 = 523.25, f = semi => C5 * Math.pow(2, semi / 12);
 
-  // Party songs (all original). Lead notes are semitones from C5; null is a rest. Bass: 8 notes per bar, one per 2 steps.
-  const HOOK = [0, 4, 7, 4, 9, 7, 4, null, 5, 9, 12, 9, 7, 4, 2, null];
-  const ANSWER = [0, 4, 7, 12, 14, 12, 9, 7, 9, 7, 4, 2, 0, null, 0, null];
+  // Party songs (original). Lead in semitones from C5, null = rest. Bass: 8 notes per bar.
+  const HOOK = [0, 4, 7, 4, 9, 7, 4, null, 5, 9, 12, 9, 7, 4, 2, null], ANSWER = [0, 4, 7, 12, 14, 12, 9, 7, 9, 7, 4, 2, 0, null, 0, null];
   const CLIMB = [12, 14, 16, 19, 16, 14, 12, 14, 16, 19, 21, 19, 24, null, 24, null];
   const SONGS = {
     monsoon: { name: "Monsoon Bounce", step: .21, wave: "square", vol: .09, bars: [HOOK, ANSWER], bass: [-24, -24, -17, -17, -15, -15, -19, -17] },
@@ -801,38 +1195,34 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
     anthem: { name: "Month Clear Anthem", step: .2, wave: "square", vol: .09, bars: [HOOK, ANSWER, HOOK, CLIMB], keys: [0, 0, 5, 0], bass: [-24, -24, -17, -17, -15, -15, -19, -17] },
     finale: { name: "Victory Lap", step: .19, wave: "square", vol: .09, disco: true, bars: [HOOK, ANSWER, CLIMB, CLIMB], keys: [0, 2, 5, 7], bass: [-24, -24, -17, -17, -15, -15, -19, -17] },
     ding: { name: "Revision Ding", step: .16, wave: "triangle", vol: .22, bars: [[12, 16, 19, 24, null, 19, 24, null, 16, 19, 24, 28, null, null, null, null]], bass: [-12, -12, -5, -5, 0, 0, 0, 0] },
+    focus: { name: "Focus Bell", step: .22, wave: "triangle", vol: .2, bars: [[0, 4, 7, 12, 7, 12, 16, null, 12, 16, 19, 24, null, null, 24, null]], bass: [-24, -24, -17, -17, -12, -12, -12, -12] },
   };
   const WEEK_SONGS = ["monsoon", "kite", "chai", "disco", "tabla"];
   let lastSong = "";
   function nextSong() { const pool = WEEK_SONGS.filter(s => s !== lastSong); lastSong = pool[(Math.random() * pool.length) | 0]; return lastSong; }
-
   let songsOn = true, songGain = null;
   try { songsOn = localStorage.getItem("ca-dance-sound") !== "off"; } catch {}
   function stopSong() { if (songGain && actx) { try { songGain.gain.setTargetAtTime(0, actx.currentTime, 0.05); } catch {} } songGain = null; }
   const songLength = song => song.bars.reduce((a, b) => a + b.length, 0) * song.step + 0.8;
-  function playSong(key) {
+  function playSong(key, delay = 0) {
     const song = SONGS[key], secs = songLength(song);
     if (!songsOn) return secs;
     const ac = ctx(); if (!ac) return secs;
     stopSong();
     songGain = ac.createGain(); songGain.gain.value = 0.55; songGain.connect(ac.destination);
-    const out = songGain, t0 = ac.currentTime + 0.05, ST = song.step;
-    const tone = (freq, t, dur, type, vol) => {
-      const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.value = freq;
-      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      o.connect(g).connect(out); o.start(t); o.stop(t + dur + 0.03);
-    };
+    const out = songGain, t0 = ac.currentTime + 0.05 + delay, ST = song.step;
+    const tone = (freq, t, dur, type, vol) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.value = freq; g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur); o.connect(g).connect(out); o.start(t); o.stop(t + dur + 0.03); };
     const drum = (t, f0, f1, v, d) => { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + d * .75); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d); o.connect(g).connect(out); o.start(t); o.stop(t + d + 0.02); };
     const nb = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.05), ac.sampleRate), nd = nb.getChannelData(0);
     for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
     const hat = (t, vol) => { const s = ac.createBufferSource(), hp = ac.createBiquadFilter(), g = ac.createGain(); s.buffer = nb; hp.type = "highpass"; hp.frequency.value = 7000; g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.045); s.connect(hp).connect(g).connect(out); s.start(t); };
     let pos = 0;
     song.bars.forEach((bar, b) => {
-      const key = song.keys ? song.keys[b] : 0;
+      const key2 = song.keys ? song.keys[b] : 0;
       bar.forEach((n, s) => {
         const t = t0 + (pos + s) * ST + (s % 2 && song.swing ? song.swing * ST : 0);
-        if (n !== null) tone(f(n + key), t, ST * 0.95, song.wave, song.vol);
-        const bn = song.bass[Math.floor(s / 2) % 8] + key;
+        if (n !== null) tone(f(n + key2), t, ST * 0.95, song.wave, song.vol);
+        const bn = song.bass[Math.floor(s / 2) % 8] + key2;
         if (song.disco) tone(f(bn + (s % 2 ? 12 : 0)), t, ST * 0.9, "triangle", 0.2);
         else if (s % 2 === 0) tone(f(bn), t, ST * 1.8, "triangle", 0.22);
         if (song.tabla) { if (s % 4 === 0) drum(t, 180, 70, .45, .25); if (s % 4 === 2 || s % 8 === 7) drum(t, 520, 380, .22, .12); }
@@ -845,13 +1235,58 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
     return secs;
   }
 
-  // Calm background music: slow generative pads with soft bells, through a gentle echo.
-  const CALM_VOL = 0.22;
-  const calm = { on: true, running: false, gain: null, input: null, timer: null, next: 0, idx: 0 };
+  // ---------- Meme sounds (your files) ----------
+  let memesOn = true;
+  try { memesOn = localStorage.getItem("ca-dance-memes") !== "off"; } catch {}
+  const memeBuf = {}, memeLoad = {};
+  let memeSrc = null, memeGain = null, playingMeme = null;
+  function loadMeme(id) {
+    if (memeBuf[id]) return Promise.resolve(memeBuf[id]);
+    if (!memeLoad[id]) memeLoad[id] = fetch(`memes/${id}.mp3`).then(r => { if (!r.ok) throw new Error("missing"); return r.arrayBuffer(); })
+      .then(ab => new Promise((res, rej) => ctx().decodeAudioData(ab, res, rej))).then(b => (memeBuf[id] = b)).catch(e => { delete memeLoad[id]; throw e; });
+    return memeLoad[id];
+  }
+  function stopMeme() { try { memeSrc?.stop(); } catch {} memeSrc = null; playingMeme = null; renderMemePlaying(); }
+  async function playMeme(id) {
+    const ac = ctx(); if (!ac) return 0;
+    stopMeme();
+    try {
+      const buf = await loadMeme(id);
+      if (!memeGain) { memeGain = ac.createGain(); memeGain.gain.value = 0.9; memeGain.connect(ac.destination); }
+      const src = ac.createBufferSource(); src.buffer = buf; src.connect(memeGain); src.start();
+      memeSrc = src; playingMeme = id; renderMemePlaying();
+      duckCalm(true);
+      src.onended = () => { if (memeSrc === src) { memeSrc = null; playingMeme = null; renderMemePlaying(); if (partyEl.hidden) duckCalm(false); } };
+      return buf.duration;
+    } catch { toast("Couldn't play that sound."); return 0; }
+  }
+  const memeFor = trig => { const v = S.memeMap[trig]; if (v === "none") return null; return v || (TRIGGERS.find(t => t[0] === trig) || [])[2] || null; };
+  function playMemeFor(trig) { const id = memeFor(trig); if (memesOn && id) return playMeme(id); return Promise.resolve(0); }
+  const memeName = id => (S.memeNames[id] || "").trim() || MEMES.find(m => m.id === id).name;
+  function buildMemes() {
+    $("memeGrid").innerHTML = MEMES.map((m, k) => `<button type="button" class="meme" data-id="${m.id}"><span class="mi" aria-hidden="true">${MEME_ICONS[k]}</span><b></b><small>${m.dur.toFixed(1)} s</small></button>`).join("");
+    $("memeGrid").querySelectorAll(".meme").forEach(b => b.addEventListener("click", () => { if (playingMeme === b.dataset.id) stopMeme(); else playMeme(b.dataset.id); }));
+    $("memeSet").innerHTML = TRIGGERS.map(([k, txt]) => `<label><span>${txt}</span><select id="mm-${k}" data-k="${k}"></select></label>`).join("");
+    $("memeSet").querySelectorAll("select").forEach(s => s.addEventListener("change", () => { S.memeMap[s.dataset.k] = s.value; persist(); if (s.value !== "none" && memesOn) playMeme(s.value); }));
+    $("memeNames").innerHTML = MEMES.map(m => `<input class="name-in" id="mn-${m.id}" data-id="${m.id}" maxlength="24" aria-label="Name for ${m.name}">`).join("");
+    $("memeNames").querySelectorAll("input").forEach(i => i.addEventListener("change", () => { S.memeNames[i.dataset.id] = i.value.slice(0, 24); renderMemes(); persist(); }));
+  }
+  function renderMemes() {
+    $("memeGrid").querySelectorAll(".meme").forEach(b => { b.querySelector("b").textContent = memeName(b.dataset.id); });
+    $("memeSet").querySelectorAll("select").forEach(s => {
+      const cur = memeFor(s.dataset.k) || "none";
+      s.innerHTML = `<option value="none">No meme</option>` + MEMES.map(m => `<option value="${m.id}">${esc(memeName(m.id))}</option>`).join("");
+      s.value = cur;
+    });
+    $("memeNames").querySelectorAll("input").forEach(i => { if (document.activeElement !== i) { i.value = S.memeNames[i.dataset.id] || ""; i.placeholder = MEMES.find(m => m.id === i.dataset.id).name; } });
+  }
+  function renderMemePlaying() { $("memeGrid").querySelectorAll(".meme").forEach(b => b.classList.toggle("playing", b.dataset.id === playingMeme)); }
+
+  // ---------- Calm background music ----------
+  const CALM_VOL = 0.22, calm = { on: true, running: false, gain: null, input: null, timer: null, next: 0, idx: 0 };
   try { calm.on = localStorage.getItem("ca-dance-calm") !== "off"; } catch {}
-  const CHORDS = [[-12, -5, 0, 4, 11], [-15, -8, -3, 0, 7], [-19, -12, -7, -3, 4], [-17, -10, -5, 2, 9]]; // Cmaj7, Am7, Fmaj7, G6/9 around C4
-  const BELLS = [12, 14, 16, 19, 21, 24];
-  const C4 = 261.63, g4 = s => C4 * Math.pow(2, s / 12);
+  const CHORDS = [[-12, -5, 0, 4, 11], [-15, -8, -3, 0, 7], [-19, -12, -7, -3, 4], [-17, -10, -5, 2, 9]];
+  const BELLS = [12, 14, 16, 19, 21, 24], C4 = 261.63, g4 = s => C4 * Math.pow(2, s / 12);
   function startCalm() {
     if (calm.running || !calm.on) return;
     const ac = ctx(); if (!ac) return;
@@ -859,25 +1294,21 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
     const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 1400;
     const dl = ac.createDelay(); dl.delayTime.value = 0.48; const fb = ac.createGain(); fb.gain.value = 0.38;
     lp.connect(calm.gain); lp.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(calm.gain);
-    calm.gain.connect(ac.destination); calm.input = lp;
-    calm.next = ac.currentTime + 0.1; calm.running = true;
-    calm.timer = setInterval(scheduleCalm, 500); scheduleCalm(); paintCalm();
-    if (!partyEl.hidden) duckCalm(true);
+    calm.gain.connect(ac.destination); calm.input = lp; calm.next = ac.currentTime + 0.1; calm.running = true;
+    calm.timer = setInterval(scheduleCalm, 500); scheduleCalm(); paintChips();
+    if (!partyEl.hidden || memeSrc) duckCalm(true);
   }
   function scheduleCalm() {
     if (!calm.running) return;
     const ac = actx, LEN = 8;
     while (calm.next < ac.currentTime + 2.5) {
       const t = calm.next, chord = CHORDS[calm.idx % CHORDS.length];
-      chord.forEach((s, k) => {
-        [["sine", 0, .05], ["triangle", 7, .018]].forEach(([type, det, v]) => {
-          const o = ac.createOscillator(), g = ac.createGain(), vv = v * (k === 0 ? 1.3 : 1);
-          o.type = type; o.frequency.value = g4(s); o.detune.value = det;
-          g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vv, t + 2.5);
-          g.gain.setValueAtTime(vv, t + LEN - 1); g.gain.linearRampToValueAtTime(0.0001, t + LEN + 2);
-          o.connect(g).connect(calm.input); o.start(t); o.stop(t + LEN + 2.2);
-        });
-      });
+      chord.forEach((s, k) => [["sine", 0, .05], ["triangle", 7, .018]].forEach(([type, det, v]) => {
+        const o = ac.createOscillator(), g = ac.createGain(), vv = v * (k === 0 ? 1.3 : 1);
+        o.type = type; o.frequency.value = g4(s); o.detune.value = det;
+        g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vv, t + 2.5); g.gain.setValueAtTime(vv, t + LEN - 1); g.gain.linearRampToValueAtTime(0.0001, t + LEN + 2);
+        o.connect(g).connect(calm.input); o.start(t); o.stop(t + LEN + 2.2);
+      }));
       for (let b = 0; b < 3; b++) {
         const bt = t + 1 + Math.random() * (LEN - 2), o = ac.createOscillator(), g = ac.createGain();
         o.type = "sine"; o.frequency.value = g4(BELLS[(Math.random() * BELLS.length) | 0]);
@@ -887,116 +1318,136 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
       calm.next += LEN; calm.idx++;
     }
   }
-  function stopCalm() {
-    if (!calm.running) return;
-    clearInterval(calm.timer); calm.running = false;
-    try { calm.gain.gain.setTargetAtTime(0.0001, actx.currentTime, 0.4); } catch {}
-    paintCalm();
-  }
+  function stopCalm() { if (!calm.running) return; clearInterval(calm.timer); calm.running = false; try { calm.gain.gain.setTargetAtTime(0.0001, actx.currentTime, 0.4); } catch {} paintChips(); }
   function duckCalm(down) { if (calm.running && actx) calm.gain.gain.setTargetAtTime(down ? CALM_VOL * 0.12 : CALM_VOL, actx.currentTime, 0.25); }
-  const calmBtn = document.getElementById("calmBtn"), songBtn = document.getElementById("songBtn");
-  function paintCalm() {
-    calmBtn.setAttribute("aria-pressed", calm.on && calm.running);
-    calmBtn.classList.toggle("waiting", calm.on && !calm.running);
-    document.getElementById("calmLabel").textContent = !calm.on ? "Calm music off" : calm.running ? "Calm music on" : "Calm music: tap anywhere";
+  function paintChips() {
+    const cb = $("calmBtn");
+    cb.setAttribute("aria-pressed", calm.on && calm.running); cb.classList.toggle("waiting", calm.on && !calm.running);
+    $("calmLabel").textContent = !calm.on ? "Calm music off" : calm.running ? "Calm music on" : "Calm music: tap anywhere";
+    $("songBtn").setAttribute("aria-pressed", songsOn); $("songLabel").textContent = songsOn ? "Party songs on" : "Party songs off";
+    $("memeBtn").setAttribute("aria-pressed", memesOn); $("memeLabel").textContent = memesOn ? "Memes on" : "Memes off";
   }
-  function paintSongs() { songBtn.setAttribute("aria-pressed", songsOn); document.getElementById("songLabel").textContent = songsOn ? "Party songs on" : "Party songs off"; }
-  calmBtn.addEventListener("click", () => {
-    calm.on = !(calm.on && calm.running);
-    try { localStorage.setItem("ca-dance-calm", calm.on ? "on" : "off"); } catch {}
-    if (calm.on) startCalm(); else stopCalm();
-    paintCalm();
-  });
-  songBtn.addEventListener("click", () => {
-    songsOn = !songsOn; paintSongs();
-    try { localStorage.setItem("ca-dance-sound", songsOn ? "on" : "off"); } catch {}
-    if (!songsOn) stopSong();
-  });
+  $("calmBtn").addEventListener("click", () => { calm.on = !(calm.on && calm.running); try { localStorage.setItem("ca-dance-calm", calm.on ? "on" : "off"); } catch {} if (calm.on) startCalm(); else stopCalm(); paintChips(); });
+  $("songBtn").addEventListener("click", () => { songsOn = !songsOn; try { localStorage.setItem("ca-dance-sound", songsOn ? "on" : "off"); } catch {} if (!songsOn) stopSong(); paintChips(); });
+  $("memeBtn").addEventListener("click", () => { memesOn = !memesOn; try { localStorage.setItem("ca-dance-memes", memesOn ? "on" : "off"); } catch {} if (!memesOn) stopMeme(); paintChips(); });
   // Browsers only allow sound after your first tap, so calm music starts then.
   document.addEventListener("pointerdown", e => { if (calm.on && !calm.running && !e.target.closest("#calmBtn")) startCalm(); }, true);
-  paintCalm(); paintSongs();
 
   // ---------- Party ----------
-  const partyEl = document.getElementById("party"), partyDancer = document.getElementById("partyDancer");
+  const partyEl = $("party"), partyDancer = $("partyDancer");
   let partyTimer = null, confettiStop = null;
-  function party(songKey, title, sub, move) {
-    document.getElementById("partyTitle").textContent = title;
-    document.getElementById("partySub").textContent = sub;
-    document.getElementById("partySong").textContent = songsOn ? `Now playing: ${SONGS[songKey].name}` : "";
+  async function party(songKey, title, sub, move, memeTrig) {
+    $("partyTitle").textContent = title; $("partySub").textContent = sub;
     partyDancer.classList.remove("move-a", "move-b", "move-c");
     partyDancer.classList.add(move || (Math.random() < .5 ? "move-a" : "move-b"));
-    partyEl.hidden = false;
-    duckCalm(true);
-    const secs = playSong(songKey);
+    partyEl.hidden = false; duckCalm(true);
     confettiStop?.(); confettiStop = confetti(songKey === "finale" ? 3 : songKey === "anthem" ? 2 : 1);
-    clearTimeout(partyTimer); partyTimer = setTimeout(closeParty, Math.max(3, secs) * 1000);
+    const memeId = memesOn && memeTrig ? memeFor(memeTrig) : null;
+    const songTxt = songsOn ? SONGS[songKey].name : "";
+    $("partySong").textContent = [memeId ? memeName(memeId) : "", songTxt].filter(Boolean).length ? `Now playing: ${[memeId ? memeName(memeId) : "", songTxt].filter(Boolean).join(", then ")}` : "";
+    clearTimeout(partyTimer);
+    let memeDur = 0;
+    if (memeId) { ctx(); memeDur = (MEMES.find(m => m.id === memeId)?.dur || 0); playMeme(memeId); }
+    const secs = playSong(songKey, memeDur ? memeDur + 0.2 : 0);
+    partyTimer = setTimeout(closeParty, Math.max(3, memeDur + (songsOn ? secs : 0.5)) * 1000);
   }
-  function closeParty() { clearTimeout(partyTimer); partyEl.hidden = true; stopSong(); duckCalm(false); confettiStop?.(); confettiStop = null; }
+  function closeParty() { clearTimeout(partyTimer); partyEl.hidden = true; stopSong(); stopMeme(); duckCalm(false); confettiStop?.(); confettiStop = null; }
   partyEl.addEventListener("click", e => { e.stopPropagation(); closeParty(); });
   document.addEventListener("keydown", e => { if (e.key === "Escape" && !partyEl.hidden) closeParty(); });
   function confetti(level) {
-    const cv = document.getElementById("confetti"), cx = cv.getContext("2d"), dpr = Math.min(2, window.devicePixelRatio || 1);
+    const cv = $("confetti"), c2 = cv.getContext("2d"), dpr = Math.min(2, window.devicePixelRatio || 1);
     cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
     const cols = ["#ffb627", "#ff4f9a", "#35d0bf", "#b48cff", "#fbf1e3", "#ff8a3d"];
     const ps = Array.from({ length: level === 3 ? 320 : level === 2 ? 220 : 130 }, () => ({ x: Math.random() * cv.width, y: -Math.random() * cv.height * .8, vx: (Math.random() - .5) * 2 * dpr, vy: (2 + Math.random() * 3) * dpr, r: (4 + Math.random() * 5) * dpr, a: Math.random() * 6.3, va: (Math.random() - .5) * .3, c: cols[(Math.random() * cols.length) | 0], s: Math.random() < .3 }));
     let raf, alive = true;
     const step = () => {
-      if (!alive) return; cx.clearRect(0, 0, cv.width, cv.height);
+      if (!alive) return; c2.clearRect(0, 0, cv.width, cv.height);
       for (const p of ps) {
         p.x += p.vx + Math.sin(p.a) * .6; p.y += p.vy; p.a += p.va;
         if (p.y > cv.height + 20) { p.y = -20; p.x = Math.random() * cv.width; }
-        cx.save(); cx.translate(p.x, p.y); cx.rotate(p.a); cx.fillStyle = p.c;
-        if (p.s) { cx.beginPath(); cx.arc(0, 0, p.r * .6, 0, 6.3); cx.fill(); } else cx.fillRect(-p.r, -p.r * .4, p.r * 2, p.r * .8);
-        cx.restore();
+        c2.save(); c2.translate(p.x, p.y); c2.rotate(p.a); c2.fillStyle = p.c;
+        if (p.s) { c2.beginPath(); c2.arc(0, 0, p.r * .6, 0, 6.3); c2.fill(); } else c2.fillRect(-p.r, -p.r * .4, p.r * 2, p.r * .8);
+        c2.restore();
       }
       raf = requestAnimationFrame(step);
     };
     if (!matchMedia("(prefers-reduced-motion: reduce)").matches) step();
-    return () => { alive = false; cancelAnimationFrame(raf); cx.clearRect(0, 0, cv.width, cv.height); };
+    return () => { alive = false; cancelAnimationFrame(raf); c2.clearRect(0, 0, cv.width, cv.height); };
   }
 
   // ---------- Chintu dances whenever you click anything ----------
-  const stageSvg = document.getElementById("stageSvg");
-  const MOVES = ["move-a", "move-b", "move-c"];
+  const stageSvg = $("stageSvg"), MOVES = ["move-a", "move-b", "move-c"];
   let stageTimer = null;
   function stageDance() {
-    const mv = MOVES[(Math.random() * MOVES.length) | 0], climber = ladder.querySelector(".dancer");
-    [stageSvg, climber].forEach(el => { if (!el) return; el.classList.remove("idle", ...MOVES); el.classList.add(mv); });
+    const mv = MOVES[(Math.random() * MOVES.length) | 0], els = [stageSvg, ladder.querySelector(".dancer")];
+    els.forEach(el => { if (!el) return; el.classList.remove("idle", ...MOVES); el.classList.add(mv); });
     clearTimeout(stageTimer);
     stageTimer = setTimeout(() => [stageSvg, ladder.querySelector(".dancer")].forEach(el => { if (!el) return; el.classList.remove(...MOVES); el.classList.add("idle"); }), 1700);
   }
-  document.addEventListener("click", e => { if (partyEl.hidden && !e.target.closest("textarea, input")) stageDance(); });
+  document.addEventListener("click", e => { if (partyEl.hidden && !e.target.closest("textarea, input, select, .modal")) stageDance(); });
+
+  // ---------- Focus timer ----------
+  const FKEY = "ca-dance-focus";
+  let F = { dur: 25, endAt: null, remaining: null };
+  try { const v = JSON.parse(localStorage.getItem(FKEY) || "null"); if (v) F = { ...F, ...v }; } catch {}
+  const saveF = () => { try { localStorage.setItem(FKEY, JSON.stringify(F)); } catch {} };
+  const focusSvg = $("focusSvg");
+  function setDur(d) { if (F.endAt) return; F.dur = d; F.remaining = null; saveF(); paintFocus(); }
+  $("f25").addEventListener("click", () => setDur(25)); $("f50").addEventListener("click", () => setDur(50));
+  $("fStart").addEventListener("click", () => {
+    if (F.endAt) { F.remaining = F.endAt - Date.now(); F.endAt = null; }
+    else { F.endAt = Date.now() + (F.remaining ?? F.dur * 60000); F.remaining = null; }
+    saveF(); paintFocus();
+  });
+  $("fReset").addEventListener("click", () => { F.endAt = null; F.remaining = null; saveF(); paintFocus(); });
+  function focusComplete(late) {
+    const d = today();
+    F.endAt = null; F.remaining = null; saveF();
+    S.focus[d] = { n: ((S.focus[d] && S.focus[d].n) || 0) + 1, min: ((S.focus[d] && S.focus[d].min) || 0) + F.dur };
+    logActivity(`Focus ${F.dur} min`); renderAll(); persist(); paintFocus();
+    if (late) toast(`Your ${F.dur}-minute focus session finished while you were away. Counted!`);
+    else party("focus", "Focus session done!", `${F.dur} minutes of real study. Take a 5-minute break, then go again.`, "move-a", "focusDone");
+  }
+  function paintFocus() {
+    const running = !!F.endAt, left = running ? Math.max(0, F.endAt - Date.now()) : (F.remaining ?? F.dur * 60000);
+    const mm = Math.floor(left / 60000), ss = Math.floor(left / 1000) % 60;
+    $("focusTime").textContent = `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
+    $("focusBar").style.width = `${(1 - left / (F.dur * 60000)) * 100}%`;
+    $("fStart").textContent = running ? "Pause" : F.remaining ? "Resume" : "Start";
+    $("f25").setAttribute("aria-pressed", F.dur === 25); $("f50").setAttribute("aria-pressed", F.dur === 50);
+    $("f25").disabled = $("f50").disabled = running;
+    focusSvg.classList.toggle("reading", running); focusSvg.classList.toggle("idle", !running);
+  }
+  function renderFocusMeta() {
+    const fd = S.focus[today()] || { n: 0, min: 0 };
+    const total = Object.values(S.focus).reduce((a, v) => a + (v.min || 0), 0);
+    $("focusMeta").innerHTML = `Today: <b>${fd.n} session${fd.n === 1 ? "" : "s"}</b> · ${fd.min} min. All time: ${(total / 60).toFixed(1)} hours.`;
+  }
 
   // ---------- Pendulum wall clock ----------
   (function ticks() {
     let h = "";
-    for (let i = 0; i < 60; i++) {
-      const a = i * 6 * Math.PI / 180, r1 = i % 5 ? 54 : 50, r2 = 57;
-      h += `<line x1="${(100 + r1 * Math.sin(a)).toFixed(2)}" y1="${(84 - r1 * Math.cos(a)).toFixed(2)}" x2="${(100 + r2 * Math.sin(a)).toFixed(2)}" y2="${(84 - r2 * Math.cos(a)).toFixed(2)}" stroke="#1c1030" stroke-width="${i % 5 ? 1 : 2.5}"/>`;
-    }
-    document.getElementById("ticks").innerHTML = h;
+    for (let i = 0; i < 60; i++) { const a = i * 6 * Math.PI / 180, r1 = i % 5 ? 54 : 50, r2 = 57; h += `<line x1="${(100 + r1 * Math.sin(a)).toFixed(2)}" y1="${(84 - r1 * Math.cos(a)).toFixed(2)}" x2="${(100 + r2 * Math.sin(a)).toFixed(2)}" y2="${(84 - r2 * Math.cos(a)).toFixed(2)}" stroke="#1c1030" stroke-width="${i % 5 ? 1 : 2.5}"/>`; }
+    $("ticks").innerHTML = h;
   })();
-  const hH = document.getElementById("hHour"), hM = document.getElementById("hMin"), hS = document.getElementById("hSec"), wallTime = document.getElementById("wallTime");
+  const hH = $("hHour"), hM = $("hMin"), hS = $("hSec"), wallTime = $("wallTime");
   let lastSec = -1, secTurns = 0;
   function wall(now) {
     const d = new Date(now + IST_OFF), h = d.getUTCHours(), m = d.getUTCMinutes(), s = d.getUTCSeconds();
     if (s === lastSec) return;
     if (lastSec !== -1 && s < lastSec) secTurns++;
     lastSec = s;
-    hS.style.transform = `rotate(${secTurns * 360 + s * 6}deg)`;
-    hM.style.transform = `rotate(${m * 6 + s * 0.1}deg)`;
-    hH.style.transform = `rotate(${(h % 12) * 30 + m * 0.5}deg)`;
+    hS.style.transform = `rotate(${secTurns * 360 + s * 6}deg)`; hM.style.transform = `rotate(${m * 6 + s * 0.1}deg)`; hH.style.transform = `rotate(${(h % 12) * 30 + m * 0.5}deg)`;
     const p = n => String(n).padStart(2, "0");
     wallTime.textContent = `${p(h % 12 || 12)}:${p(m)}:${p(s)} ${h < 12 ? "AM" : "PM"}`;
+    if (F.endAt) { if (Date.now() >= F.endAt) focusComplete(Date.now() - F.endAt > 60000); else paintFocus(); }
   }
 
   // ---------- Reverse stopwatch ----------
   let mode = "sprint", lastNote = "", lastMin = -1, lastDay = today();
   try { if (localStorage.getItem("ca-dance-mode") === "full") mode = "full"; } catch {}
-  const digits = document.getElementById("digits"), bar = document.getElementById("bar"), barWrap = document.getElementById("barWrap");
-  const clockEl = document.getElementById("clock"), note = document.getElementById("clockNote"), clockLabel = document.getElementById("clockLabel");
-  const bS = document.getElementById("modeSprint"), bF = document.getElementById("modeFull");
-  const FULL_FROM = IST(2026, 11, 7);
+  const digits = $("digits"), bar = $("bar"), barWrap = $("barWrap"), clockEl = $("clock"), note = $("clockNote"), clockLabel = $("clockLabel");
+  const bS = $("modeSprint"), bF = $("modeFull"), FULL_FROM = IST(2026, 11, 7);
   function setMode(m) { mode = m; bS.setAttribute("aria-pressed", m === "sprint"); bF.setAttribute("aria-pressed", m === "full"); try { localStorage.setItem("ca-dance-mode", m); } catch {} lastNote = ""; lastMin = -1; }
   bS.addEventListener("click", () => setMode("sprint")); bF.addEventListener("click", () => setMode("full"));
   setMode(mode);
@@ -1021,7 +1472,7 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
       const pct = Math.max(0, Math.min(100, ms / total * 100));
       bar.style.width = pct + "%"; barWrap.setAttribute("aria-valuenow", pct.toFixed(0)); lastMin = minuteKey;
       updatePace(ALL.filter(k => S.done[k]).length);
-      if (today() !== lastDay) { lastDay = today(); renderAll(); } // a new day: refresh reminders and the log
+      if (today() !== lastDay) { lastDay = today(); renderAll(); }
     }
     clockEl.classList.toggle("red", ms > 0 && ms < 24 * 3600000);
     if (msg !== lastNote) { note.innerHTML = msg; lastNote = msg; }
@@ -1029,8 +1480,8 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
     requestAnimationFrame(tick);
   }
 
-  buildBoard();
-  renderAll();
+  buildBoard(); buildCalendar(); buildMemes();
+  renderAll(); paintChips(); paintFocus();
   tick();
   connect();
 })();
