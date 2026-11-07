@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Baloo+2:wght@400;600;800&family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Baloo+2:wght@400;600;800&family=Share+Tech+Mono&family=Kalam:wght@400;700&display=swap">
 <style>
 /* Layout: a sunrise above the Himalaya. A live 3D sky (floating islands, light rays, clouds, gold dust) sits behind
    glass panels: the Sankat Mochan hero card, alerts, stopwatch + pendulum clock, focus timer + streak, the dancer
@@ -389,6 +389,78 @@ select option { background: #0e2350; }
 .party-hint { font-size: 13px; color: var(--ink-dim); }
 footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 80ch; margin: 0 auto; }
 
+
+/* ---------- Study Room: a night desk that turns to sunrise as you study ---------- */
+.room[hidden], .breath[hidden] { display: none; }
+.room { position: fixed; inset: 0; z-index: 55; overflow: hidden; color: #fdf0dc; font-family: var(--body); background: #120a06; }
+.room-wall { position: absolute; inset: 0; background: radial-gradient(80vmax 55vmax at 18% 70%, rgba(255,160,70,.24), transparent 60%), radial-gradient(60vmax 40vmax at 85% 75%, rgba(255,140,60,.12), transparent 60%), linear-gradient(180deg, #27170e 0%, #1a0f08 60%, #120a05 100%); }
+.room-wall::after { content: ""; position: absolute; inset: 0; opacity: .25; background: repeating-linear-gradient(90deg, rgba(255,255,255,.02) 0 2px, transparent 2px 90px); }
+.lamp-glow { position: absolute; left: -10vmax; top: 30%; width: 60vmax; height: 60vmax; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,190,110,.3), transparent); animation: flicker 5s ease-in-out infinite; pointer-events: none; }
+@keyframes flicker { 0%, 100% { opacity: .9; } 45% { opacity: 1; } 50% { opacity: .82; } 55% { opacity: .97; } }
+.desk { position: absolute; left: 0; right: 0; bottom: 0; height: 34%; background: linear-gradient(180deg, #7a4a2b 0%, #5a3520 12%, #3e2414 60%, #2a170c 100%); border-top: 3px solid #9a6a42; box-shadow: inset 0 18px 30px -10px rgba(0,0,0,.45); }
+.desk::before { content: ""; position: absolute; inset: 0; opacity: .35; background: repeating-linear-gradient(178deg, rgba(0,0,0,.18) 0 2px, transparent 2px 22px); }
+.room-inner { position: relative; height: 100%; display: flex; flex-direction: column; align-items: center; gap: 10px;
+  padding: max(14px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(14px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); overflow-y: auto; }
+.room-top { width: min(1000px, 100%); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.room-chip { font-size: 13px; font-weight: 700; padding: 5px 12px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); }
+.room-chip.warn { background: rgba(255,79,154,.2); border-color: var(--rani); }
+.room-sounds { display: inline-flex; gap: 4px; background: rgba(0,0,0,.25); border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: 3px; margin-left: auto; }
+.room-sounds button { border: 0; background: transparent; color: #e9d9c2; padding: 4px 12px; border-radius: 999px; font-weight: 700; font-size: 13px; cursor: pointer; }
+.room-sounds button[aria-pressed="true"] { background: #ffcf7a; color: #2a1600; }
+.window { position: relative; width: min(600px, 88vw); aspect-ratio: 16 / 8.5; max-height: 36vh; border-radius: 120px 120px 8px 8px; overflow: hidden;
+  box-shadow: 0 0 0 12px #4a2c18, 0 0 0 16px #2a170c, 0 0 0 17px rgba(255,200,140,.15), 0 30px 60px -20px #000; margin-top: 14px; }
+.window canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.window .bar { position: absolute; background: #4a2c18; box-shadow: 0 0 6px rgba(0,0,0,.5); }
+.window .bar.v { left: 50%; top: 0; bottom: 0; width: 8px; transform: translateX(-50%); }
+.window .bar.h { left: 0; right: 0; top: 55%; height: 8px; }
+.window-sill { width: min(660px, 94vw); height: 12px; margin-top: -4px; border-radius: 4px; background: linear-gradient(180deg, #8a5a36, #4a2c18); box-shadow: 0 8px 16px -6px #000; }
+.room-timer { font-family: var(--mono); font-size: clamp(56px, 13vw, 128px); line-height: 1; font-variant-numeric: tabular-nums; color: #ffe3ae; text-shadow: 0 0 34px rgba(255,180,80,.55), 0 4px 0 rgba(0,0,0,.4); margin-top: 6px; }
+.room-quote { margin: 0; max-width: 46ch; text-align: center; font-family: "Kalam", "Baloo 2", cursive; font-size: clamp(17px, 2.6vw, 22px); color: #f3dcb8; min-height: 1.6em; transition: opacity .6s; }
+.room-inner > * { flex-shrink: 0; }
+.room-desk { width: min(1000px, 100%); margin-top: auto; display: grid; grid-template-columns: 1fr minmax(0, 560px) 1fr; align-items: end; gap: 12px; }
+.notebook { position: relative; transform: rotate(-1.5deg); padding: 16px 20px 18px 58px; border-radius: 6px; color: #23324f; font-family: "Kalam", cursive; min-height: 170px;
+  background: linear-gradient(90deg, transparent 44px, #e66 44px 46px, transparent 46px), repeating-linear-gradient(180deg, #fbf4e2 0 31px, #c6d4ec 31px 32px);
+  box-shadow: 0 2px 0 #e9dfc6, 0 4px 0 #ddd1b4, 0 6px 0 #cfc29f, 0 26px 40px -14px rgba(0,0,0,.8); }
+.nb-date { font-size: 15px; color: #6a5a48; line-height: 32px; }
+.nb-task { font-size: clamp(20px, 3vw, 26px); font-weight: 700; line-height: 32px; min-height: 64px; }
+.nb-task .caret { display: inline-block; width: 2px; height: 1em; background: #23324f; vertical-align: -2px; margin-left: 2px; animation: blink 1s steps(2) infinite; }
+.nb-detail { font-size: 17px; line-height: 32px; color: #3a4a6a; }
+.nb-end textarea { width: 100%; min-height: 64px; background: transparent; border: 0; border-bottom: 2px dashed #9aa9c6; border-radius: 0; color: #23324f; font-family: "Kalam", cursive; font-size: 19px; line-height: 32px; padding: 0; resize: none; }
+.nb-end .btn { margin-top: 8px; }
+.diya, .chai { justify-self: center; position: relative; }
+.diya svg, .chai svg { display: block; filter: drop-shadow(0 12px 10px rgba(0,0,0,.6)); }
+.flame { transform-origin: 50px 52px; animation: flame .9s ease-in-out infinite alternate; }
+@keyframes flame { 0% { transform: scale(1, 1) rotate(-3deg); } 100% { transform: scale(.88, 1.12) rotate(3deg); } }
+.diya-glow { position: absolute; left: 50%; top: 0; width: 160px; height: 160px; transform: translate(-50%, -45%); border-radius: 50%; background: radial-gradient(closest-side, rgba(255,190,90,.5), transparent); animation: flicker 2.2s ease-in-out infinite; pointer-events: none; }
+.steam { position: absolute; left: 50%; bottom: 78px; width: 60px; height: 70px; transform: translateX(-50%); pointer-events: none; }
+.steam i { position: absolute; bottom: 0; width: 8px; height: 40px; border-radius: 50%; background: rgba(255,255,255,.28); filter: blur(5px); animation: steam 3.2s ease-in infinite; }
+.steam i:nth-child(1) { left: 14px; } .steam i:nth-child(2) { left: 28px; animation-delay: 1s; } .steam i:nth-child(3) { left: 40px; animation-delay: 2s; }
+@keyframes steam { 0% { transform: translateY(0) scaleX(1); opacity: 0; } 20% { opacity: .9; } 100% { transform: translateY(-50px) scaleX(2.2); opacity: 0; } }
+.room-ctrl { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; align-items: center; padding: 6px 0 4px; position: relative; }
+.room-ctrl .modes { background: rgba(0,0,0,.3); }
+.room-ctrl .modes button { color: #e9d9c2; }
+.btn.big { font-size: 17px; padding: 11px 26px; }
+.btn.warm { background: linear-gradient(180deg, #ffd884, #f0a028); color: #2a1600; }
+.btn.dim { background: rgba(255,255,255,.1); color: #fdf0dc; border: 1px solid rgba(255,255,255,.18); }
+.btn.dim.confirm { border-color: var(--rani); color: #ff9bc4; }
+.breath { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; background: rgba(10,6,3,.82); backdrop-filter: blur(4px); text-align: center; }
+.breath-wrap { display: grid; justify-items: center; gap: 26px; }
+.breath-circle { width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, rgba(255,214,140,.9), rgba(255,150,60,.25) 60%, transparent 72%); box-shadow: 0 0 60px rgba(255,170,70,.6); transition: transform 3.6s ease-in-out; }
+.breath-circle.in { transform: scale(1.9); }
+.breath-text { font-family: "Kalam", cursive; font-size: 30px; color: #ffe3ae; }
+.breath-sub { font-size: 14px; color: #cdb89c; }
+.hero-cta { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
+.hero-cta small { color: var(--ink-dim); font-size: 13px; }
+.btn.glow { animation: ctaGlow 2.4s ease-in-out infinite; }
+@keyframes ctaGlow { 0%, 100% { box-shadow: 0 3px 0 rgba(0,0,0,.35), 0 0 0 0 rgba(255,190,80,.0); } 50% { box-shadow: 0 3px 0 rgba(0,0,0,.35), 0 0 28px 4px rgba(255,190,80,.55); } }
+@media (max-width: 720px) {
+  .room-desk { grid-template-columns: minmax(0, 1fr); }
+  .diya, .chai { display: none; }
+  .room-sounds { margin-left: 0; }
+  .window { max-height: 26vh; }
+}
+@media (prefers-reduced-motion: reduce) { .flame, .steam i, .lamp-glow, .diya-glow, .btn.glow { animation: none; } .breath-circle { transition-duration: .01s; } }
+
 @media (max-width: 960px) { .cal { grid-template-columns: repeat(2, minmax(0, 1fr)); } .memes, .names { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 860px) {
   .hero { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; }
@@ -469,6 +541,7 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
         <div class="lift-bar" role="progressbar" aria-label="Mountain lifted" aria-valuemin="0" aria-valuemax="100" id="liftWrap"><i id="liftBar"></i></div>
         <div class="lift-parts" id="liftParts"></div>
       </div>
+      <div class="hero-cta"><button type="button" class="btn warm big glow" id="enterRoom">Enter the study room</button><small>A quiet room, one task, and the sun rises as you study.</small></div>
     </div>
   </section>
 
@@ -523,6 +596,7 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
             <button type="button" class="btn ghost" id="fReset">Reset</button>
           </div>
           <p class="focus-meta" id="focusMeta"></p>
+          <button type="button" class="btn warm" id="enterRoom2" style="margin-top:10px">Study in the room instead</button>
         </div>
       </div>
     </section>
@@ -614,6 +688,62 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
   <div class="sheet">
     <div class="sheet-head"><div><div class="eyebrow">Prove it before you tick it</div><h2 class="h2" id="quizTitle">Quiz</h2></div><button type="button" class="x" id="quizClose" aria-label="Close quiz">×</button></div>
     <div id="quizBody" style="display:grid; gap:12px"></div>
+  </div>
+</div>
+
+<div class="room" id="room" hidden role="dialog" aria-modal="true" aria-label="Study room">
+  <div class="room-wall"></div><div class="lamp-glow"></div><div class="desk"></div>
+  <div class="room-inner">
+    <div class="room-top">
+      <span class="room-chip" id="roomLeft">Phone checks: 0</span>
+      <span class="room-chip" id="roomToday">Today in the room: 0 min</span>
+      <div class="room-sounds" role="group" aria-label="Room sound">
+        <button type="button" data-snd="rain" aria-pressed="true">Rain</button>
+        <button type="button" data-snd="library" aria-pressed="false">Library</button>
+        <button type="button" data-snd="calm" aria-pressed="false">Calm music</button>
+        <button type="button" data-snd="silence" aria-pressed="false">Silence</button>
+      </div>
+      <button type="button" class="x" id="roomExit" aria-label="Leave the study room">×</button>
+    </div>
+    <div class="window"><canvas id="roomSky"></canvas><i class="bar v"></i><i class="bar h"></i></div>
+    <div class="window-sill"></div>
+    <div class="room-timer" id="roomTimer" aria-live="off">25:00</div>
+    <p class="room-quote" id="roomQuote">The night is quiet. Your competition is studying. So are you.</p>
+    <div class="room-desk">
+      <div class="diya"><div class="diya-glow"></div><svg width="100" height="90" viewBox="0 0 100 90" aria-hidden="true">
+        <path class="flame" d="M50 14 C58 28 62 40 50 52 C38 40 42 28 50 14 Z" fill="#ffcf5a"/><path class="flame" d="M50 26 C54 34 55 41 50 48 C45 41 46 34 50 26 Z" fill="#fff3c4"/>
+        <rect x="49" y="48" width="2" height="8" fill="#3a2414"/>
+        <path d="M14 56 Q50 50 86 56 Q80 80 50 82 Q20 80 14 56 Z" fill="#b5532a"/><path d="M14 56 Q50 62 86 56" stroke="#e9894a" stroke-width="3" fill="none"/>
+        <path d="M30 70 Q50 76 70 70" stroke="#f3b46a" stroke-width="2" fill="none" opacity=".7"/></svg></div>
+      <div class="notebook" id="notebook">
+        <div class="nb-date" id="nbDate"></div>
+        <div class="nb-task" id="nbTask"></div>
+        <div class="nb-detail" id="nbDetail"></div>
+        <div class="nb-end" id="nbEnd" hidden>
+          <textarea id="nbLearn" placeholder="One thing I learned tonight…" aria-label="One thing you learned"></textarea>
+          <button type="button" class="btn warm" id="nbSave">Save and celebrate</button>
+        </div>
+      </div>
+      <div class="chai"><div class="steam"><i></i><i></i><i></i></div><svg width="110" height="90" viewBox="0 0 110 90" aria-hidden="true">
+        <ellipse cx="50" cy="84" rx="44" ry="6" fill="rgba(0,0,0,.35)"/>
+        <path d="M14 22 H86 L80 76 Q78 84 70 84 H30 Q22 84 20 76 Z" fill="#f4efe6"/>
+        <path d="M86 32 Q104 32 102 50 Q100 66 82 64" stroke="#f4efe6" stroke-width="8" fill="none"/>
+        <ellipse cx="50" cy="22" rx="36" ry="7" fill="#c8874a"/><ellipse cx="50" cy="22" rx="36" ry="7" fill="none" stroke="#e8e0d2" stroke-width="3"/>
+        <path d="M22 40 H78" stroke="#d24b3a" stroke-width="5"/></svg></div>
+    </div>
+    <div class="room-ctrl">
+      <div class="modes" role="group" aria-label="Session length" id="roomDur">
+        <button type="button" data-min="25" aria-pressed="true">25 min</button>
+        <button type="button" data-min="50" aria-pressed="false">50 min</button>
+        <button type="button" data-min="90" aria-pressed="false">90 min</button>
+      </div>
+      <button type="button" class="btn warm big" id="roomGo">Begin</button>
+      <button type="button" class="btn dim" id="roomStop" hidden>End early</button>
+    </div>
+  </div>
+  <div class="breath" id="breath" hidden>
+    <div class="breath-wrap"><div class="breath-circle" id="breathCircle"></div><div class="breath-text" id="breathText">Breathe in</div>
+      <div class="breath-sub">Three slow breaths. Put the phone face down.</div><button type="button" class="btn dim" id="breathSkip">Skip</button></div>
   </div>
 </div>
 
@@ -1400,7 +1530,7 @@ ${notes.slice(0, 5000)}
   $("songBtn").addEventListener("click", () => { songsOn = !songsOn; try { localStorage.setItem("ca-dance-sound", songsOn ? "on" : "off"); } catch {} if (!songsOn) stopSong(); paintChips(); });
   $("memeBtn").addEventListener("click", () => { memesOn = !memesOn; try { localStorage.setItem("ca-dance-memes", memesOn ? "on" : "off"); } catch {} if (!memesOn) stopMeme(); paintChips(); });
   // Browsers only allow sound after your first tap, so calm music starts then.
-  document.addEventListener("pointerdown", e => { if (calm.on && !calm.running && !e.target.closest("#calmBtn")) startCalm(); }, true);
+  document.addEventListener("pointerdown", e => { if (calm.on && !calm.running && !e.target.closest("#calmBtn") && document.getElementById("room").hidden) startCalm(); }, true);
 
   // ---------- Party ----------
   const partyEl = $("party"), partyDancer = $("partyDancer");
@@ -1453,7 +1583,7 @@ ${notes.slice(0, 5000)}
     clearTimeout(stageTimer);
     stageTimer = setTimeout(() => [stageSvg, ladder.querySelector(".dancer")].forEach(el => { if (!el) return; el.classList.remove(...MOVES); el.classList.add("idle"); }), 1700);
   }
-  document.addEventListener("click", e => { if (partyEl.hidden && !e.target.closest("textarea, input, select, .modal")) stageDance(); });
+  document.addEventListener("click", e => { if (partyEl.hidden && !e.target.closest("textarea, input, select, .modal, .room")) stageDance(); });
 
   // ---------- Focus timer ----------
   const FKEY = "ca-dance-focus";
@@ -1548,6 +1678,234 @@ ${notes.slice(0, 5000)}
     wall(now);
     requestAnimationFrame(tick);
   }
+
+  // ---------- Study Room ----------
+  const room = $("room"), roomSky = $("roomSky"), rsx = roomSky.getContext("2d");
+  const R = { dur: 25, endAt: null, remaining: null, startedAt: null, done: false, left: 0, leftMs: 0, awayAt: null, sound: "rain", nodes: [], timers: [], calmWas: false, quoteT: null, raf: null, task: null, typed: null };
+  try { const v = JSON.parse(localStorage.getItem("ca-room") || "null"); if (v) { if ([25, 50, 90].includes(v.dur)) R.dur = v.dur; if (["rain", "library", "calm", "silence"].includes(v.sound)) R.sound = v.sound; } } catch {}
+  const saveR = () => { try { localStorage.setItem("ca-room", JSON.stringify({ dur: R.dur, sound: R.sound })); } catch {} };
+  const QUOTES = [
+    "Selection ek din mein nahi hota. Par aaj ka din usme count hota hai.",
+    "Phone baad mein. Pehle ye week.",
+    "Your competition is awake and reading. So are you.",
+    "On exam day, these exact minutes will answer for you.",
+    "Bas ek page aur. Phir ek aur.",
+    "The mountain gets lighter one week at a time.",
+    "Nobody will remember the reels you skipped. The result will remember this hour.",
+    "Slow is fine. Stopping is not.",
+    "Read it like the question is already printed on 23 Nov.",
+    "Chai is getting cold. The syllabus is not getting smaller. Keep going.",
+  ];
+  const MKEY = { jul: 7, aug: 8, sep: 9, oct: 10 };
+  function nextTask() {
+    const plan = revisionPlan();
+    if (plan.due.length) { const it = plan.due[0]; return { title: `Revise ${label(it.id)}, round ${it.step + 1}`, detail: "Read your notes for that week once. Say each point out loud. Then press Revised." }; }
+    const openMock = ALL.find(k => S.done[k] && !S.mocks[k]);
+    if (openMock) return { title: `Take the ${label(openMock)} mock`, detail: "Time it, no notes. Then write the score out of 50." };
+    const next = ALL.find(k => !S.done[k]);
+    if (next) {
+      const m = monthOf(next), w = WEEKS[Number(next.slice(-1)) - 1], end = w[1] ?? m.last;
+      let unread = 0; for (let d = w[0]; d <= end; d++) if (!S.days[calKey(MKEY[m.key], d)]) unread++;
+      if (unread) return { title: `Read the news for ${w[0]}–${end} ${short[m.key]}`, detail: `${unread} day${unread > 1 ? "s" : ""} left. Make short notes, then pass the ${label(next)} quiz.` };
+      return { title: `Pass the ${label(next)} quiz`, detail: "Paste your notes into the quiz. 4 out of 5 unlocks the dance." };
+    }
+    return { title: "Revise everything once more", detail: "Go month by month. Read your notes, then check the calendar for gaps." };
+  }
+  function typeTask(t) {
+    clearInterval(R.typed);
+    const el = $("nbTask"), txt = t.title; let i = 0;
+    $("nbDetail").textContent = "";
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = txt; $("nbDetail").textContent = t.detail; return; }
+    el.innerHTML = `<span></span><i class="caret"></i>`;
+    R.typed = setInterval(() => { i++; el.firstChild.textContent = txt.slice(0, i); if (i >= txt.length) { clearInterval(R.typed); el.textContent = txt; $("nbDetail").textContent = t.detail; } }, 38);
+  }
+  function paintRoomTop() {
+    const fd = S.focus[today()] || { min: 0 };
+    $("roomToday").textContent = `Today in the room: ${fd.min || 0} min`;
+    const away = Math.round(R.leftMs / 60000);
+    $("roomLeft").textContent = `Phone checks: ${R.left}${R.left ? ` · ${away} min away` : ""}`;
+    $("roomLeft").classList.toggle("warn", R.left > 0);
+    room.querySelectorAll("[data-snd]").forEach(b => b.setAttribute("aria-pressed", b.dataset.snd === R.sound));
+    room.querySelectorAll("#roomDur button").forEach(b => { b.setAttribute("aria-pressed", Number(b.dataset.min) === R.dur); b.disabled = !!(R.endAt || R.remaining); });
+  }
+  function roomLeftMs() { return R.endAt ? Math.max(0, R.endAt - Date.now()) : (R.remaining ?? R.dur * 60000); }
+  function roomProgress() { if (R.done) return 1; const total = R.dur * 60000; return Math.min(1, Math.max(0, 1 - roomLeftMs() / total)); }
+  function paintRoomTimer() {
+    const left = roomLeftMs(), mm = Math.floor(left / 60000), ss = Math.floor(left / 1000) % 60;
+    $("roomTimer").textContent = R.done ? "Sunrise." : `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
+    $("roomGo").textContent = R.endAt ? "Pause" : R.remaining ? "Resume" : "Begin";
+    $("roomGo").hidden = R.done; $("roomStop").hidden = !(R.endAt || R.remaining) || R.done;
+  }
+
+  // Window: night sky to sunrise, mountains, rain on the glass
+  const stars = Array.from({ length: 90 }, () => ({ x: Math.random(), y: Math.random() * 0.6, r: Math.random() * 1.3 + 0.3, tw: Math.random() * 6 }));
+  const drops = Array.from({ length: 140 }, () => ({ x: Math.random(), y: Math.random(), v: 0.6 + Math.random() * 0.8, l: 8 + Math.random() * 14 }));
+  const glass = Array.from({ length: 26 }, () => ({ x: Math.random(), y: Math.random(), r: 1.5 + Math.random() * 3, v: Math.random() * 0.0006 }));
+  const mix = (a, b, k) => a.map((v, i) => Math.round(v + (b[i] - v) * k));
+  const rgb = a => `rgb(${a[0]},${a[1]},${a[2]})`;
+  function drawRoomSky(now) {
+    const dpr = Math.min(2, window.devicePixelRatio || 1), W = roomSky.clientWidth * dpr, H = roomSky.clientHeight * dpr;
+    if (!W || !H) return;
+    if (roomSky.width !== W || roomSky.height !== H) { roomSky.width = W; roomSky.height = H; }
+    const p = roomProgress(), t = now / 1000, k = Math.max(0, (p - 0.35) / 0.65);
+    const g = rsx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, rgb(mix([6, 10, 34], [74, 128, 196], k)));
+    g.addColorStop(0.6, rgb(mix([22, 22, 62], [255, 186, 120], k)));
+    g.addColorStop(1, rgb(mix([40, 26, 60], [255, 140, 70], k)));
+    rsx.fillStyle = g; rsx.fillRect(0, 0, W, H);
+    const sa = Math.max(0, 1 - p * 1.4);
+    if (sa > 0) for (const s of stars) { rsx.globalAlpha = sa * (0.5 + 0.5 * Math.sin(t * 1.5 + s.tw)); rsx.fillStyle = "#fff"; rsx.beginPath(); rsx.arc(s.x * W, s.y * H, s.r * dpr, 0, 6.3); rsx.fill(); }
+    rsx.globalAlpha = 1;
+    if (p < 0.6) { rsx.globalAlpha = 1 - p / 0.6; rsx.fillStyle = "#f4ecd8"; rsx.beginPath(); rsx.arc(W * 0.8, H * 0.22, H * 0.07, 0, 6.3); rsx.fill(); rsx.fillStyle = rgb(mix([6, 10, 34], [74, 128, 196], k)); rsx.beginPath(); rsx.arc(W * 0.8 + H * 0.03, H * 0.2, H * 0.065, 0, 6.3); rsx.fill(); rsx.globalAlpha = 1; }
+    if (p > 0.45) {
+      const sy = H * (1.05 - (p - 0.45) / 0.55 * 0.5), sx = W * 0.42;
+      const sg = rsx.createRadialGradient(sx, sy, 0, sx, sy, H * 0.6); sg.addColorStop(0, "rgba(255,240,200,.95)"); sg.addColorStop(0.12, "rgba(255,210,130,.8)"); sg.addColorStop(1, "rgba(255,160,80,0)");
+      rsx.fillStyle = sg; rsx.fillRect(0, 0, W, H);
+    }
+    const ridge = (base, amp, col, seed) => { rsx.fillStyle = col; rsx.beginPath(); rsx.moveTo(0, H); for (let x = 0; x <= W; x += W / 40) { const y = H * base - amp * H * (0.5 + 0.5 * Math.sin(x / W * 9 + seed) * Math.cos(x / W * 4 + seed * 2)); rsx.lineTo(x, y); } rsx.lineTo(W, H); rsx.fill(); };
+    ridge(0.78, 0.22, rgb(mix([24, 22, 52], [120, 92, 120], k)), 1.3);
+    ridge(0.9, 0.16, rgb(mix([12, 10, 28], [70, 48, 66], k)), 4.1);
+    const rain = R.sound === "rain" && p < 0.92;
+    if (rain) {
+      rsx.strokeStyle = `rgba(200,215,255,${0.35 * (1 - p)})`; rsx.lineWidth = 1 * dpr; rsx.beginPath();
+      for (const d of drops) { d.y += d.v * 0.012; if (d.y > 1.05) { d.y = -0.05; d.x = Math.random(); } const x = d.x * W, y = d.y * H; rsx.moveTo(x, y); rsx.lineTo(x - d.l * 0.25 * dpr, y + d.l * dpr); }
+      rsx.stroke();
+      for (const gd of glass) { gd.y += gd.v; if (gd.y > 1.02) { gd.y = -0.02; gd.x = Math.random(); } rsx.fillStyle = "rgba(220,230,255,.35)"; rsx.beginPath(); rsx.arc(gd.x * W, gd.y * H, gd.r * dpr, 0, 6.3); rsx.fill(); }
+    }
+  }
+  let roomLast = 0;
+  function roomLoop(now) {
+    R.raf = requestAnimationFrame(roomLoop);
+    if (now - roomLast < 40) return; roomLast = now;
+    drawRoomSky(now);
+    if (R.endAt) { paintRoomTimer(); if (Date.now() >= R.endAt) roomComplete(); }
+  }
+
+  // Room sounds: rain, library hum, calm music or silence
+  function noiseBuf(ac, brown) {
+    const len = ac.sampleRate * 2, b = ac.createBuffer(1, len, ac.sampleRate), d = b.getChannelData(0); let last = 0;
+    for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; if (brown) { last = (last + 0.02 * w) / 1.02; d[i] = last * 3.5; } else d[i] = w; }
+    return b;
+  }
+  function stopRoomSound() { R.nodes.forEach(n => { try { n.stop ? n.stop() : n.disconnect(); } catch {} }); R.nodes = []; R.timers.forEach(clearInterval); R.timers = []; }
+  function startRoomSound() {
+    stopRoomSound();
+    const ac = ctx(); if (!ac) return;
+    if (R.sound === "calm") { calm.on = true; startCalm(); return; }
+    stopCalm();
+    if (R.sound === "silence") return;
+    const out = ac.createGain(); out.gain.setValueAtTime(0.0001, ac.currentTime); out.gain.exponentialRampToValueAtTime(R.sound === "rain" ? 0.32 : 0.28, ac.currentTime + 2); out.connect(ac.destination);
+    const src = ac.createBufferSource(); src.buffer = noiseBuf(ac, R.sound === "library"); src.loop = true;
+    const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = R.sound === "rain" ? 2200 : 420;
+    const hp = ac.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = R.sound === "rain" ? 380 : 60;
+    src.connect(hp).connect(lp).connect(out); src.start();
+    R.nodes.push(src, out);
+    const burst = (f, q, v, d) => { const s = ac.createBufferSource(), bp = ac.createBiquadFilter(), g = ac.createGain(), t = ac.currentTime; s.buffer = src.buffer; bp.type = "bandpass"; bp.frequency.value = f; bp.Q.value = q; g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d); s.connect(bp).connect(g).connect(out); s.start(t, Math.random()); s.stop(t + d + 0.05); };
+    if (R.sound === "rain") R.timers.push(setInterval(() => { for (let i = 0; i < 3; i++) if (Math.random() < 0.6) setTimeout(() => burst(2500 + Math.random() * 3500, 8, 0.35, 0.05), Math.random() * 300); }, 300));
+    else R.timers.push(setInterval(() => { if (Math.random() < 0.08) { burst(1800, 0.7, 0.25, 0.35); setTimeout(() => burst(2600, 0.7, 0.18, 0.25), 180); } }, 1000));
+  }
+  function shankh() {
+    const ac = ctx(); if (!ac) return; const t = ac.currentTime + 0.05;
+    const out = ac.createGain(); out.gain.setValueAtTime(0.0001, t); out.gain.exponentialRampToValueAtTime(0.28, t + 0.6); out.gain.setValueAtTime(0.28, t + 1.6); out.gain.exponentialRampToValueAtTime(0.0001, t + 3.2); out.connect(ac.destination);
+    const bp = ac.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 760; bp.Q.value = 1.6; bp.connect(out);
+    const lfo = ac.createOscillator(), lg = ac.createGain(); lfo.frequency.value = 5; lg.gain.value = 3; lfo.connect(lg);
+    [[233, 1], [466, 0.45], [699, 0.2]].forEach(([fq, v]) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = "sawtooth"; o.frequency.setValueAtTime(fq * 0.94, t); o.frequency.linearRampToValueAtTime(fq, t + 0.5); lg.connect(o.frequency); g.gain.value = v; o.connect(g).connect(bp); o.start(t); o.stop(t + 3.3); });
+    lfo.start(t); lfo.stop(t + 3.3);
+  }
+
+  function openRoom() {
+    R.calmWas = calm.running;
+    R.done = false; R.left = 0; R.leftMs = 0; R.endAt = null; R.remaining = null;
+    room.hidden = false; document.body.style.overflow = "hidden";
+    $("nbEnd").hidden = true; $("nbLearn").value = "";
+    $("nbDate").textContent = `${niceDay(today())} · Tonight's one task`;
+    R.task = nextTask(); typeTask(R.task);
+    $("roomQuote").textContent = QUOTES[(Math.random() * QUOTES.length) | 0];
+    paintRoomTop(); paintRoomTimer();
+    startRoomSound();
+    cancelAnimationFrame(R.raf); R.raf = requestAnimationFrame(roomLoop);
+  }
+  function closeRoom() {
+    room.hidden = true; document.body.style.overflow = "";
+    cancelAnimationFrame(R.raf); clearInterval(R.quoteT); clearInterval(R.typed);
+    stopRoomSound(); R.endAt = null; R.remaining = null;
+    if (R.sound !== "calm") { if (R.calmWas && calm.on) startCalm(); }
+  }
+  function rotateQuote() { const q = $("roomQuote"); q.style.opacity = 0; setTimeout(() => { if (!R.done) q.textContent = QUOTES[(Math.random() * QUOTES.length) | 0]; q.style.opacity = 1; }, 600); }
+  function breathe(then) {
+    const b = $("breath"), c = $("breathCircle"), txt = $("breathText");
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) { then(); return; }
+    b.hidden = false; let n = 0, alive = true;
+    const step = () => {
+      if (!alive) return;
+      if (n >= 6) { b.hidden = true; then(); return; }
+      const inhale = n % 2 === 0; c.classList.toggle("in", inhale); txt.textContent = inhale ? "Breathe in…" : "…and out";
+      n++; setTimeout(step, 3800);
+    };
+    $("breathSkip").onclick = () => { alive = false; b.hidden = true; c.classList.remove("in"); then(); };
+    step();
+  }
+  function beginSession() {
+    shankh();
+    R.endAt = Date.now() + R.dur * 60000; R.startedAt = Date.now();
+    clearInterval(R.quoteT); R.quoteT = setInterval(rotateQuote, 5 * 60000);
+    paintRoomTop(); paintRoomTimer();
+  }
+  $("roomGo").addEventListener("click", () => {
+    if (R.endAt) { R.remaining = R.endAt - Date.now(); R.endAt = null; }
+    else if (R.remaining) { R.endAt = Date.now() + R.remaining; R.remaining = null; }
+    else { ctx(); breathe(beginSession); }
+    paintRoomTop(); paintRoomTimer();
+  });
+  $("roomStop").addEventListener("click", e => {
+    const b = e.currentTarget;
+    if (!b.classList.contains("confirm")) { b.classList.add("confirm"); b.textContent = "Tap again to end"; clearTimeout(b._t); b._t = setTimeout(() => { b.classList.remove("confirm"); b.textContent = "End early"; }, 3000); return; }
+    b.classList.remove("confirm"); b.textContent = "End early";
+    const mins = Math.floor((R.dur * 60000 - roomLeftMs()) / 60000);
+    if (mins > 0) { logActivity(`Study room: ended early after ${mins} min`); persist(); renderLog(); }
+    R.endAt = null; R.remaining = null; clearInterval(R.quoteT);
+    $("roomQuote").textContent = mins > 0 ? `${mins} minutes still count. Come back and finish the next one.` : "No problem. Sit back down when you're ready.";
+    paintRoomTop(); paintRoomTimer();
+  });
+  room.querySelectorAll("#roomDur button").forEach(b => b.addEventListener("click", () => { if (R.endAt || R.remaining) return; R.dur = Number(b.dataset.min); saveR(); paintRoomTop(); paintRoomTimer(); }));
+  room.querySelectorAll("[data-snd]").forEach(b => b.addEventListener("click", () => { R.sound = b.dataset.snd; saveR(); startRoomSound(); paintRoomTop(); }));
+  $("roomExit").addEventListener("click", e => {
+    if (R.endAt || R.remaining) {
+      const b = e.currentTarget;
+      if (!b._armed) { b._armed = true; $("roomQuote").textContent = "Leaving mid-session? Tap × again to leave. The minutes so far won't count as a session."; setTimeout(() => b._armed = false, 3500); return; }
+      b._armed = false;
+    }
+    closeRoom();
+  });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !room.hidden && !R.endAt && !R.remaining) closeRoom(); });
+  // Accountability: count every time you leave the room mid-session
+  document.addEventListener("visibilitychange", () => {
+    if (room.hidden || !R.endAt) return;
+    if (document.hidden) R.awayAt = Date.now();
+    else if (R.awayAt) {
+      const away = Date.now() - R.awayAt; R.awayAt = null;
+      if (away > 3000) { R.left++; R.leftMs += away; const m = Math.floor(away / 60000), s = Math.round(away / 1000) % 60; $("roomQuote").textContent = `You left the room for ${m ? m + " min " : ""}${s} s. Phone face down. Back to it.`; playMemeFor("quizFail"); paintRoomTop(); }
+    }
+  });
+  function roomComplete() {
+    R.endAt = null; R.remaining = null; R.done = true; clearInterval(R.quoteT);
+    shankh(); paintRoomTimer(); paintRoomTop();
+    $("roomQuote").textContent = R.left ? `Session done. You left the room ${R.left} time${R.left > 1 ? "s" : ""}. Try for zero next time.` : "Session done without leaving the room once. That's how toppers do it.";
+    $("nbEnd").hidden = false; setTimeout(() => $("nbLearn").focus(), 50);
+    const d = today();
+    S.focus[d] = { n: ((S.focus[d] && S.focus[d].n) || 0) + 1, min: ((S.focus[d] && S.focus[d].min) || 0) + R.dur };
+    logActivity(`Study room ${R.dur} min${R.left ? ` (left ${R.left}x)` : ", no phone"}`);
+    persist(); renderAll(); paintRoomTop();
+  }
+  $("nbSave").addEventListener("click", () => {
+    const v = $("nbLearn").value.trim(), d = today();
+    if (v) { S.log[d] = ((S.log[d] || "").trim() + (S.log[d] ? "\n" : "") + `• ${v}`).slice(0, 4000); persist(); }
+    const dur = R.dur, left = R.left;
+    closeRoom(); renderAll();
+    party("focus", "The sun is up!", `${dur} minutes in the study room${left ? "" : " without touching your phone"}. ${v ? "Your note is saved in today's log." : ""}`, "move-a", "focusDone");
+  });
+  $("enterRoom").addEventListener("click", openRoom);
+  $("enterRoom2").addEventListener("click", openRoom);
 
   // ---------- Hero 3D tilt ----------
   const heroEl = $("hero"), heroCard = $("heroCard");
