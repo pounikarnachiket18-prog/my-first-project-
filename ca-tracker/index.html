@@ -4,17 +4,19 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Baloo+2:wght@400;600;800&family=Share+Tech+Mono&display=swap">
 <style>
-/* Layout: a dance stage. Stopwatch marquee on top, the dancer's stage, then four month boards of four week tiles each. */
+/* Layout: a dance stage. Alerts, then the stopwatch beside a pendulum wall clock, the dancer and success ladder,
+   revision reminders, the daily log, and four month boards with a study + mock row per week. */
 :root {
   --stage: #1c1030;        /* deep plum stage floor */
   --stage-2: #28173f;      /* raised panels */
-  --stage-3: #3a2358;      /* borders, empty tiles */
+  --stage-3: #3a2358;      /* borders, empty states */
   --ink: #fbf1e3;          /* warm cream text */
   --ink-dim: #c9b8d9;      /* secondary text */
-  --marigold: #ffb627;     /* the accent: done, celebration */
-  --rani: #ff4f9a;         /* pressure: clock in the red zone */
-  --teal: #35d0bf;         /* calm info */
-  --skin: #a8653a;
+  --marigold: #ffb627;     /* accent: done, celebration */
+  --rani: #ff4f9a;         /* pressure, overdue */
+  --teal: #35d0bf;         /* calm info, revision */
+  --wood: #7a4a2a;         /* pendulum clock case */
+  --wood-2: #5a3319;
   --display: "Bungee", "Arial Black", Impact, sans-serif;
   --body: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
   --mono: "Share Tech Mono", ui-monospace, "Courier New", monospace;
@@ -22,140 +24,181 @@
 }
 * { box-sizing: border-box; }
 body {
-  background:
-    radial-gradient(1200px 500px at 50% -120px, #3b1f5e 0%, transparent 70%),
-    var(--stage);
-  color: var(--ink);
-  font-family: var(--body);
-  font-size: 16px;
-  line-height: 1.45;
+  background: radial-gradient(1200px 500px at 50% -120px, #3b1f5e 0%, transparent 70%), var(--stage);
+  color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.45;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 20px 48px;
-  min-height: 100%;
+  padding-block: 20px 48px; min-height: 100%;
 }
-.wrap { max-width: 1100px; margin: 0 auto; display: grid; gap: 28px; }
-button { font: inherit; color: inherit; }
-button:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+.wrap { max-width: 1120px; margin: 0 auto; display: grid; gap: 24px; }
+button, input, textarea { font: inherit; color: inherit; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, a:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+a { color: inherit; }
+.panel { background: var(--stage-2); border: 1px solid var(--stage-3); border-radius: 20px; padding: 18px clamp(16px, 3vw, 26px); }
+.h2 { font-family: var(--display); font-size: clamp(18px, 3vw, 22px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.h2 b { color: var(--marigold); font-weight: 400; }
+.sub { color: var(--ink-dim); font-size: 14px; margin: 4px 0 0; max-width: 70ch; }
+.sec-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 8px 16px; margin-bottom: 14px; }
+.eyebrow { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-dim); }
 
 /* Top bar */
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .brand { font-family: var(--display); font-size: clamp(18px, 3.4vw, 26px); letter-spacing: .02em; line-height: 1.1; }
 .brand small { display: block; font-family: var(--body); font-weight: 600; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-dim); }
 .brand b { color: var(--marigold); font-weight: 400; }
-.chip {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: var(--stage-2); border: 1px solid var(--stage-3);
-  border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 600; font-size: 14px;
-}
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 8px; background: var(--stage-2); border: 1px solid var(--stage-3); border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 600; font-size: 14px; }
 .chip:hover { border-color: var(--marigold); }
-.chip svg { width: 18px; height: 18px; }
+.chip[aria-pressed="true"] { border-color: var(--teal); }
+.chip .led { width: 8px; height: 8px; border-radius: 50%; background: var(--stage-3); }
+.chip[aria-pressed="true"] .led { background: var(--teal); box-shadow: 0 0 8px var(--teal); }
+.chip.waiting .led { background: var(--marigold); animation: blink 1s steps(2) infinite; }
+@keyframes blink { 50% { opacity: .2; } }
 
-/* Stopwatch */
+/* Alerts */
+.alerts { display: flex; flex-wrap: wrap; gap: 10px; }
+.alert { display: inline-flex; align-items: center; gap: 10px; padding: 8px 14px; border-radius: 12px; font-weight: 600; font-size: 15px; text-decoration: none; border: 1px solid; }
+.alert.due { background: color-mix(in srgb, var(--teal) 16%, transparent); border-color: var(--teal); }
+.alert.late { background: color-mix(in srgb, var(--rani) 16%, transparent); border-color: var(--rani); }
+.alert.ok { background: color-mix(in srgb, var(--marigold) 12%, transparent); border-color: color-mix(in srgb, var(--marigold) 60%, transparent); }
+.alert .n { font-family: var(--display); font-size: 18px; line-height: 1; }
+
+/* Clock row */
+.clock-row { display: grid; grid-template-columns: minmax(0, 1fr) 230px; gap: 20px; align-items: stretch; }
 .clock {
-  background: linear-gradient(180deg, #120a20, #1a0e2c);
-  border: 2px solid var(--stage-3);
-  border-radius: 20px;
-  padding: 20px clamp(16px, 4vw, 32px) 22px;
-  display: grid; gap: 12px; justify-items: center; text-align: center;
-  box-shadow: 0 0 0 6px #120a20, 0 20px 60px -20px #000;
-  position: relative; overflow: hidden;
+  background: linear-gradient(180deg, #120a20, #1a0e2c); border: 2px solid var(--stage-3); border-radius: 20px;
+  padding: 20px clamp(16px, 4vw, 32px) 22px; display: grid; gap: 12px; justify-items: center; align-content: center; text-align: center;
+  box-shadow: 0 0 0 6px #120a20, 0 20px 60px -20px #000; position: relative; overflow: hidden; min-width: 0;
 }
-.clock::before { /* marquee bulbs */
+.clock::before {
   content: ""; position: absolute; inset: 7px; border-radius: 14px; pointer-events: none;
-  background-image: radial-gradient(circle, #ffd37a 0 2px, transparent 3px);
-  background-size: 22px 22px; background-position: 0 0;
+  background-image: radial-gradient(circle, #ffd37a 0 2px, transparent 3px); background-size: 22px 22px;
   -webkit-mask: linear-gradient(#000 0 0) top/100% 10px no-repeat, linear-gradient(#000 0 0) bottom/100% 10px no-repeat;
           mask: linear-gradient(#000 0 0) top/100% 10px no-repeat, linear-gradient(#000 0 0) bottom/100% 10px no-repeat;
   opacity: .55; animation: bulbs 1.2s steps(2) infinite;
 }
 @keyframes bulbs { to { background-position: 11px 0; } }
 .clock-label { font-weight: 800; letter-spacing: .16em; text-transform: uppercase; font-size: 13px; color: var(--ink-dim); }
-.digits {
-  font-family: var(--mono); font-variant-numeric: tabular-nums;
-  font-size: clamp(44px, 11.5vw, 120px); line-height: 1; letter-spacing: .02em;
-  color: var(--marigold); text-shadow: 0 0 18px rgba(255,182,39,.45);
-  white-space: nowrap;
-}
+.digits { font-family: var(--mono); font-variant-numeric: tabular-nums; font-size: clamp(40px, 9vw, 104px); line-height: 1; color: var(--marigold); text-shadow: 0 0 18px rgba(255,182,39,.45); white-space: nowrap; }
 .digits .cs { font-size: .48em; color: var(--ink-dim); text-shadow: none; }
 .digits .sep { opacity: .7; }
 .clock.red .digits { color: var(--rani); text-shadow: 0 0 22px rgba(255,79,154,.6); animation: pulse 1s ease-in-out infinite; }
 @keyframes pulse { 50% { transform: scale(1.025); } }
-.units { display: flex; gap: clamp(18px, 6vw, 70px); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-dim); margin-top: -4px; }
-.bar { width: min(640px, 100%); height: 10px; background: var(--stage-3); border-radius: 999px; overflow: hidden; }
+.units { display: flex; gap: clamp(18px, 5vw, 60px); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-dim); margin-top: -4px; }
+.bar { width: min(600px, 100%); height: 10px; background: var(--stage-3); border-radius: 999px; overflow: hidden; }
 .bar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--rani), var(--marigold)); border-radius: inherit; transition: width .5s linear; }
-.clock-note { font-size: 15px; color: var(--ink); max-width: 60ch; }
+.clock-note { font-size: 15px; max-width: 58ch; margin: 0; }
 .clock-note strong { color: var(--marigold); }
 .modes { display: inline-flex; background: var(--stage-2); border: 1px solid var(--stage-3); border-radius: 999px; padding: 3px; }
 .modes button { border: 0; background: transparent; padding: 5px 14px; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 14px; color: var(--ink-dim); }
 .modes button[aria-pressed="true"] { background: var(--marigold); color: #2a1600; }
 
-/* Stage with idle dancer */
-.stage {
-  display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 24px; align-items: center;
-  background: var(--stage-2); border: 1px solid var(--stage-3); border-radius: 20px; padding: 18px clamp(16px, 3vw, 28px);
-}
+.wall { display: grid; justify-items: center; align-content: center; gap: 6px; background: var(--stage-2); border: 1px solid var(--stage-3); border-radius: 20px; padding: 14px; }
+.wall svg { width: 100%; max-width: 190px; height: auto; }
+.wall .time { font-family: var(--mono); font-size: 20px; font-variant-numeric: tabular-nums; }
+.wall .tz { font-size: 12px; color: var(--ink-dim); letter-spacing: .12em; text-transform: uppercase; }
+.pendulum { transform-origin: 100px 168px; animation: swing 2s ease-in-out infinite; }
+@keyframes swing { 0%, 100% { transform: rotate(16deg); } 50% { transform: rotate(-16deg); } }
+.hand { transition: transform .25s cubic-bezier(.4, 2.2, .5, 1); transform-origin: 100px 84px; }
+
+/* Stage + ladder */
+.stage { display: grid; grid-template-columns: minmax(0, 220px) minmax(0, 1fr); gap: 22px; align-items: center; }
 .stage-dancer { position: relative; display: grid; place-items: center; }
 .stage-dancer::after { content: ""; position: absolute; bottom: 4px; width: 70%; height: 22px; background: radial-gradient(closest-side, rgba(255,182,39,.35), transparent); }
-.stage-dancer svg { width: 100%; max-width: 200px; height: auto; position: relative; z-index: 1; }
-.stage-info { display: grid; gap: 14px; min-width: 0; }
-.bubble {
-  background: var(--ink); color: #2a1600; border-radius: 16px; padding: 12px 16px; font-weight: 600; position: relative; max-width: 46ch;
-}
+.stage-dancer svg { width: 100%; max-width: 190px; height: auto; position: relative; z-index: 1; }
+.stage-info { display: grid; gap: 12px; min-width: 0; }
+.bubble { background: var(--ink); color: #2a1600; border-radius: 16px; padding: 12px 16px; font-weight: 600; position: relative; max-width: 52ch; }
 .bubble::before { content: ""; position: absolute; left: -10px; top: 22px; border: 10px solid transparent; border-right-color: var(--ink); border-left: 0; }
 .stats { display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: baseline; }
-.big { font-family: var(--display); font-size: clamp(36px, 7vw, 56px); line-height: 1; color: var(--marigold); }
+.big { font-family: var(--display); font-size: clamp(32px, 6vw, 48px); line-height: 1; color: var(--marigold); font-variant-numeric: tabular-nums; }
 .big span { font-size: .45em; color: var(--ink-dim); }
-.stat-label { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-dim); }
-.pace { font-size: 15px; }
+.stat-label { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-dim); }
+.pace { font-size: 15px; margin: 0; }
 .pace b { color: var(--teal); }
-.save-note { font-size: 13px; color: var(--ink-dim); }
+.save-note { font-size: 13px; color: var(--ink-dim); margin: 0; }
+.ladder-wrap { margin-top: 18px; border-top: 1px dashed var(--stage-3); padding-top: 14px; }
+.ladder-wrap svg { width: 100%; height: auto; display: block; overflow: visible; }
+.ladder-climber { transition: transform .7s cubic-bezier(.5, -0.3, .4, 1.4); }
+.hop { animation: hop .7s ease-out; }
+@keyframes hop { 0% { transform: translateY(0); } 40% { transform: translateY(-46px); } 100% { transform: translateY(0); } }
+
+/* Revision */
+.two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.list { display: grid; gap: 8px; }
+.rev-item { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 12px; border-radius: 12px; background: var(--stage); border: 1px solid var(--stage-3); }
+.rev-item.late { border-color: var(--rani); }
+.rev-item .what { flex: 1 1 180px; min-width: 0; }
+.rev-item .what b { display: block; }
+.rev-item .what span { font-size: 13px; color: var(--ink-dim); }
+.rev-item.late .what span { color: var(--rani); }
+.swatch { width: 10px; height: 34px; border-radius: 4px; flex: none; }
+.btn { border: 0; border-radius: 999px; padding: 6px 14px; font-weight: 800; font-size: 14px; cursor: pointer; background: var(--teal); color: #062925; }
+.btn:hover { filter: brightness(1.1); }
+.empty { color: var(--ink-dim); font-size: 14px; padding: 12px; border: 1px dashed var(--stage-3); border-radius: 12px; margin: 0; }
+.up-day { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-dim); margin-top: 6px; }
+.up-row { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+.curve { font-size: 13px; color: var(--ink-dim); margin: 12px 0 0; }
+.curve b { color: var(--teal); }
+
+/* Accountability log */
+.log-card { background: var(--stage); border: 1px solid var(--stage-3); border-radius: 14px; padding: 12px; display: grid; gap: 8px; min-width: 0; }
+.log-card.missing { border-color: var(--rani); }
+.log-top { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+.log-top b { font-size: 16px; }
+.log-top span { font-size: 13px; color: var(--ink-dim); }
+.log-card.missing .log-top span { color: var(--rani); font-weight: 600; }
+textarea { width: 100%; min-height: 110px; resize: vertical; background: var(--stage-2); border: 1px solid var(--stage-3); border-radius: 10px; padding: 10px; line-height: 1.4; }
+textarea::placeholder { color: color-mix(in srgb, var(--ink-dim) 70%, transparent); }
+.acts { display: flex; flex-wrap: wrap; gap: 6px; }
+.act { font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--stage-3); }
+.streak { font-family: var(--display); color: var(--marigold); font-size: 18px; }
+details { margin-top: 12px; }
+summary { cursor: pointer; font-weight: 600; color: var(--ink-dim); }
+.hist { display: grid; gap: 6px; margin-top: 8px; }
+.hist div { font-size: 14px; display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 10px; }
+.hist div span:first-child { color: var(--ink-dim); font-variant-numeric: tabular-nums; }
 
 /* Month boards */
-.months { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
-.month {
-  background: var(--stage-2); border: 1px solid var(--stage-3); border-radius: 18px; padding: 14px; display: grid; gap: 12px; align-content: start;
-  --m: var(--marigold);
-}
+.months { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.month { --m: var(--marigold); display: grid; gap: 10px; align-content: start; }
 .month.complete { border-color: var(--m); box-shadow: 0 0 0 1px var(--m), 0 0 30px -8px var(--m); }
 .month-head { display: flex; align-items: center; gap: 10px; }
-.month-head svg { width: 34px; height: 34px; flex: none; }
+.month-head > svg { width: 34px; height: 34px; flex: none; }
 .month-name { font-family: var(--display); font-size: 20px; line-height: 1; }
 .month-sub { font-size: 12px; color: var(--ink-dim); letter-spacing: .08em; text-transform: uppercase; }
 .dots { margin-left: auto; display: flex; gap: 4px; }
 .dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--stage-3); }
 .dots i.on { background: var(--m); }
-.weeks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-.week {
-  border: 2px dashed var(--stage-3); background: transparent; border-radius: 14px;
-  padding: 10px 8px 9px; cursor: pointer; display: grid; justify-items: center; gap: 4px; text-align: center;
-  transition: border-color .15s, background .15s, transform .15s;
-  min-height: 112px; position: relative;
-}
-.week:hover { border-color: var(--m); transform: translateY(-2px); }
-.week .ico { width: 44px; height: 44px; color: var(--ink-dim); }
-.week .wk { font-weight: 800; font-size: 15px; line-height: 1.1; }
-.week .rng { font-size: 12px; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
-.week .tag { font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-dim); }
-.week.done { border-style: solid; border-color: var(--m); background: color-mix(in srgb, var(--m) 18%, transparent); }
-.week.done .ico { color: var(--m); }
-.week.done .tag { color: var(--m); }
-.week.confirm { border-color: var(--rani); }
-.week.confirm .tag { color: var(--rani); }
+.rows { display: grid; gap: 8px; }
+.cols, .row { display: grid; grid-template-columns: minmax(0, 1fr) 92px 150px 52px; gap: 8px; }
+.cols { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-dim); padding: 0 9px; }
+.cols span:last-child { text-align: center; }
+.row { align-items: center; padding: 8px; border-radius: 12px; background: var(--stage); border: 1px solid var(--stage-3); }
+.row-name { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.row-name .ico { width: 34px; height: 34px; color: var(--ink-dim); flex: none; }
+.row.studied .row-name .ico { color: var(--m); }
+.row-name b { display: block; font-size: 15px; line-height: 1.1; }
+.row-name span { font-size: 12px; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
 .ico .check { opacity: 0; transition: opacity .2s; }
-.week.done .ico .check { opacity: 1; }
+.row.studied .ico .check { opacity: 1; }
+.pill { border: 2px dashed var(--stage-3); background: transparent; border-radius: 999px; padding: 4px 6px; font-weight: 800; font-size: 13px; cursor: pointer; white-space: nowrap; }
+.pill:hover { border-color: var(--m); }
+.pill.on { border: 2px solid var(--m); background: var(--m); color: #1c1030; }
+.pill.confirm { border: 2px solid var(--rani); background: transparent; color: var(--rani); }
+.mockbox { display: flex; align-items: center; gap: 6px; }
+.mockbox .pill { flex: 1; }
+.score { width: 46px; background: var(--stage-2); border: 1px solid var(--stage-3); border-radius: 8px; padding: 3px 4px; text-align: center; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
+.score::-webkit-inner-spin-button { -webkit-appearance: none; }
+.score:disabled { opacity: .35; }
+.mockbox small { color: var(--ink-dim); font-size: 12px; }
+.revdots { display: flex; gap: 4px; justify-content: center; }
+.revdots i { width: 11px; height: 11px; border-radius: 3px; border: 2px solid var(--stage-3); }
+.revdots i.on { background: var(--teal); border-color: var(--teal); }
+.revdots i.due { border-color: var(--teal); animation: blink 1.2s steps(2) infinite; }
 
-/* The icon dance on click */
+/* Dance moves */
 .boogie { animation: boogie .42s ease-in-out 5; }
-@keyframes boogie {
-  0% { transform: translateY(0) rotate(0) scale(1); }
-  25% { transform: translateY(-12px) rotate(-18deg) scale(1.15); }
-  50% { transform: translateY(0) rotate(0) scale(.95); }
-  75% { transform: translateY(-12px) rotate(18deg) scale(1.15); }
-  100% { transform: translateY(0) rotate(0) scale(1); }
-}
-
-/* Dancer parts */
+@keyframes boogie { 0%,100% { transform: translateY(0) rotate(0) scale(1); } 25% { transform: translateY(-10px) rotate(-18deg) scale(1.15); } 50% { transform: translateY(0) scale(.95); } 75% { transform: translateY(-10px) rotate(18deg) scale(1.15); } }
 .dancer .armL { transform-origin: 74px 116px; }
 .dancer .armR { transform-origin: 126px 116px; }
 .dancer .legL { transform-origin: 88px 182px; }
@@ -166,7 +209,6 @@ button:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
 .dancer.idle .armR { animation: wave 2.4s ease-in-out infinite; }
 @keyframes idle { 50% { transform: translateY(-4px); } }
 @keyframes wave { 0%, 60%, 100% { transform: rotate(0); } 70% { transform: rotate(-30deg); } 80% { transform: rotate(-10deg); } 90% { transform: rotate(-30deg); } }
-
 .dancer.move-a .whole { animation: bob .42s ease-in-out infinite; }
 .dancer.move-a .armL { animation: pumpL .42s ease-in-out infinite; }
 .dancer.move-a .armR { animation: pumpR .42s ease-in-out infinite; }
@@ -179,7 +221,6 @@ button:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
 @keyframes kickL { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(28deg); } 50% { transform: rotate(0); } }
 @keyframes kickR { 0%, 50%, 100% { transform: rotate(0); } 75% { transform: rotate(-28deg); } }
 @keyframes tilt { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
-
 .dancer.move-b .whole { animation: sway .84s ease-in-out infinite; }
 .dancer.move-b .armL { animation: twistL .84s ease-in-out infinite; }
 .dancer.move-b .armR { animation: twistR .84s ease-in-out infinite; }
@@ -189,41 +230,46 @@ button:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
 @keyframes sway { 0%, 100% { transform: translateX(-16px) rotate(-6deg); } 50% { transform: translateX(16px) rotate(6deg); } }
 @keyframes twistL { 0%, 100% { transform: rotate(150deg); } 50% { transform: rotate(90deg); } }
 @keyframes twistR { 0%, 100% { transform: rotate(-90deg); } 50% { transform: rotate(-150deg); } }
-
 .dancer.move-c .whole { animation: spin 1.68s cubic-bezier(.6,0,.4,1) infinite; }
 .dancer.move-c .armL { animation: pumpL .42s ease-in-out infinite; }
 .dancer.move-c .armR { animation: pumpR .42s ease-in-out infinite; }
 .dancer.move-c .legL { animation: kickL .42s ease-in-out infinite; }
 .dancer.move-c .legR { animation: kickR .42s ease-in-out infinite; }
-@keyframes spin { 0% { transform: translateY(0) scaleX(1); } 25% { transform: translateY(-22px) scaleX(-1); } 50% { transform: translateY(0) scaleX(-1); } 75% { transform: translateY(-22px) scaleX(1); } 100% { transform: translateY(0) scaleX(1); } }
+@keyframes spin { 0%, 100% { transform: translateY(0) scaleX(1); } 25% { transform: translateY(-22px) scaleX(-1); } 50% { transform: translateY(0) scaleX(-1); } 75% { transform: translateY(-22px) scaleX(1); } }
 
 /* Party overlay */
 .party[hidden] { display: none; }
 .party {
-  position: fixed; inset: 0; z-index: 50;
+  position: fixed; inset: 0; z-index: 50; cursor: pointer; display: grid; place-items: center; text-align: center;
   background: radial-gradient(600px 520px at 50% 35%, rgba(255,182,39,.28), transparent 70%), rgba(18,10,32,.94);
-  display: grid; place-items: center; text-align: center; cursor: pointer;
   padding: max(20px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
 }
 .party canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .party-inner { position: relative; display: grid; gap: 10px; justify-items: center; }
-.party-inner svg { width: min(300px, 62vw); height: auto; }
+.party-inner svg { width: min(290px, 60vw); height: auto; }
 .party-title { font-family: var(--display); font-size: clamp(26px, 6vw, 48px); line-height: 1.05; color: var(--marigold); text-wrap: balance; max-width: 18ch; }
 .party-sub { font-size: 18px; font-weight: 600; max-width: 40ch; }
+.party-song { font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--teal); }
 .party-hint { font-size: 13px; color: var(--ink-dim); }
+footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 80ch; margin: 0 auto; }
 
-footer { font-size: 13px; color: var(--ink-dim); text-align: center; }
-
-@media (max-width: 900px) { .months { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 860px) {
+  .clock-row { grid-template-columns: minmax(0, 1fr); }
+  .wall { grid-template-columns: 110px minmax(0, 1fr); justify-items: start; text-align: left; column-gap: 16px; }
+  .wall svg { max-width: 110px; grid-row: span 2; }
+  .months, .two { grid-template-columns: minmax(0, 1fr); }
+}
 @media (max-width: 560px) {
-  .months { grid-template-columns: minmax(0, 1fr); }
-  .stage { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: left; }
-  .stage-dancer svg { max-width: 150px; }
+  .stage { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  .stage-dancer svg { max-width: 140px; }
   .bubble::before { left: 40px; top: -10px; border: 10px solid transparent; border-bottom-color: var(--ink); border-top: 0; }
-  .units { gap: 22px; }
+  .cols { display: none; }
+  .row { grid-template-columns: minmax(0, 1fr) auto; }
+  .row .revdots { justify-content: end; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .clock::before, .clock.red .digits, .dancer.idle .whole, .dancer.idle .armR { animation: none; }
+  .clock::before, .clock.red .digits, .dancer.idle .whole, .dancer.idle .armR, .revdots i.due, .chip.waiting .led { animation: none; }
+  .pendulum { animation-duration: 4s; }
   .boogie { animation-iteration-count: 1; }
   .dancer.move-a *, .dancer.move-b *, .dancer.move-c * { animation-duration: 1.6s !important; }
 }
@@ -231,35 +277,6 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; }
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
-    <symbol id="dancer" viewBox="0 0 200 260">
-      <ellipse cx="100" cy="246" rx="52" ry="8" fill="rgba(0,0,0,.35)"/>
-      <g class="whole">
-        <g class="legL"><path d="M88 182 L80 236" stroke="#2b2f6b" stroke-width="16" stroke-linecap="round" fill="none"/><ellipse cx="76" cy="238" rx="13" ry="7" fill="#ff4f9a"/></g>
-        <g class="legR"><path d="M112 182 L120 236" stroke="#2b2f6b" stroke-width="16" stroke-linecap="round" fill="none"/><ellipse cx="124" cy="238" rx="13" ry="7" fill="#ff4f9a"/></g>
-        <g class="armL"><path d="M74 116 L52 160" stroke="#ffb627" stroke-width="14" stroke-linecap="round" fill="none"/><circle cx="50" cy="164" r="9" fill="#a8653a"/></g>
-        <g class="armR">
-          <path d="M126 116 L148 160" stroke="#ffb627" stroke-width="14" stroke-linecap="round" fill="none"/>
-          <circle cx="150" cy="164" r="9" fill="#a8653a"/>
-          <g transform="translate(138 160) rotate(-18)"><rect x="0" y="-26" width="34" height="28" rx="3" fill="#fbf1e3" stroke="#2a1600" stroke-width="2"/><path d="M5 -20 H29 M5 -14 H29 M5 -8 H20" stroke="#2a1600" stroke-width="2.4" stroke-linecap="round"/></g>
-        </g>
-        <path d="M72 112 Q100 100 128 112 L134 188 Q100 198 66 188 Z" fill="#ffb627"/>
-        <path d="M100 108 V150" stroke="#c97f00" stroke-width="3" stroke-linecap="round"/>
-        <circle cx="100" cy="128" r="2.8" fill="#c97f00"/><circle cx="100" cy="140" r="2.8" fill="#c97f00"/>
-        <path d="M68 180 Q100 192 132 180 L134 188 Q100 198 66 188 Z" fill="#35d0bf"/>
-        <g class="head">
-          <rect x="92" y="94" width="16" height="14" rx="4" fill="#a8653a"/>
-          <circle cx="100" cy="70" r="32" fill="#a8653a"/>
-          <path d="M68 66 Q70 34 100 36 Q132 36 133 66 Q120 50 100 50 Q80 50 68 66 Z" fill="#1d1030"/>
-          <path d="M70 52 Q100 40 131 54" stroke="#ff4f9a" stroke-width="6" fill="none" stroke-linecap="round"/>
-          <circle cx="87" cy="72" r="9" fill="none" stroke="#1d1030" stroke-width="3"/>
-          <circle cx="113" cy="72" r="9" fill="none" stroke="#1d1030" stroke-width="3"/>
-          <path d="M96 72 H104" stroke="#1d1030" stroke-width="3"/>
-          <circle cx="87" cy="72" r="3" fill="#1d1030"/><circle cx="113" cy="72" r="3" fill="#1d1030"/>
-          <path d="M88 86 Q100 96 112 86" stroke="#1d1030" stroke-width="3.4" fill="none" stroke-linecap="round"/>
-          <circle cx="78" cy="84" r="4" fill="#ff4f9a" opacity=".5"/><circle cx="122" cy="84" r="4" fill="#ff4f9a" opacity=".5"/>
-        </g>
-      </g>
-    </symbol>
     <symbol id="paper" viewBox="0 0 48 48">
       <rect x="6" y="8" width="32" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="3"/>
       <path d="M38 16 H42 V38 a4 4 0 0 1 -4 4" fill="none" stroke="currentColor" stroke-width="3"/>
@@ -276,59 +293,165 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; }
 <div class="wrap">
   <header class="top">
     <div class="brand"><small>SBI Clerk Mains · 23 Nov 2026</small>Current Affairs <b>Dance Floor</b></div>
-    <button class="chip" id="soundBtn" type="button" aria-pressed="true">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path id="soundIcon" d="M4 9v6h4l5 4V5L8 9H4z M16 8.5a5 5 0 0 1 0 7 M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span id="soundLabel">Music on</span>
-    </button>
+    <div class="chips">
+      <button class="chip" id="calmBtn" type="button" aria-pressed="false"><span class="led"></span><span id="calmLabel">Calm music</span></button>
+      <button class="chip" id="songBtn" type="button" aria-pressed="true"><span class="led"></span><span id="songLabel">Party songs on</span></button>
+    </div>
   </header>
 
-  <section class="clock" id="clock" aria-labelledby="clockLabel">
-    <div class="clock-label" id="clockLabel">10-day reverse stopwatch</div>
-    <div class="digits" id="digits" aria-live="off">240<span class="sep">:</span>00<span class="sep">:</span>00<span class="cs">.00</span></div>
-    <div class="units" aria-hidden="true"><span>hours</span><span>min</span><span>sec</span></div>
-    <div class="bar" role="progressbar" aria-label="Time left in the sprint" aria-valuemin="0" aria-valuemax="100" id="barWrap"><i id="bar"></i></div>
-    <p class="clock-note" id="clockNote">Loading the clock…</p>
-    <div class="modes" role="group" aria-label="Clock mode">
-      <button type="button" id="modeSprint" aria-pressed="true">10-day sprint</button>
-      <button type="button" id="modeFull" aria-pressed="false">Till exam</button>
+  <nav class="alerts" id="alerts" aria-label="Today's reminders"></nav>
+
+  <div class="clock-row">
+    <section class="clock" id="clock" aria-labelledby="clockLabel">
+      <div class="clock-label" id="clockLabel">10-day reverse stopwatch</div>
+      <div class="digits" id="digits">240<span class="sep">:</span>00<span class="sep">:</span>00<span class="cs">.00</span></div>
+      <div class="units" aria-hidden="true"><span>hours</span><span>min</span><span>sec</span></div>
+      <div class="bar" role="progressbar" aria-label="Time left" aria-valuemin="0" aria-valuemax="100" id="barWrap"><i id="bar"></i></div>
+      <p class="clock-note" id="clockNote">Starting the clock…</p>
+      <div class="modes" role="group" aria-label="Clock mode">
+        <button type="button" id="modeSprint" aria-pressed="true">10-day sprint</button>
+        <button type="button" id="modeFull" aria-pressed="false">Till exam</button>
+      </div>
+    </section>
+
+    <section class="wall" aria-label="Pendulum clock, India time">
+      <svg viewBox="0 0 200 300" role="img" aria-label="Pendulum wall clock">
+        <path d="M30 60 Q30 14 100 10 Q170 14 170 60 V280 Q170 292 158 292 H42 Q30 292 30 280 Z" fill="var(--wood)" stroke="var(--wood-2)" stroke-width="4"/>
+        <rect x="52" y="160" width="96" height="120" rx="10" fill="#120a20" stroke="var(--wood-2)" stroke-width="3"/>
+        <g class="pendulum">
+          <rect x="98" y="168" width="4" height="78" fill="#d8a54a"/>
+          <circle cx="100" cy="252" r="16" fill="#ffb627" stroke="#b77d10" stroke-width="3"/>
+          <circle cx="95" cy="247" r="4" fill="#ffe2a0"/>
+        </g>
+        <circle cx="100" cy="84" r="60" fill="#fbf1e3" stroke="var(--wood-2)" stroke-width="5"/>
+        <g id="ticks"></g>
+        <text x="100" y="45" text-anchor="middle" font-family="Bungee, sans-serif" font-size="14" fill="#1c1030">12</text>
+        <text x="138" y="89" text-anchor="middle" font-family="Bungee, sans-serif" font-size="14" fill="#1c1030">3</text>
+        <text x="100" y="133" text-anchor="middle" font-family="Bungee, sans-serif" font-size="14" fill="#1c1030">6</text>
+        <text x="62" y="89" text-anchor="middle" font-family="Bungee, sans-serif" font-size="14" fill="#1c1030">9</text>
+        <g class="hand" id="hHour"><path d="M100 84 V54" stroke="#1c1030" stroke-width="6" stroke-linecap="round"/></g>
+        <g class="hand" id="hMin"><path d="M100 84 V36" stroke="#1c1030" stroke-width="4" stroke-linecap="round"/></g>
+        <g class="hand" id="hSec"><path d="M100 94 V32" stroke="#ff4f9a" stroke-width="2" stroke-linecap="round"/><circle cx="100" cy="84" r="5" fill="#ff4f9a"/></g>
+      </svg>
+      <div class="time" id="wallTime">--:--:--</div>
+      <div class="tz">India time · it never stops</div>
+    </section>
+  </div>
+
+  <section class="panel" aria-label="Your progress">
+    <div class="stage">
+      <div class="stage-dancer" id="stageDancer"></div>
+      <div class="stage-info">
+        <div class="bubble" id="bubble">Tick a week when you finish it and I'll dance for you.</div>
+        <div class="stats">
+          <div><div class="big" id="doneCount">0<span> / 16</span></div><div class="stat-label">weeks studied</div></div>
+          <div><div class="big" id="mockCount">0<span> / 16</span></div><div class="stat-label">mocks taken</div></div>
+          <div><div class="big" id="avgScore">–<span> / 50</span></div><div class="stat-label">avg mock score</div></div>
+        </div>
+        <p class="pace" id="pace"></p>
+        <p class="save-note" id="saveNote">Connecting to your saved progress…</p>
+      </div>
+    </div>
+    <div class="ladder-wrap">
+      <div class="sec-head">
+        <div><h2 class="h2">Success <b>ladder</b></h2><p class="sub">Chintu climbs one step for every week you study. A star on a step means you took that week's mock.</p></div>
+        <div class="eyebrow" id="ladderStep">Step 0 of 16</div>
+      </div>
+      <svg id="ladder" viewBox="0 0 840 300" role="img" aria-label="Success ladder"></svg>
     </div>
   </section>
 
-  <section class="stage" aria-label="Your progress">
-    <div class="stage-dancer"><svg class="dancer idle" viewBox="0 0 200 260" role="img" aria-label="Chintu the dancer, waiting"><use href="#dancer"/></svg></div>
-    <div class="stage-info">
-      <div class="bubble" id="bubble">Tick a week when you finish it and I'll dance for you.</div>
-      <div class="stats">
-        <div><div class="big" id="doneCount">0<span> / 16</span></div><div class="stat-label">weeks finished</div></div>
-        <div><div class="big" id="monthCount">0<span> / 4</span></div><div class="stat-label">months cleared</div></div>
-      </div>
-      <p class="pace" id="pace"></p>
-      <p class="save-note" id="saveNote">Connecting to your saved progress…</p>
+  <section class="panel" id="revise" aria-labelledby="revTitle">
+    <div class="sec-head">
+      <div><h2 class="h2" id="revTitle">Revision <b>reminders</b></h2><p class="sub">You forget a week fastest in the first few days. Each week you study comes back for revision 1, 3 and 7 days later.</p></div>
     </div>
+    <div class="two">
+      <div><div class="eyebrow" style="margin-bottom:8px">Revise today</div><div class="list" id="dueList"></div></div>
+      <div><div class="eyebrow" style="margin-bottom:8px">Coming up</div><div class="list" id="upList"></div></div>
+    </div>
+    <p class="curve"><b>Round 1</b> next day · <b>Round 2</b> 3 days after studying · <b>Round 3</b> 7 days after. Anything that would land after 22 Nov moves to 22 Nov so it's done before the exam.</p>
+  </section>
+
+  <section class="panel" id="log" aria-labelledby="logTitle">
+    <div class="sec-head">
+      <div><h2 class="h2" id="logTitle">Daily <b>accountability</b></h2><p class="sub">Write what you actually studied. Be honest, even if it's "nothing". Your ticks for the day show under each note.</p></div>
+      <div class="streak" id="streak">0-day streak</div>
+    </div>
+    <div class="two">
+      <div class="log-card" id="yCard">
+        <div class="log-top"><b>Yesterday</b><span id="yDate"></span></div>
+        <textarea id="logYesterday" placeholder="What did you study yesterday? Which months, which sources, how long?"></textarea>
+        <div class="acts" id="yActs"></div>
+      </div>
+      <div class="log-card" id="tCard">
+        <div class="log-top"><b>Today</b><span id="tDate"></span></div>
+        <textarea id="logToday" placeholder="For example: Finished August Week 2 from the monthly PDF, made notes on banking news, took the mock, 2.5 hours."></textarea>
+        <div class="acts" id="tActs"></div>
+      </div>
+    </div>
+    <details><summary>Earlier days</summary><div class="hist" id="hist"></div></details>
   </section>
 
   <section class="months" id="months" aria-label="July to October, week by week"></section>
 
-  <footer>Weeks follow calendar dates: W1 is 1–7, W2 is 8–14, W3 is 15–21, W4 is 22 to month end. Tap a finished week twice to un-tick it. The tune is an original chiptune made in your browser.</footer>
+  <footer>Weeks follow calendar dates: W1 is 1–7, W2 is 8–14, W3 is 15–21, W4 is 22 to month end. Mock scores are out of 50, the size of the General/Financial Awareness section. Tap a filled button twice to undo it. All music is original and made in your browser.</footer>
 </div>
 
 <div class="party" id="party" hidden role="dialog" aria-modal="true" aria-labelledby="partyTitle">
   <canvas id="confetti"></canvas>
   <div class="party-inner">
-    <svg class="dancer move-a" id="partyDancer" viewBox="0 0 200 260" aria-hidden="true"><use href="#dancer"/></svg>
+    <div id="partyDancerBox"></div>
     <div class="party-title" id="partyTitle">Week done!</div>
     <div class="party-sub" id="partySub"></div>
+    <div class="party-song" id="partySong"></div>
     <div class="party-hint">Tap anywhere to get back to work</div>
   </div>
 </div>
 
 <script>
 (() => {
+  // ---------- Character (inlined so every limb can animate) ----------
+  const DANCER = `
+    <ellipse cx="100" cy="246" rx="52" ry="8" fill="rgba(0,0,0,.35)"/>
+    <g class="whole">
+      <g class="legL"><path d="M88 182 L80 236" stroke="#2b2f6b" stroke-width="16" stroke-linecap="round" fill="none"/><ellipse cx="76" cy="238" rx="13" ry="7" fill="#ff4f9a"/></g>
+      <g class="legR"><path d="M112 182 L120 236" stroke="#2b2f6b" stroke-width="16" stroke-linecap="round" fill="none"/><ellipse cx="124" cy="238" rx="13" ry="7" fill="#ff4f9a"/></g>
+      <g class="armL"><path d="M74 116 L52 160" stroke="#ffb627" stroke-width="14" stroke-linecap="round" fill="none"/><circle cx="50" cy="164" r="9" fill="#a8653a"/></g>
+      <g class="armR"><path d="M126 116 L148 160" stroke="#ffb627" stroke-width="14" stroke-linecap="round" fill="none"/><circle cx="150" cy="164" r="9" fill="#a8653a"/>
+        <g transform="translate(138 160) rotate(-18)"><rect x="0" y="-26" width="34" height="28" rx="3" fill="#fbf1e3" stroke="#2a1600" stroke-width="2"/><path d="M5 -20 H29 M5 -14 H29 M5 -8 H20" stroke="#2a1600" stroke-width="2.4" stroke-linecap="round"/></g></g>
+      <path d="M72 112 Q100 100 128 112 L134 188 Q100 198 66 188 Z" fill="#ffb627"/>
+      <path d="M100 108 V150" stroke="#c97f00" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="100" cy="128" r="2.8" fill="#c97f00"/><circle cx="100" cy="140" r="2.8" fill="#c97f00"/>
+      <path d="M68 180 Q100 192 132 180 L134 188 Q100 198 66 188 Z" fill="#35d0bf"/>
+      <g class="head">
+        <rect x="92" y="94" width="16" height="14" rx="4" fill="#a8653a"/>
+        <circle cx="100" cy="70" r="32" fill="#a8653a"/>
+        <path d="M68 66 Q70 34 100 36 Q132 36 133 66 Q120 50 100 50 Q80 50 68 66 Z" fill="#1d1030"/>
+        <path d="M70 52 Q100 40 131 54" stroke="#ff4f9a" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <circle cx="87" cy="72" r="9" fill="none" stroke="#1d1030" stroke-width="3"/><circle cx="113" cy="72" r="9" fill="none" stroke="#1d1030" stroke-width="3"/>
+        <path d="M96 72 H104" stroke="#1d1030" stroke-width="3"/>
+        <circle cx="87" cy="72" r="3" fill="#1d1030"/><circle cx="113" cy="72" r="3" fill="#1d1030"/>
+        <path d="M88 86 Q100 96 112 86" stroke="#1d1030" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+        <circle cx="78" cy="84" r="4" fill="#ff4f9a" opacity=".5"/><circle cx="122" cy="84" r="4" fill="#ff4f9a" opacity=".5"/>
+      </g>
+    </g>`;
+  document.getElementById("stageDancer").innerHTML = `<svg class="dancer idle" id="stageSvg" viewBox="0 0 200 260" role="img" aria-label="Chintu, your study buddy">${DANCER}</svg>`;
+  document.getElementById("partyDancerBox").innerHTML = `<svg class="dancer move-a" id="partyDancer" viewBox="0 0 200 260" aria-hidden="true">${DANCER}</svg>`;
+
   // ---------- Dates (IST = UTC+5:30) ----------
-  const IST = (y, m, d, h = 0, min = 0) => Date.UTC(y, m - 1, d, h - 5, min - 30);
-  const EXAM = IST(2026, 11, 23, 0, 0);          // 23 Nov 2026, 00:00 IST
-  const SPRINT_START = EXAM - 10 * 86400000;     // 13 Nov 2026, 00:00 IST
-  const REVISION_FROM = IST(2026, 11, 21, 0, 0); // last 2 days kept for revision
+  const IST_OFF = 5.5 * 3600000;
+  const IST = (y, m, d, h = 0, min = 0) => Date.UTC(y, m - 1, d, h, min) - IST_OFF;
+  const EXAM = IST(2026, 11, 23);
+  const SPRINT_START = EXAM - 10 * 86400000;
+  const REVISION_FROM = IST(2026, 11, 21);
+  const LAST_REV_DAY = "2026-11-22";
+  const istDay = ts => new Date(ts + IST_OFF).toISOString().slice(0, 10);
+  const parseDay = s => { const [y, m, d] = s.split("-").map(Number); return Date.UTC(y, m - 1, d); };
+  const addDays = (day, n) => new Date(parseDay(day) + n * 86400000).toISOString().slice(0, 10);
+  const dayDiff = (a, b) => Math.round((parseDay(b) - parseDay(a)) / 86400000);
+  const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const niceDay = day => { const dt = new Date(parseDay(day)); return `${DOW[dt.getUTCDay()]} ${dt.getUTCDate()} ${MON[dt.getUTCMonth()]}`; };
+  const today = () => istDay(Date.now());
 
   const MONTHS = [
     { key: "jul", name: "July", sym: "m-jul", color: "#35d0bf", last: 31, theme: "Monsoon month" },
@@ -339,51 +462,78 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; }
   const short = { jul: "Jul", aug: "Aug", sep: "Sep", oct: "Oct" };
   const WEEKS = [[1, 7], [8, 14], [15, 21], [22, null]];
   const ALL = MONTHS.flatMap(m => WEEKS.map((_, i) => `${m.key}-${i + 1}`));
+  const monthOf = id => MONTHS.find(m => m.key === id.split("-")[0]);
+  const label = id => `${monthOf(id).name} W${id.slice(-1)}`;
+  const REV_OFFSETS = [1, 3, 7];
 
   // ---------- State + saving ----------
-  let done = {};          // { "jul-1": "2026-11-07T..." }
-  let ref = null;         // db document, when available
-  let writing = false, pendingWrite = false;
+  // done: {id: iso}, mocks: {id: {at, score}}, revs: {id: [iso,...]}, log: {day: text}, activity: {day: [text]}
+  let S = { done: {}, mocks: {}, revs: {}, log: {}, activity: {} };
+  let ref = null, writing = false, pendingWrite = false;
   const saveNote = document.getElementById("saveNote");
-  const LS_KEY = "ca-dance-floor-v1";
-
-  function lsRead() { try { return JSON.parse(localStorage.getItem(LS_KEY) || "null"); } catch { return null; } }
-  function lsWrite() { try { localStorage.setItem(LS_KEY, JSON.stringify(done)); } catch {} }
-
+  const LS_KEY = "ca-dance-floor-v2";
+  const clean = d => ({ done: d?.done || {}, mocks: d?.mocks || {}, revs: d?.revs || {}, log: d?.log || {}, activity: d?.activity || {} });
+  function lsRead() {
+    try {
+      const v2 = JSON.parse(localStorage.getItem(LS_KEY) || "null");
+      if (v2) return clean(v2);
+      const v1 = JSON.parse(localStorage.getItem("ca-dance-floor-v1") || "null");
+      if (v1) return clean({ done: v1 });
+    } catch {}
+    return null;
+  }
+  function lsWrite() { try { localStorage.setItem(LS_KEY, JSON.stringify(S)); } catch {} }
+  const SAVED = "Saved to your account. It follows you to any device where you're signed in.";
   async function persist() {
     lsWrite();
     if (!ref) return;
     if (writing) { pendingWrite = true; return; }
     writing = true;
     try {
-      do { pendingWrite = false; await ref.set({ done: { ...done }, updatedAt: new Date().toISOString() }); } while (pendingWrite);
-      saveNote.textContent = "Saved to your account. It follows you to any device where you're signed in.";
-    } catch (e) {
-      saveNote.textContent = "Couldn't save to your account just now. Your ticks are kept in this browser.";
-    } finally { writing = false; }
+      do { pendingWrite = false; await ref.set({ ...JSON.parse(JSON.stringify(S)), updatedAt: new Date().toISOString() }); } while (pendingWrite);
+      saveNote.textContent = SAVED;
+    } catch { saveNote.textContent = "Couldn't save to your account just now. Everything is kept in this browser."; }
+    finally { writing = false; }
   }
+  function logActivity(text) { const d = today(); S.activity[d] = [...(S.activity[d] || []), text].slice(-30); }
 
   async function connect() {
     const local = lsRead();
-    if (local && typeof local === "object") { done = local; render(); }
+    if (local) { S = local; renderAll(); }
     try {
       const [db, user] = await Promise.all([window.claude?.use?.("db"), window.claude?.use?.("user")]);
       const uid = user ? await user.id() : null;
       if (!db || !uid) { saveNote.textContent = "Progress is saved in this browser only."; return; }
       ref = db.collection("data/users/" + uid).doc("progress");
       let settled = false;
-      const timer = setTimeout(() => { if (!settled) saveNote.textContent = "Can't reach your saved progress yet. Ticks are kept in this browser for now."; }, 10000);
+      const timer = setTimeout(() => { if (!settled) saveNote.textContent = "Can't reach your saved progress yet. Everything is kept in this browser for now."; }, 10000);
       ref.onSnapshot(snap => {
         if (!snap.metadata.fromCache) { settled = true; clearTimeout(timer); }
-        if (snap.exists) {
-          const d = snap.data();
-          if (d && d.done && typeof d.done === "object") { done = { ...d.done }; lsWrite(); render(); }
-        } else if (!snap.metadata.fromCache && Object.keys(done).length) {
-          persist(); // first visit with local ticks: copy them up
-        }
-        if (settled) saveNote.textContent = "Saved to your account. It follows you to any device where you're signed in.";
-      }, () => { settled = true; clearTimeout(timer); saveNote.textContent = "Account saving stopped. Ticks are kept in this browser."; ref = null; });
+        if (snap.exists) { S = clean(JSON.parse(JSON.stringify(snap.data()))); lsWrite(); renderAll(); }
+        else if (!snap.metadata.fromCache && (Object.keys(S.done).length || Object.keys(S.log).length || Object.keys(S.mocks).length)) persist();
+        if (settled) saveNote.textContent = SAVED;
+      }, () => { settled = true; clearTimeout(timer); ref = null; saveNote.textContent = "Account saving stopped. Everything is kept in this browser."; });
     } catch { saveNote.textContent = "Progress is saved in this browser only."; }
+  }
+
+  // ---------- Revision schedule ----------
+  function dueFor(id, step) {
+    const t = today();
+    let due = addDays(istDay(Date.parse(S.done[id])), REV_OFFSETS[step]);
+    if (due > LAST_REV_DAY) due = LAST_REV_DAY < t ? t : LAST_REV_DAY;
+    return due;
+  }
+  function revisionPlan() {
+    const t = today(), items = [];
+    for (const id of ALL) {
+      if (!S.done[id]) continue;
+      const step = (S.revs[id] || []).length;
+      if (step >= 3) continue;
+      const due = dueFor(id, step);
+      items.push({ id, step, due, late: dayDiff(due, t) });
+    }
+    items.sort((a, b) => a.due.localeCompare(b.due) || ALL.indexOf(a.id) - ALL.indexOf(b.id));
+    return { due: items.filter(x => x.due <= t), up: items.filter(x => x.due > t) };
   }
 
   // ---------- Board ----------
@@ -392,154 +542,411 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; }
     monthsEl.innerHTML = "";
     for (const m of MONTHS) {
       const card = document.createElement("article");
-      card.className = "month"; card.style.setProperty("--m", m.color); card.dataset.month = m.key;
+      card.className = "month panel"; card.style.setProperty("--m", m.color); card.dataset.month = m.key;
       card.innerHTML = `
         <div class="month-head">
           <svg aria-hidden="true"><use href="#${m.sym}"/></svg>
           <div><div class="month-name">${m.name}</div><div class="month-sub">${m.theme}</div></div>
           <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         </div>
-        <div class="weeks"></div>`;
-      const weeksEl = card.querySelector(".weeks");
+        <div class="cols" aria-hidden="true"><span>Week</span><span>Study</span><span>Mock · score</span><span>Revise</span></div>
+        <div class="rows"></div>`;
+      const rows = card.querySelector(".rows");
       WEEKS.forEach(([a, b], i) => {
         const id = `${m.key}-${i + 1}`;
-        const btn = document.createElement("button");
-        btn.type = "button"; btn.className = "week"; btn.dataset.id = id;
-        btn.innerHTML = `<svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#paper"/><g class="check"><circle cx="36" cy="36" r="10" fill="#1c1030" stroke="currentColor" stroke-width="3"/><path d="M31 36 l4 4 l7 -8" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
-          <span class="wk">Week ${i + 1}</span>
-          <span class="rng">${a}–${b ?? m.last} ${short[m.key]}</span>
-          <span class="tag">To do</span>`;
-        btn.addEventListener("click", () => onTile(btn, m, i));
-        weeksEl.appendChild(btn);
+        const row = document.createElement("div");
+        row.className = "row"; row.dataset.id = id;
+        row.innerHTML = `
+          <div class="row-name"><svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#paper"/><g class="check"><circle cx="36" cy="36" r="10" fill="#1c1030" stroke="currentColor" stroke-width="3"/><path d="M31 36 l4 4 l7 -8" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
+            <div><b>Week ${i + 1}</b><span>${a}–${b ?? m.last} ${short[m.key]}</span></div></div>
+          <button type="button" class="pill study">Study</button>
+          <div class="mockbox"><button type="button" class="pill mock">Mock</button>
+            <input class="score" id="score-${id}" type="number" inputmode="numeric" min="0" max="50" placeholder="–" aria-label="${m.name} week ${i + 1} mock score out of 50"><small>/50</small></div>
+          <div class="revdots" aria-label="Revision rounds"><i></i><i></i><i></i></div>`;
+        row.querySelector(".study").addEventListener("click", e => onStudy(e.currentTarget, row, m, i));
+        row.querySelector(".mock").addEventListener("click", e => onMock(e.currentTarget, row, m, i));
+        const sc = row.querySelector(".score");
+        sc.addEventListener("change", () => {
+          if (!S.mocks[id]) return;
+          let v = sc.value === "" ? null : Math.max(0, Math.min(50, Math.round(Number(sc.value))));
+          if (Number.isNaN(v)) v = null;
+          S.mocks[id] = { ...S.mocks[id], score: v };
+          if (v !== null) logActivity(`Mock ${label(id)}: ${v}/50`);
+          renderAll(); persist();
+        });
+        rows.appendChild(row);
       });
       monthsEl.appendChild(card);
     }
   }
 
-  function render() {
-    let count = 0, monthsDone = 0;
+  function withConfirm(btn, isOn, doUndo) {
+    if (!isOn) return false;
+    if (btn.classList.contains("confirm")) { clearTimeout(btn._t); btn.classList.remove("confirm"); doUndo(); return true; }
+    monthsEl.querySelectorAll(".pill.confirm").forEach(b => b.classList.remove("confirm"));
+    btn.classList.add("confirm"); btn.textContent = "Undo?";
+    clearTimeout(btn._t); btn._t = setTimeout(() => { btn.classList.remove("confirm"); renderAll(); }, 3000);
+    return true;
+  }
+  function wiggle(el) { el.classList.remove("boogie"); void el.getBoundingClientRect(); el.classList.add("boogie"); el.addEventListener("animationend", () => el.classList.remove("boogie"), { once: true }); }
+
+  function onStudy(btn, row, m, i) {
+    const id = row.dataset.id;
+    if (withConfirm(btn, !!S.done[id], () => { delete S.done[id]; delete S.revs[id]; renderAll(); persist(); })) return;
+    S.done[id] = new Date().toISOString();
+    logActivity(`Studied ${label(id)}`);
+    renderAll(); persist(); wiggle(row.querySelector(".ico"));
+    const count = ALL.filter(k => S.done[k]).length, left = 16 - count;
+    const monthDone = WEEKS.every((_, k) => S.done[`${m.key}-${k + 1}`]);
+    if (count === 16) return party("finale", "All 16 weeks done!", "July to October covered. Finish your revision rounds and mocks before 23 Nov.", "move-c");
+    if (monthDone) return party("anthem", `All of ${m.name} cleared!`, `${left} weeks left in total. Take ${m.name}'s mocks if any are open.`, "move-b");
+    const subs = [`${left} weeks to go. Now take this week's mock.`, `${left} left. Chintu climbed a step for you.`, `Only ${left} more. Round 1 revision is tomorrow.`];
+    party(nextSong(), `${m.name} Week ${i + 1} done!`, subs[(Math.random() * subs.length) | 0]);
+  }
+  function onMock(btn, row, m, i) {
+    const id = row.dataset.id;
+    if (withConfirm(btn, !!S.mocks[id], () => { delete S.mocks[id]; renderAll(); persist(); })) return;
+    S.mocks[id] = { at: new Date().toISOString(), score: null };
+    logActivity(`Mock ${label(id)}`);
+    renderAll(); persist();
+    const n = ALL.filter(k => S.mocks[k]).length;
+    party(nextSong(), `Mock for ${short[m.key]} W${i + 1} done!`, `${n} of 16 mocks taken. Type your score out of 50 next to it.`);
+  }
+  function onRevise(id) {
+    const step = (S.revs[id] || []).length;
+    S.revs[id] = [...(S.revs[id] || []), new Date().toISOString()];
+    logActivity(`Revised ${label(id)} (round ${step + 1})`);
+    renderAll(); persist();
+    party("ding", `${label(id)} revised!`, step === 2 ? "All 3 rounds done. This week is locked in." : `Round ${step + 1} of 3 done. Round ${step + 2} is on ${niceDay(dueFor(id, step + 1))}.`, "move-b");
+  }
+
+  // ---------- Rendering ----------
+  function renderBoard() {
+    const plan = revisionPlan(), dueIds = new Set(plan.due.map(x => x.id));
     for (const m of MONTHS) {
       const card = monthsEl.querySelector(`[data-month="${m.key}"]`);
       let mc = 0;
-      card.querySelectorAll(".week").forEach(btn => {
-        const on = !!done[btn.dataset.id];
+      card.querySelectorAll(".row").forEach(row => {
+        const id = row.dataset.id, on = !!S.done[id], mk = S.mocks[id];
         if (on) mc++;
-        btn.classList.toggle("done", on);
-        if (!btn.classList.contains("confirm")) btn.querySelector(".tag").textContent = on ? "Done" : "To do";
-        btn.setAttribute("aria-pressed", on ? "true" : "false");
-        btn.setAttribute("aria-label", `${m.name} week ${btn.dataset.id.slice(-1)}, ${on ? "done" : "not done"}`);
+        row.classList.toggle("studied", on);
+        const st = row.querySelector(".study"), mb = row.querySelector(".mock"), sc = row.querySelector(".score");
+        if (!st.classList.contains("confirm")) st.textContent = on ? "Studied" : "Study";
+        st.classList.toggle("on", on); st.setAttribute("aria-pressed", on);
+        if (!mb.classList.contains("confirm")) mb.textContent = mk ? "Mock done" : "Mock";
+        mb.classList.toggle("on", !!mk); mb.setAttribute("aria-pressed", !!mk);
+        sc.disabled = !mk;
+        if (document.activeElement !== sc) sc.value = mk && mk.score != null ? mk.score : "";
+        const r = (S.revs[id] || []).length;
+        row.querySelectorAll(".revdots i").forEach((d, k) => { d.classList.toggle("on", k < r); d.classList.toggle("due", k === r && dueIds.has(id)); });
+        row.querySelector(".revdots").title = on ? `${r} of 3 revision rounds done` : "Study this week first";
       });
       card.querySelectorAll(".dots i").forEach((d, k) => d.classList.toggle("on", k < mc));
       card.classList.toggle("complete", mc === 4);
-      count += mc; if (mc === 4) monthsDone++;
     }
+  }
+
+  function renderStats() {
+    const count = ALL.filter(k => S.done[k]).length;
+    const mocks = ALL.filter(k => S.mocks[k]);
+    const scored = mocks.map(k => S.mocks[k].score).filter(v => typeof v === "number");
     document.getElementById("doneCount").innerHTML = `${count}<span> / 16</span>`;
-    document.getElementById("monthCount").innerHTML = `${monthsDone}<span> / 4</span>`;
-    const next = ALL.find(k => !done[k]);
+    document.getElementById("mockCount").innerHTML = `${mocks.length}<span> / 16</span>`;
+    document.getElementById("avgScore").innerHTML = `${scored.length ? (scored.reduce((a, b) => a + b, 0) / scored.length).toFixed(1) : "–"}<span> / 50</span>`;
+    const next = ALL.find(k => !S.done[k]);
+    const openMock = ALL.find(k => S.done[k] && !S.mocks[k]);
     const bubble = document.getElementById("bubble");
-    if (!next) bubble.textContent = "All 16 weeks done! Spend the last days revising your notes and doing mock tests.";
-    else {
-      const m = MONTHS.find(x => x.key === next.split("-")[0]);
-      bubble.textContent = count === 0
-        ? `Start with ${m.name} Week ${next.slice(-1)}. Tick it when you finish and I'll dance for you.`
-        : `Nice, ${count} down. Next up: ${m.name} Week ${next.slice(-1)}. Finish it so I can dance again.`;
-    }
+    if (!next) bubble.textContent = openMock ? `Every week is studied! Take the mock for ${label(openMock)} next.` : "All 16 weeks and mocks done. Keep revising until the exam.";
+    else if (openMock) bubble.textContent = `You studied ${label(openMock)} but haven't taken its mock yet. Take it, then start ${label(next)}.`;
+    else bubble.textContent = count === 0 ? `Start with ${label(next)}. Tick it when you finish and I'll dance for you.` : `Nice, ${count} down. Next up: ${label(next)}. Finish it so I can dance again.`;
     updatePace(count);
+    renderLadder(count);
   }
 
   function updatePace(count) {
-    const left = 16 - count;
-    const days = (REVISION_FROM - Date.now()) / 86400000;
-    const pace = document.getElementById("pace");
-    if (left === 0) { pace.innerHTML = "<b>Coverage complete.</b> Revise every month once more before 23 Nov."; return; }
+    const left = 16 - count, days = (REVISION_FROM - Date.now()) / 86400000, pace = document.getElementById("pace");
+    if (left === 0) { pace.innerHTML = "<b>Coverage complete.</b> Keep up with the revision rounds."; return; }
     if (days <= 0) { pace.innerHTML = `Revision days are here and <b>${left} week${left > 1 ? "s" : ""}</b> are still open. Pick the ones with the most banking and economy news.`; return; }
-    const perDay = left / days;
-    pace.innerHTML = `To finish by 20 Nov night you need <b>${perDay.toFixed(1)} week${perDay >= 1.05 ? "s" : ""} a day</b> (${left} left in ${days.toFixed(1)} days). 21–22 Nov stay free for revision.`;
+    const per = left / days;
+    pace.innerHTML = `To finish by 20 Nov night you need <b>${per.toFixed(1)} week${per >= 1.05 ? "s" : ""} a day</b> (${left} left in ${days.toFixed(1)} days). 21–22 Nov stay free for revision.`;
   }
 
-  let confirmTimer = null;
-  function onTile(btn, m, i) {
-    const id = btn.dataset.id;
-    if (done[id]) {
-      if (btn.classList.contains("confirm")) {
-        clearTimeout(confirmTimer); btn.classList.remove("confirm");
-        delete done[id]; render(); persist();
-      } else {
-        monthsEl.querySelectorAll(".week.confirm").forEach(b => b.classList.remove("confirm"));
-        btn.classList.add("confirm"); btn.querySelector(".tag").textContent = "Tap again to undo";
-        clearTimeout(confirmTimer);
-        confirmTimer = setTimeout(() => { btn.classList.remove("confirm"); render(); }, 3000);
-      }
-      return;
+  // Ladder: 16 steps rising left to right
+  const ladder = document.getElementById("ladder");
+  const STEP_W = 46, STEP_H = 13, X0 = 40, GROUND = 286;
+  const stepTop = k => GROUND - k * STEP_H;
+  let ladderBuilt = false, lastLadder = -1;
+  function buildLadder() {
+    let h = `<rect x="0" y="${GROUND}" width="840" height="4" rx="2" fill="var(--stage-3)"/>`;
+    ALL.forEach((id, k) => {
+      const x = X0 + (k + 1) * STEP_W, y = stepTop(k + 1), m = monthOf(id);
+      h += `<g data-step="${k}"><rect class="st" x="${x}" y="${y}" width="${STEP_W - 3}" height="${GROUND - y}" rx="4" fill="var(--stage-3)" data-color="${m.color}"/>
+        <text x="${x + (STEP_W - 3) / 2}" y="${GROUND - 3}" text-anchor="middle" font-size="11" font-weight="800" fill="var(--ink)" opacity=".8" font-family="Baloo 2, sans-serif">${short[m.key][0]}${id.slice(-1)}</text>
+        <path class="star" d="M${x + 21} ${y - 22} l4 8 9 1 -7 6 2 9 -8 -5 -8 5 2 -9 -7 -6 9 -1 z" fill="var(--marigold)" opacity="0"/></g>`;
+    });
+    const px = X0 + 17 * STEP_W - 10, py = stepTop(16);
+    h += `<path d="M${px} ${py} V${py - 56}" stroke="var(--ink)" stroke-width="3"/><path d="M${px} ${py - 56} l-30 9 30 9 z" fill="var(--rani)"/>
+      <text x="${px}" y="${py - 62}" text-anchor="end" font-family="Bungee, sans-serif" font-size="13" fill="var(--marigold)">23 NOV</text>`;
+    h += `<g class="ladder-climber" id="climber"><g id="climberHop"><svg class="dancer idle" x="-30" y="-76" width="60" height="78" viewBox="0 0 200 260">${DANCER}</svg></g></g>`;
+    ladder.innerHTML = h; ladderBuilt = true;
+  }
+  function renderLadder(count) {
+    if (!ladderBuilt) buildLadder();
+    ALL.forEach((id, k) => {
+      const g = ladder.querySelector(`[data-step="${k}"]`), st = g.querySelector(".st");
+      st.setAttribute("fill", k < count ? st.dataset.color : "var(--stage-3)");
+      g.querySelector(".star").setAttribute("opacity", S.mocks[id] ? "1" : "0");
+    });
+    const x = count === 0 ? X0 - 4 : X0 + count * STEP_W + (STEP_W - 3) / 2, y = stepTop(count);
+    document.getElementById("climber").style.transform = `translate(${x}px, ${y}px)`;
+    if (lastLadder !== -1 && count > lastLadder) { const hop = document.getElementById("climberHop"); hop.classList.remove("hop"); void hop.getBoundingClientRect(); hop.classList.add("hop"); }
+    lastLadder = count;
+    document.getElementById("ladderStep").textContent = `Step ${count} of 16`;
+  }
+
+  function renderRevisions() {
+    const { due, up } = revisionPlan(), dl = document.getElementById("dueList"), ul = document.getElementById("upList");
+    dl.innerHTML = due.length ? "" : `<p class="empty">Nothing to revise today. Study a week and its first revision shows up here tomorrow.</p>`;
+    for (const it of due) {
+      const el = document.createElement("div");
+      el.className = "rev-item" + (it.late > 0 ? " late" : "");
+      el.innerHTML = `<span class="swatch" style="background:${monthOf(it.id).color}"></span>
+        <div class="what"><b>${label(it.id)} · Round ${it.step + 1} of 3</b><span>${it.late > 0 ? `Overdue by ${it.late} day${it.late > 1 ? "s" : ""}` : "Due today"}</span></div>
+        <button type="button" class="btn">Revised</button>`;
+      el.querySelector(".btn").addEventListener("click", () => onRevise(it.id));
+      dl.appendChild(el);
     }
-    done[id] = new Date().toISOString();
-    render(); persist();
-    const ico = btn.querySelector(".ico");
-    ico.classList.remove("boogie"); void ico.getBoundingClientRect(); ico.classList.add("boogie");
-    ico.addEventListener("animationend", () => ico.classList.remove("boogie"), { once: true });
-
-    const count = Object.keys(done).filter(k => ALL.includes(k)).length;
-    const monthDone = WEEKS.every((_, k) => done[`${m.key}-${k + 1}`]);
-    const level = count === 16 ? 3 : monthDone ? 2 : 1;
-    const left = 16 - count;
-    const titles = {
-      1: [`${m.name} Week ${i + 1} done!`, `${short[m.key]} W${i + 1} cleared!`, `That's Week ${i + 1} of ${m.name}!`],
-      2: [`All of ${m.name} cleared!`],
-      3: [`All 16 weeks done!`],
-    };
-    const subs = {
-      1: [`${left} weeks to go. Keep the streak alive.`, `${left} left. The clock is ticking, so is Chintu.`, `Only ${left} more. Revise this week's notes once tonight.`],
-      2: [`4 out of 4 weeks. ${left ? `${left} weeks left in total.` : ""} Make one-page notes for ${m.name} now.`],
-      3: [`July to October covered. Use the last days for revision and mock tests.`],
-    };
-    const pick = a => a[Math.floor(Math.random() * a.length)];
-    party(level, pick(titles[level]), pick(subs[level]));
+    ul.innerHTML = up.length ? "" : `<p class="empty">No upcoming revisions yet.</p>`;
+    let lastD = "";
+    for (const it of up.slice(0, 10)) {
+      if (it.due !== lastD) { const n = dayDiff(today(), it.due), d = document.createElement("div"); d.className = "up-day"; d.textContent = `${niceDay(it.due)} · in ${n} day${n > 1 ? "s" : ""}`; ul.appendChild(d); lastD = it.due; }
+      const r = document.createElement("div"); r.className = "up-row";
+      r.innerHTML = `<span class="swatch" style="background:${monthOf(it.id).color};height:14px;width:14px"></span>${label(it.id)} · Round ${it.step + 1}`;
+      ul.appendChild(r);
+    }
   }
 
-  // ---------- Party: dancer + confetti + tune ----------
-  const partyEl = document.getElementById("party");
-  const partyDancer = document.getElementById("partyDancer");
+  const logY = document.getElementById("logYesterday"), logT = document.getElementById("logToday");
+  const hasDay = d => !!((S.log[d] || "").trim() || (S.activity[d] || []).length);
+  function renderLog() {
+    const t = today(), y = addDays(t, -1);
+    document.getElementById("tDate").textContent = niceDay(t);
+    const yMissing = !hasDay(y);
+    document.getElementById("yDate").textContent = yMissing ? `${niceDay(y)} · nothing logged` : niceDay(y);
+    document.getElementById("yCard").classList.toggle("missing", yMissing);
+    if (document.activeElement !== logY) logY.value = S.log[y] || "";
+    if (document.activeElement !== logT) logT.value = S.log[t] || "";
+    const acts = (el, d) => { el.innerHTML = ""; (S.activity[d] || []).forEach(a => { const s = document.createElement("span"); s.className = "act"; s.textContent = a; el.appendChild(s); }); };
+    acts(document.getElementById("yActs"), y); acts(document.getElementById("tActs"), t);
+    let d = hasDay(t) ? t : y, n = 0;
+    while (hasDay(d)) { n++; d = addDays(d, -1); }
+    document.getElementById("streak").textContent = `${n}-day streak`;
+    const hist = document.getElementById("hist"); hist.innerHTML = "";
+    const days = [...new Set([...Object.keys(S.log), ...Object.keys(S.activity)])].filter(x => x < y).sort().reverse().slice(0, 14);
+    if (!days.length) hist.innerHTML = `<p class="empty">Older notes will appear here.</p>`;
+    for (const day of days) {
+      const row = document.createElement("div");
+      const a = document.createElement("span"); a.textContent = niceDay(day);
+      const b = document.createElement("span"); b.textContent = (S.log[day] || "").trim() || (S.activity[day] || []).join(", ") || "Nothing logged";
+      row.append(a, b); hist.appendChild(row);
+    }
+  }
+  let logTimer = null;
+  function onLogInput(el, which) {
+    clearTimeout(logTimer);
+    logTimer = setTimeout(() => {
+      const d = which === "t" ? today() : addDays(today(), -1);
+      const v = el.value.slice(0, 4000);
+      if ((S.log[d] || "") === v) return;
+      if (v.trim()) S.log[d] = v; else delete S.log[d];
+      persist(); renderLog(); renderAlerts();
+    }, 900);
+  }
+  logY.addEventListener("input", () => onLogInput(logY, "y"));
+  logT.addEventListener("input", () => onLogInput(logT, "t"));
+
+  function renderAlerts() {
+    const { due } = revisionPlan(), late = due.filter(x => x.late > 0).length, onTime = due.length - late;
+    const t = today(), y = addDays(t, -1);
+    const el = document.getElementById("alerts"); el.innerHTML = "";
+    const add = (cls, n, text, href) => { const a = document.createElement("a"); a.className = "alert " + cls; a.href = href; a.innerHTML = (n !== null ? `<span class="n">${n}</span>` : "") + `<span>${text}</span>`; el.appendChild(a); };
+    if (late) add("late", late, `revision${late > 1 ? "s" : ""} overdue`, "#revise");
+    if (onTime) add("due", onTime, `revision${onTime > 1 ? "s" : ""} due today`, "#revise");
+    if (!hasDay(y)) add("late", null, `You didn't log yesterday (${niceDay(y)}). Write what you studied.`, "#log");
+    const openMocks = ALL.filter(k => S.done[k] && !S.mocks[k]).length;
+    if (openMocks) add("due", openMocks, `mock${openMocks > 1 ? "s" : ""} waiting for weeks you studied`, "#months");
+    if (!(S.log[t] || "").trim()) add("ok", null, "Tonight, write what you studied today.", "#log");
+  }
+
+  function renderAll() { renderBoard(); renderStats(); renderRevisions(); renderLog(); renderAlerts(); }
+
+  // ---------- Audio ----------
+  let actx = null;
+  function ctx() {
+    try { actx = actx || new (window.AudioContext || window.webkitAudioContext)(); if (actx.state === "suspended") actx.resume(); return actx; }
+    catch { return null; }
+  }
+  const C5 = 523.25, f = semi => C5 * Math.pow(2, semi / 12);
+
+  // Party songs (all original). Lead notes are semitones from C5; null is a rest. Bass: 8 notes per bar, one per 2 steps.
+  const HOOK = [0, 4, 7, 4, 9, 7, 4, null, 5, 9, 12, 9, 7, 4, 2, null];
+  const ANSWER = [0, 4, 7, 12, 14, 12, 9, 7, 9, 7, 4, 2, 0, null, 0, null];
+  const CLIMB = [12, 14, 16, 19, 16, 14, 12, 14, 16, 19, 21, 19, 24, null, 24, null];
+  const SONGS = {
+    monsoon: { name: "Monsoon Bounce", step: .21, wave: "square", vol: .09, bars: [HOOK, ANSWER], bass: [-24, -24, -17, -17, -15, -15, -19, -17] },
+    kite: { name: "Kite Skip", step: .18, wave: "triangle", vol: .2, bars: [[7, 9, 12, 9, 7, 4, 7, null, 5, 7, 9, 7, 5, 2, 0, null], [0, 2, 4, 7, 9, 7, 4, 2, 4, 2, 0, -3, 0, null, 0, null], [7, 9, 12, 14, 16, 14, 12, 9, 12, 9, 7, 4, 7, null, 12, null]], bass: [-24, -24, -20, -20, -17, -17, -19, -19] },
+    chai: { name: "Chai Break Shuffle", step: .24, swing: .3, wave: "square", vol: .07, bars: [[0, null, 3, 5, 7, null, 5, 3, 0, null, -2, 0, 3, null, 0, null], [7, null, 10, 7, 5, 3, 5, null, 3, null, 0, -2, 0, null, null, null]], bass: [-24, -24, -21, -21, -19, -19, -17, -19] },
+    disco: { name: "Topper Disco", step: .19, wave: "sawtooth", vol: .045, disco: true, bars: [[12, null, 12, 14, 16, 14, 12, null, 9, null, 9, 12, 14, 12, 9, 7], [7, 9, 12, null, 12, 14, 16, 19, 16, null, 14, 12, 14, null, 12, null]], bass: [-24, -24, -24, -24, -15, -15, -17, -17] },
+    tabla: { name: "Notes Pe Naach", step: .2, wave: "triangle", vol: .2, tabla: true, bars: [[0, 2, 4, null, 7, 4, 2, 0, 2, null, 4, 7, 9, 7, 4, null], [9, 7, 4, 7, 9, 12, 9, null, 7, 4, 2, 4, 0, null, 0, null]], bass: [-24, -17, -24, -17, -19, -12, -17, -10] },
+    anthem: { name: "Month Clear Anthem", step: .2, wave: "square", vol: .09, bars: [HOOK, ANSWER, HOOK, CLIMB], keys: [0, 0, 5, 0], bass: [-24, -24, -17, -17, -15, -15, -19, -17] },
+    finale: { name: "Victory Lap", step: .19, wave: "square", vol: .09, disco: true, bars: [HOOK, ANSWER, CLIMB, CLIMB], keys: [0, 2, 5, 7], bass: [-24, -24, -17, -17, -15, -15, -19, -17] },
+    ding: { name: "Revision Ding", step: .16, wave: "triangle", vol: .22, bars: [[12, 16, 19, 24, null, 19, 24, null, 16, 19, 24, 28, null, null, null, null]], bass: [-12, -12, -5, -5, 0, 0, 0, 0] },
+  };
+  const WEEK_SONGS = ["monsoon", "kite", "chai", "disco", "tabla"];
+  let lastSong = "";
+  function nextSong() { const pool = WEEK_SONGS.filter(s => s !== lastSong); lastSong = pool[(Math.random() * pool.length) | 0]; return lastSong; }
+
+  let songsOn = true, songGain = null;
+  try { songsOn = localStorage.getItem("ca-dance-sound") !== "off"; } catch {}
+  function stopSong() { if (songGain && actx) { try { songGain.gain.setTargetAtTime(0, actx.currentTime, 0.05); } catch {} } songGain = null; }
+  const songLength = song => song.bars.reduce((a, b) => a + b.length, 0) * song.step + 0.8;
+  function playSong(key) {
+    const song = SONGS[key], secs = songLength(song);
+    if (!songsOn) return secs;
+    const ac = ctx(); if (!ac) return secs;
+    stopSong();
+    songGain = ac.createGain(); songGain.gain.value = 0.55; songGain.connect(ac.destination);
+    const out = songGain, t0 = ac.currentTime + 0.05, ST = song.step;
+    const tone = (freq, t, dur, type, vol) => {
+      const o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(out); o.start(t); o.stop(t + dur + 0.03);
+    };
+    const drum = (t, f0, f1, v, d) => { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + d * .75); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d); o.connect(g).connect(out); o.start(t); o.stop(t + d + 0.02); };
+    const nb = ac.createBuffer(1, Math.floor(ac.sampleRate * 0.05), ac.sampleRate), nd = nb.getChannelData(0);
+    for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    const hat = (t, vol) => { const s = ac.createBufferSource(), hp = ac.createBiquadFilter(), g = ac.createGain(); s.buffer = nb; hp.type = "highpass"; hp.frequency.value = 7000; g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.045); s.connect(hp).connect(g).connect(out); s.start(t); };
+    let pos = 0;
+    song.bars.forEach((bar, b) => {
+      const key = song.keys ? song.keys[b] : 0;
+      bar.forEach((n, s) => {
+        const t = t0 + (pos + s) * ST + (s % 2 && song.swing ? song.swing * ST : 0);
+        if (n !== null) tone(f(n + key), t, ST * 0.95, song.wave, song.vol);
+        const bn = song.bass[Math.floor(s / 2) % 8] + key;
+        if (song.disco) tone(f(bn + (s % 2 ? 12 : 0)), t, ST * 0.9, "triangle", 0.2);
+        else if (s % 2 === 0) tone(f(bn), t, ST * 1.8, "triangle", 0.22);
+        if (song.tabla) { if (s % 4 === 0) drum(t, 180, 70, .45, .25); if (s % 4 === 2 || s % 8 === 7) drum(t, 520, 380, .22, .12); }
+        else { if (s % 4 === 0) drum(t, 150, 42, .5, .16); hat(t + ST / 2, s % 4 === 2 ? 0.12 : 0.06); }
+      });
+      pos += bar.length;
+    });
+    const end = t0 + pos * ST;
+    tone(f(12), end, 0.6, song.wave, song.vol); tone(f(-12), end, 0.8, "triangle", 0.25);
+    return secs;
+  }
+
+  // Calm background music: slow generative pads with soft bells, through a gentle echo.
+  const CALM_VOL = 0.22;
+  const calm = { on: true, running: false, gain: null, input: null, timer: null, next: 0, idx: 0 };
+  try { calm.on = localStorage.getItem("ca-dance-calm") !== "off"; } catch {}
+  const CHORDS = [[-12, -5, 0, 4, 11], [-15, -8, -3, 0, 7], [-19, -12, -7, -3, 4], [-17, -10, -5, 2, 9]]; // Cmaj7, Am7, Fmaj7, G6/9 around C4
+  const BELLS = [12, 14, 16, 19, 21, 24];
+  const C4 = 261.63, g4 = s => C4 * Math.pow(2, s / 12);
+  function startCalm() {
+    if (calm.running || !calm.on) return;
+    const ac = ctx(); if (!ac) return;
+    calm.gain = ac.createGain(); calm.gain.gain.setValueAtTime(0.0001, ac.currentTime); calm.gain.gain.exponentialRampToValueAtTime(CALM_VOL, ac.currentTime + 3);
+    const lp = ac.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 1400;
+    const dl = ac.createDelay(); dl.delayTime.value = 0.48; const fb = ac.createGain(); fb.gain.value = 0.38;
+    lp.connect(calm.gain); lp.connect(dl); dl.connect(fb); fb.connect(dl); dl.connect(calm.gain);
+    calm.gain.connect(ac.destination); calm.input = lp;
+    calm.next = ac.currentTime + 0.1; calm.running = true;
+    calm.timer = setInterval(scheduleCalm, 500); scheduleCalm(); paintCalm();
+    if (!partyEl.hidden) duckCalm(true);
+  }
+  function scheduleCalm() {
+    if (!calm.running) return;
+    const ac = actx, LEN = 8;
+    while (calm.next < ac.currentTime + 2.5) {
+      const t = calm.next, chord = CHORDS[calm.idx % CHORDS.length];
+      chord.forEach((s, k) => {
+        [["sine", 0, .05], ["triangle", 7, .018]].forEach(([type, det, v]) => {
+          const o = ac.createOscillator(), g = ac.createGain(), vv = v * (k === 0 ? 1.3 : 1);
+          o.type = type; o.frequency.value = g4(s); o.detune.value = det;
+          g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vv, t + 2.5);
+          g.gain.setValueAtTime(vv, t + LEN - 1); g.gain.linearRampToValueAtTime(0.0001, t + LEN + 2);
+          o.connect(g).connect(calm.input); o.start(t); o.stop(t + LEN + 2.2);
+        });
+      });
+      for (let b = 0; b < 3; b++) {
+        const bt = t + 1 + Math.random() * (LEN - 2), o = ac.createOscillator(), g = ac.createGain();
+        o.type = "sine"; o.frequency.value = g4(BELLS[(Math.random() * BELLS.length) | 0]);
+        g.gain.setValueAtTime(0.0001, bt); g.gain.linearRampToValueAtTime(0.045, bt + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, bt + 3.2);
+        o.connect(g).connect(calm.input); o.start(bt); o.stop(bt + 3.3);
+      }
+      calm.next += LEN; calm.idx++;
+    }
+  }
+  function stopCalm() {
+    if (!calm.running) return;
+    clearInterval(calm.timer); calm.running = false;
+    try { calm.gain.gain.setTargetAtTime(0.0001, actx.currentTime, 0.4); } catch {}
+    paintCalm();
+  }
+  function duckCalm(down) { if (calm.running && actx) calm.gain.gain.setTargetAtTime(down ? CALM_VOL * 0.12 : CALM_VOL, actx.currentTime, 0.25); }
+  const calmBtn = document.getElementById("calmBtn"), songBtn = document.getElementById("songBtn");
+  function paintCalm() {
+    calmBtn.setAttribute("aria-pressed", calm.on && calm.running);
+    calmBtn.classList.toggle("waiting", calm.on && !calm.running);
+    document.getElementById("calmLabel").textContent = !calm.on ? "Calm music off" : calm.running ? "Calm music on" : "Calm music: tap anywhere";
+  }
+  function paintSongs() { songBtn.setAttribute("aria-pressed", songsOn); document.getElementById("songLabel").textContent = songsOn ? "Party songs on" : "Party songs off"; }
+  calmBtn.addEventListener("click", () => {
+    calm.on = !(calm.on && calm.running);
+    try { localStorage.setItem("ca-dance-calm", calm.on ? "on" : "off"); } catch {}
+    if (calm.on) startCalm(); else stopCalm();
+    paintCalm();
+  });
+  songBtn.addEventListener("click", () => {
+    songsOn = !songsOn; paintSongs();
+    try { localStorage.setItem("ca-dance-sound", songsOn ? "on" : "off"); } catch {}
+    if (!songsOn) stopSong();
+  });
+  // Browsers only allow sound after your first tap, so calm music starts then.
+  document.addEventListener("pointerdown", e => { if (calm.on && !calm.running && !e.target.closest("#calmBtn")) startCalm(); }, true);
+  paintCalm(); paintSongs();
+
+  // ---------- Party ----------
+  const partyEl = document.getElementById("party"), partyDancer = document.getElementById("partyDancer");
   let partyTimer = null, confettiStop = null;
-  function party(level, title, sub) {
+  function party(songKey, title, sub, move) {
     document.getElementById("partyTitle").textContent = title;
     document.getElementById("partySub").textContent = sub;
+    document.getElementById("partySong").textContent = songsOn ? `Now playing: ${SONGS[songKey].name}` : "";
     partyDancer.classList.remove("move-a", "move-b", "move-c");
-    partyDancer.classList.add(level === 3 ? "move-c" : level === 2 ? "move-b" : (Math.random() < .5 ? "move-a" : "move-b"));
+    partyDancer.classList.add(move || (Math.random() < .5 ? "move-a" : "move-b"));
     partyEl.hidden = false;
-    const secs = playTune(level);
-    confettiStop?.(); confettiStop = confetti(level);
-    clearTimeout(partyTimer);
-    partyTimer = setTimeout(closeParty, (secs + 0.6) * 1000);
+    duckCalm(true);
+    const secs = playSong(songKey);
+    confettiStop?.(); confettiStop = confetti(songKey === "finale" ? 3 : songKey === "anthem" ? 2 : 1);
+    clearTimeout(partyTimer); partyTimer = setTimeout(closeParty, Math.max(3, secs) * 1000);
   }
-  function closeParty() {
-    clearTimeout(partyTimer); partyEl.hidden = true; stopTune(); confettiStop?.(); confettiStop = null;
-  }
-  partyEl.addEventListener("click", closeParty);
+  function closeParty() { clearTimeout(partyTimer); partyEl.hidden = true; stopSong(); duckCalm(false); confettiStop?.(); confettiStop = null; }
+  partyEl.addEventListener("click", e => { e.stopPropagation(); closeParty(); });
   document.addEventListener("keydown", e => { if (e.key === "Escape" && !partyEl.hidden) closeParty(); });
-
   function confetti(level) {
-    const cv = document.getElementById("confetti"), cx = cv.getContext("2d");
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    const size = () => { cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; };
-    size();
+    const cv = document.getElementById("confetti"), cx = cv.getContext("2d"), dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = innerWidth * dpr; cv.height = innerHeight * dpr;
     const cols = ["#ffb627", "#ff4f9a", "#35d0bf", "#b48cff", "#fbf1e3", "#ff8a3d"];
-    const n = level === 3 ? 320 : level === 2 ? 220 : 130;
-    const ps = Array.from({ length: n }, () => ({
-      x: Math.random() * cv.width, y: -Math.random() * cv.height * .8,
-      vx: (Math.random() - .5) * 2 * dpr, vy: (2 + Math.random() * 3) * dpr,
-      r: (4 + Math.random() * 5) * dpr, a: Math.random() * 6.3, va: (Math.random() - .5) * .3,
-      c: cols[(Math.random() * cols.length) | 0], s: Math.random() < .3,
-    }));
+    const ps = Array.from({ length: level === 3 ? 320 : level === 2 ? 220 : 130 }, () => ({ x: Math.random() * cv.width, y: -Math.random() * cv.height * .8, vx: (Math.random() - .5) * 2 * dpr, vy: (2 + Math.random() * 3) * dpr, r: (4 + Math.random() * 5) * dpr, a: Math.random() * 6.3, va: (Math.random() - .5) * .3, c: cols[(Math.random() * cols.length) | 0], s: Math.random() < .3 }));
     let raf, alive = true;
     const step = () => {
-      if (!alive) return;
-      cx.clearRect(0, 0, cv.width, cv.height);
+      if (!alive) return; cx.clearRect(0, 0, cv.width, cv.height);
       for (const p of ps) {
         p.x += p.vx + Math.sin(p.a) * .6; p.y += p.vy; p.a += p.va;
         if (p.y > cv.height + 20) { p.y = -20; p.x = Math.random() * cv.width; }
         cx.save(); cx.translate(p.x, p.y); cx.rotate(p.a); cx.fillStyle = p.c;
-        if (p.s) { cx.beginPath(); cx.arc(0, 0, p.r * .6, 0, 6.3); cx.fill(); }
-        else cx.fillRect(-p.r, -p.r * .4, p.r * 2, p.r * .8);
+        if (p.s) { cx.beginPath(); cx.arc(0, 0, p.r * .6, 0, 6.3); cx.fill(); } else cx.fillRect(-p.r, -p.r * .4, p.r * 2, p.r * .8);
         cx.restore();
       }
       raf = requestAnimationFrame(step);
@@ -548,133 +955,82 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; }
     return () => { alive = false; cancelAnimationFrame(raf); cx.clearRect(0, 0, cv.width, cv.height); };
   }
 
-  // Original chiptune, built with Web Audio. Step = one eighth note at ~143 BPM.
-  let soundOn = true;
-  try { soundOn = localStorage.getItem("ca-dance-sound") !== "off"; } catch {}
-  let actx = null, master = null;
-  const STEP = 0.21;
-  const C5 = 523.25, f = semi => C5 * Math.pow(2, semi / 12);
-  // Lead melody in semitones from C5 (null = rest)
-  const HOOK = [0, 4, 7, 4, 9, 7, 4, null, 5, 9, 12, 9, 7, 4, 2, null];
-  const ANSWER = [0, 4, 7, 12, 14, 12, 9, 7, 9, 7, 4, 2, 0, null, 0, null];
-  const FINALE = [12, 14, 16, 19, 16, 14, 12, 14, 16, 19, 21, 19, 24, null, 24, null];
-  const BASS = [-24, -24, -17, -17, -15, -15, -19, -17]; // C C G G A A F G (per 2 steps)
+  // ---------- Chintu dances whenever you click anything ----------
+  const stageSvg = document.getElementById("stageSvg");
+  const MOVES = ["move-a", "move-b", "move-c"];
+  let stageTimer = null;
+  function stageDance() {
+    const mv = MOVES[(Math.random() * MOVES.length) | 0], climber = ladder.querySelector(".dancer");
+    [stageSvg, climber].forEach(el => { if (!el) return; el.classList.remove("idle", ...MOVES); el.classList.add(mv); });
+    clearTimeout(stageTimer);
+    stageTimer = setTimeout(() => [stageSvg, ladder.querySelector(".dancer")].forEach(el => { if (!el) return; el.classList.remove(...MOVES); el.classList.add("idle"); }), 1700);
+  }
+  document.addEventListener("click", e => { if (partyEl.hidden && !e.target.closest("textarea, input")) stageDance(); });
 
-  function stopTune() {
-    if (master && actx) { try { master.gain.setTargetAtTime(0, actx.currentTime, 0.05); } catch {} }
-    master = null;
+  // ---------- Pendulum wall clock ----------
+  (function ticks() {
+    let h = "";
+    for (let i = 0; i < 60; i++) {
+      const a = i * 6 * Math.PI / 180, r1 = i % 5 ? 54 : 50, r2 = 57;
+      h += `<line x1="${(100 + r1 * Math.sin(a)).toFixed(2)}" y1="${(84 - r1 * Math.cos(a)).toFixed(2)}" x2="${(100 + r2 * Math.sin(a)).toFixed(2)}" y2="${(84 - r2 * Math.cos(a)).toFixed(2)}" stroke="#1c1030" stroke-width="${i % 5 ? 1 : 2.5}"/>`;
+    }
+    document.getElementById("ticks").innerHTML = h;
+  })();
+  const hH = document.getElementById("hHour"), hM = document.getElementById("hMin"), hS = document.getElementById("hSec"), wallTime = document.getElementById("wallTime");
+  let lastSec = -1, secTurns = 0;
+  function wall(now) {
+    const d = new Date(now + IST_OFF), h = d.getUTCHours(), m = d.getUTCMinutes(), s = d.getUTCSeconds();
+    if (s === lastSec) return;
+    if (lastSec !== -1 && s < lastSec) secTurns++;
+    lastSec = s;
+    hS.style.transform = `rotate(${secTurns * 360 + s * 6}deg)`;
+    hM.style.transform = `rotate(${m * 6 + s * 0.1}deg)`;
+    hH.style.transform = `rotate(${(h % 12) * 30 + m * 0.5}deg)`;
+    const p = n => String(n).padStart(2, "0");
+    wallTime.textContent = `${p(h % 12 || 12)}:${p(m)}:${p(s)} ${h < 12 ? "AM" : "PM"}`;
   }
-  function playTune(level) {
-    const bars = level === 3 ? [HOOK, ANSWER, FINALE, FINALE] : level === 2 ? [HOOK, ANSWER, HOOK, FINALE] : [HOOK, ANSWER];
-    const secs = bars.length * 16 * STEP;
-    if (!soundOn) return Math.max(secs, 3);
-    try {
-      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
-      if (actx.state === "suspended") actx.resume();
-    } catch { return secs; }
-    stopTune();
-    master = actx.createGain(); master.gain.value = 0.55; master.connect(actx.destination);
-    const out = master, t0 = actx.currentTime + 0.05;
-    const tone = (freq, t, dur, type, vol) => {
-      const o = actx.createOscillator(), g = actx.createGain();
-      o.type = type; o.frequency.value = freq;
-      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + 0.012);
-      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      o.connect(g).connect(out); o.start(t); o.stop(t + dur + 0.03);
-    };
-    const kick = t => {
-      const o = actx.createOscillator(), g = actx.createGain();
-      o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.12);
-      g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
-      o.connect(g).connect(out); o.start(t); o.stop(t + 0.18);
-    };
-    const noiseBuf = actx.createBuffer(1, actx.sampleRate * 0.05, actx.sampleRate);
-    const nd = noiseBuf.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
-    const hat = (t, vol) => {
-      const s = actx.createBufferSource(), hp = actx.createBiquadFilter(), g = actx.createGain();
-      s.buffer = noiseBuf; hp.type = "highpass"; hp.frequency.value = 7000;
-      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
-      s.connect(hp).connect(g).connect(out); s.start(t);
-    };
-    const shift = level === 2 ? 5 : 0;
-    bars.forEach((bar, b) => {
-      const key = (level === 2 && b === 2) ? shift : 0;
-      bar.forEach((n, s) => {
-        const t = t0 + (b * 16 + s) * STEP;
-        if (n !== null) tone(f(n + key), t, STEP * 0.95, "square", 0.09);
-        if (s % 2 === 0) tone(f(BASS[s / 2] + key), t, STEP * 1.8, "triangle", 0.22);
-        if (s % 4 === 0) kick(t);
-        hat(t + STEP / 2, s % 4 === 2 ? 0.12 : 0.06);
-      });
-    });
-    tone(f(level === 3 ? 24 : 12), t0 + secs, 0.6, "square", 0.08);
-    tone(f(level === 3 ? 0 : -12), t0 + secs, 0.8, "triangle", 0.25);
-    return secs + 0.5;
-  }
-
-  const soundBtn = document.getElementById("soundBtn");
-  function paintSound() {
-    soundBtn.setAttribute("aria-pressed", soundOn ? "true" : "false");
-    document.getElementById("soundLabel").textContent = soundOn ? "Music on" : "Music off";
-    document.getElementById("soundIcon").setAttribute("d", soundOn
-      ? "M4 9v6h4l5 4V5L8 9H4z M16 8.5a5 5 0 0 1 0 7 M18.5 6a8.5 8.5 0 0 1 0 12"
-      : "M4 9v6h4l5 4V5L8 9H4z M17 9l5 6 M22 9l-5 6");
-  }
-  soundBtn.addEventListener("click", () => {
-    soundOn = !soundOn; paintSound();
-    try { localStorage.setItem("ca-dance-sound", soundOn ? "on" : "off"); } catch {}
-    if (!soundOn) stopTune();
-  });
-  paintSound();
 
   // ---------- Reverse stopwatch ----------
-  let mode = "sprint", lastNote = "", lastMin = -1;
+  let mode = "sprint", lastNote = "", lastMin = -1, lastDay = today();
   try { if (localStorage.getItem("ca-dance-mode") === "full") mode = "full"; } catch {}
   const digits = document.getElementById("digits"), bar = document.getElementById("bar"), barWrap = document.getElementById("barWrap");
-  const clockEl = document.getElementById("clock"), note = document.getElementById("clockNote"), label = document.getElementById("clockLabel");
+  const clockEl = document.getElementById("clock"), note = document.getElementById("clockNote"), clockLabel = document.getElementById("clockLabel");
   const bS = document.getElementById("modeSprint"), bF = document.getElementById("modeFull");
-  const FULL_FROM = IST(2026, 11, 7, 0, 0);
-  function setMode(m) {
-    mode = m; bS.setAttribute("aria-pressed", m === "sprint"); bF.setAttribute("aria-pressed", m === "full");
-    try { localStorage.setItem("ca-dance-mode", m); } catch {}
-    lastNote = "";
-  }
-  bS.addEventListener("click", () => setMode("sprint"));
-  bF.addEventListener("click", () => setMode("full"));
+  const FULL_FROM = IST(2026, 11, 7);
+  function setMode(m) { mode = m; bS.setAttribute("aria-pressed", m === "sprint"); bF.setAttribute("aria-pressed", m === "full"); try { localStorage.setItem("ca-dance-mode", m); } catch {} lastNote = ""; lastMin = -1; }
+  bS.addEventListener("click", () => setMode("sprint")); bF.addEventListener("click", () => setMode("full"));
   setMode(mode);
-
   const pad = (n, w = 2) => String(n).padStart(w, "0");
   function tick() {
     const now = Date.now();
     let ms, total, msg;
     if (mode === "sprint") {
       total = EXAM - SPRINT_START;
-      if (now < SPRINT_START) {
-        ms = total;
-        const h = Math.ceil((SPRINT_START - now) / 3600000);
-        msg = `The 240-hour sprint starts on <strong>13 Nov at 00:00</strong>. That's ${h} hours from now. Use them to get ahead.`;
-      } else {
-        ms = Math.max(0, EXAM - now);
-        msg = ms > 0 ? `Every second on this clock is gone for good. <strong>Close one week before you sleep.</strong>` : `Exam day. You've done the work. All the best!`;
-      }
-      label.textContent = "10-day reverse stopwatch";
+      if (now < SPRINT_START) { ms = total; msg = `The 240-hour sprint starts on <strong>13 Nov at 00:00</strong>. That's ${Math.ceil((SPRINT_START - now) / 3600000)} hours from now. Use them to get ahead.`; }
+      else { ms = Math.max(0, EXAM - now); msg = ms > 0 ? `Every second on this clock is gone for good. <strong>Close one week before you sleep.</strong>` : `Exam day. You've done the work. All the best!`; }
+      clockLabel.textContent = "10-day reverse stopwatch";
     } else {
-      total = EXAM - FULL_FROM;
-      ms = Math.max(0, EXAM - now);
+      total = EXAM - FULL_FROM; ms = Math.max(0, EXAM - now);
       msg = ms > 0 ? `Counting down every second to <strong>23 Nov 2026, 00:00</strong>.` : `Exam day. You've done the work. All the best!`;
-      label.textContent = "Reverse stopwatch to exam day";
+      clockLabel.textContent = "Reverse stopwatch to exam day";
     }
     const h = Math.floor(ms / 3600000), mi = Math.floor(ms / 60000) % 60, s = Math.floor(ms / 1000) % 60, cs = Math.floor(ms / 10) % 100;
     digits.innerHTML = `${pad(h, 3)}<span class="sep">:</span>${pad(mi)}<span class="sep">:</span>${pad(s)}<span class="cs">.${pad(cs)}</span>`;
-    const pct = Math.max(0, Math.min(100, ms / total * 100));
-    if (mi !== lastMin) { bar.style.width = pct + "%"; barWrap.setAttribute("aria-valuenow", pct.toFixed(0)); lastMin = mi; updatePace(Object.keys(done).filter(k => ALL.includes(k)).length); }
-    clockEl.classList.toggle("red", ms > 0 && ms < 24 * 3600000 && now >= SPRINT_START);
-    if (msg !== lastNote) { note.innerHTML = msg; lastNote = msg; lastMin = -1; }
+    const minuteKey = Math.floor(now / 60000);
+    if (minuteKey !== lastMin) {
+      const pct = Math.max(0, Math.min(100, ms / total * 100));
+      bar.style.width = pct + "%"; barWrap.setAttribute("aria-valuenow", pct.toFixed(0)); lastMin = minuteKey;
+      updatePace(ALL.filter(k => S.done[k]).length);
+      if (today() !== lastDay) { lastDay = today(); renderAll(); } // a new day: refresh reminders and the log
+    }
+    clockEl.classList.toggle("red", ms > 0 && ms < 24 * 3600000);
+    if (msg !== lastNote) { note.innerHTML = msg; lastNote = msg; }
+    wall(now);
     requestAnimationFrame(tick);
   }
 
   buildBoard();
-  render();
+  renderAll();
   tick();
   connect();
 })();
