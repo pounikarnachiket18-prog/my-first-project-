@@ -1,0 +1,681 @@
+<title>Mains CA Dance Floor</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Baloo+2:wght@400;600;800&family=Share+Tech+Mono&display=swap">
+<style>
+/* Layout: a dance stage. Stopwatch marquee on top, the dancer's stage, then four month boards of four week tiles each. */
+:root {
+  --stage: #1c1030;        /* deep plum stage floor */
+  --stage-2: #28173f;      /* raised panels */
+  --stage-3: #3a2358;      /* borders, empty tiles */
+  --ink: #fbf1e3;          /* warm cream text */
+  --ink-dim: #c9b8d9;      /* secondary text */
+  --marigold: #ffb627;     /* the accent: done, celebration */
+  --rani: #ff4f9a;         /* pressure: clock in the red zone */
+  --teal: #35d0bf;         /* calm info */
+  --skin: #a8653a;
+  --display: "Bungee", "Arial Black", Impact, sans-serif;
+  --body: "Baloo 2", "Trebuchet MS", system-ui, sans-serif;
+  --mono: "Share Tech Mono", ui-monospace, "Courier New", monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background:
+    radial-gradient(1200px 500px at 50% -120px, #3b1f5e 0%, transparent 70%),
+    var(--stage);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 20px 48px;
+  min-height: 100%;
+}
+.wrap { max-width: 1100px; margin: 0 auto; display: grid; gap: 28px; }
+button { font: inherit; color: inherit; }
+button:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
+
+/* Top bar */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand { font-family: var(--display); font-size: clamp(18px, 3.4vw, 26px); letter-spacing: .02em; line-height: 1.1; }
+.brand small { display: block; font-family: var(--body); font-weight: 600; font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-dim); }
+.brand b { color: var(--marigold); font-weight: 400; }
+.chip {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--stage-2); border: 1px solid var(--stage-3);
+  border-radius: 999px; padding: 6px 14px; cursor: pointer; font-weight: 600; font-size: 14px;
+}
+.chip:hover { border-color: var(--marigold); }
+.chip svg { width: 18px; height: 18px; }
+
+/* Stopwatch */
+.clock {
+  background: linear-gradient(180deg, #120a20, #1a0e2c);
+  border: 2px solid var(--stage-3);
+  border-radius: 20px;
+  padding: 20px clamp(16px, 4vw, 32px) 22px;
+  display: grid; gap: 12px; justify-items: center; text-align: center;
+  box-shadow: 0 0 0 6px #120a20, 0 20px 60px -20px #000;
+  position: relative; overflow: hidden;
+}
+.clock::before { /* marquee bulbs */
+  content: ""; position: absolute; inset: 7px; border-radius: 14px; pointer-events: none;
+  background-image: radial-gradient(circle, #ffd37a 0 2px, transparent 3px);
+  background-size: 22px 22px; background-position: 0 0;
+  -webkit-mask: linear-gradient(#000 0 0) top/100% 10px no-repeat, linear-gradient(#000 0 0) bottom/100% 10px no-repeat;
+          mask: linear-gradient(#000 0 0) top/100% 10px no-repeat, linear-gradient(#000 0 0) bottom/100% 10px no-repeat;
+  opacity: .55; animation: bulbs 1.2s steps(2) infinite;
+}
+@keyframes bulbs { to { background-position: 11px 0; } }
+.clock-label { font-weight: 800; letter-spacing: .16em; text-transform: uppercase; font-size: 13px; color: var(--ink-dim); }
+.digits {
+  font-family: var(--mono); font-variant-numeric: tabular-nums;
+  font-size: clamp(44px, 11.5vw, 120px); line-height: 1; letter-spacing: .02em;
+  color: var(--marigold); text-shadow: 0 0 18px rgba(255,182,39,.45);
+  white-space: nowrap;
+}
+.digits .cs { font-size: .48em; color: var(--ink-dim); text-shadow: none; }
+.digits .sep { opacity: .7; }
+.clock.red .digits { color: var(--rani); text-shadow: 0 0 22px rgba(255,79,154,.6); animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { transform: scale(1.025); } }
+.units { display: flex; gap: clamp(18px, 6vw, 70px); font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-dim); margin-top: -4px; }
+.bar { width: min(640px, 100%); height: 10px; background: var(--stage-3); border-radius: 999px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--rani), var(--marigold)); border-radius: inherit; transition: width .5s linear; }
+.clock-note { font-size: 15px; color: var(--ink); max-width: 60ch; }
+.clock-note strong { color: var(--marigold); }
+.modes { display: inline-flex; background: var(--stage-2); border: 1px solid var(--stage-3); border-radius: 999px; padding: 3px; }
+.modes button { border: 0; background: transparent; padding: 5px 14px; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 14px; color: var(--ink-dim); }
+.modes button[aria-pressed="true"] { background: var(--marigold); color: #2a1600; }
+
+/* Stage with idle dancer */
+.stage {
+  display: grid; grid-template-columns: minmax(0, 260px) minmax(0, 1fr); gap: 24px; align-items: center;
+  background: var(--stage-2); border: 1px solid var(--stage-3); border-radius: 20px; padding: 18px clamp(16px, 3vw, 28px);
+}
+.stage-dancer { position: relative; display: grid; place-items: center; }
+.stage-dancer::after { content: ""; position: absolute; bottom: 4px; width: 70%; height: 22px; background: radial-gradient(closest-side, rgba(255,182,39,.35), transparent); }
+.stage-dancer svg { width: 100%; max-width: 200px; height: auto; position: relative; z-index: 1; }
+.stage-info { display: grid; gap: 14px; min-width: 0; }
+.bubble {
+  background: var(--ink); color: #2a1600; border-radius: 16px; padding: 12px 16px; font-weight: 600; position: relative; max-width: 46ch;
+}
+.bubble::before { content: ""; position: absolute; left: -10px; top: 22px; border: 10px solid transparent; border-right-color: var(--ink); border-left: 0; }
+.stats { display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: baseline; }
+.big { font-family: var(--display); font-size: clamp(36px, 7vw, 56px); line-height: 1; color: var(--marigold); }
+.big span { font-size: .45em; color: var(--ink-dim); }
+.stat-label { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-dim); }
+.pace { font-size: 15px; }
+.pace b { color: var(--teal); }
+.save-note { font-size: 13px; color: var(--ink-dim); }
+
+/* Month boards */
+.months { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.month {
+  background: var(--stage-2); border: 1px solid var(--stage-3); border-radius: 18px; padding: 14px; display: grid; gap: 12px; align-content: start;
+  --m: var(--marigold);
+}
+.month.complete { border-color: var(--m); box-shadow: 0 0 0 1px var(--m), 0 0 30px -8px var(--m); }
+.month-head { display: flex; align-items: center; gap: 10px; }
+.month-head svg { width: 34px; height: 34px; flex: none; }
+.month-name { font-family: var(--display); font-size: 20px; line-height: 1; }
+.month-sub { font-size: 12px; color: var(--ink-dim); letter-spacing: .08em; text-transform: uppercase; }
+.dots { margin-left: auto; display: flex; gap: 4px; }
+.dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--stage-3); }
+.dots i.on { background: var(--m); }
+.weeks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.week {
+  border: 2px dashed var(--stage-3); background: transparent; border-radius: 14px;
+  padding: 10px 8px 9px; cursor: pointer; display: grid; justify-items: center; gap: 4px; text-align: center;
+  transition: border-color .15s, background .15s, transform .15s;
+  min-height: 112px; position: relative;
+}
+.week:hover { border-color: var(--m); transform: translateY(-2px); }
+.week .ico { width: 44px; height: 44px; color: var(--ink-dim); }
+.week .wk { font-weight: 800; font-size: 15px; line-height: 1.1; }
+.week .rng { font-size: 12px; color: var(--ink-dim); font-variant-numeric: tabular-nums; }
+.week .tag { font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-dim); }
+.week.done { border-style: solid; border-color: var(--m); background: color-mix(in srgb, var(--m) 18%, transparent); }
+.week.done .ico { color: var(--m); }
+.week.done .tag { color: var(--m); }
+.week.confirm { border-color: var(--rani); }
+.week.confirm .tag { color: var(--rani); }
+.ico .check { opacity: 0; transition: opacity .2s; }
+.week.done .ico .check { opacity: 1; }
+
+/* The icon dance on click */
+.boogie { animation: boogie .42s ease-in-out 5; }
+@keyframes boogie {
+  0% { transform: translateY(0) rotate(0) scale(1); }
+  25% { transform: translateY(-12px) rotate(-18deg) scale(1.15); }
+  50% { transform: translateY(0) rotate(0) scale(.95); }
+  75% { transform: translateY(-12px) rotate(18deg) scale(1.15); }
+  100% { transform: translateY(0) rotate(0) scale(1); }
+}
+
+/* Dancer parts */
+.dancer .armL { transform-origin: 74px 116px; }
+.dancer .armR { transform-origin: 126px 116px; }
+.dancer .legL { transform-origin: 88px 182px; }
+.dancer .legR { transform-origin: 112px 182px; }
+.dancer .head { transform-origin: 100px 100px; }
+.dancer .whole { transform-origin: 100px 240px; }
+.dancer.idle .whole { animation: idle 2.4s ease-in-out infinite; }
+.dancer.idle .armR { animation: wave 2.4s ease-in-out infinite; }
+@keyframes idle { 50% { transform: translateY(-4px); } }
+@keyframes wave { 0%, 60%, 100% { transform: rotate(0); } 70% { transform: rotate(-30deg); } 80% { transform: rotate(-10deg); } 90% { transform: rotate(-30deg); } }
+
+.dancer.move-a .whole { animation: bob .42s ease-in-out infinite; }
+.dancer.move-a .armL { animation: pumpL .42s ease-in-out infinite; }
+.dancer.move-a .armR { animation: pumpR .42s ease-in-out infinite; }
+.dancer.move-a .legL { animation: kickL .84s ease-in-out infinite; }
+.dancer.move-a .legR { animation: kickR .84s ease-in-out infinite; }
+.dancer.move-a .head { animation: tilt .84s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-14px); } }
+@keyframes pumpL { 0%, 100% { transform: rotate(40deg); } 50% { transform: rotate(150deg); } }
+@keyframes pumpR { 0%, 100% { transform: rotate(-40deg); } 50% { transform: rotate(-150deg); } }
+@keyframes kickL { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(28deg); } 50% { transform: rotate(0); } }
+@keyframes kickR { 0%, 50%, 100% { transform: rotate(0); } 75% { transform: rotate(-28deg); } }
+@keyframes tilt { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+
+.dancer.move-b .whole { animation: sway .84s ease-in-out infinite; }
+.dancer.move-b .armL { animation: twistL .84s ease-in-out infinite; }
+.dancer.move-b .armR { animation: twistR .84s ease-in-out infinite; }
+.dancer.move-b .legL { animation: kickL .42s ease-in-out infinite; }
+.dancer.move-b .legR { animation: kickR .42s ease-in-out infinite; }
+.dancer.move-b .head { animation: tilt .42s ease-in-out infinite; }
+@keyframes sway { 0%, 100% { transform: translateX(-16px) rotate(-6deg); } 50% { transform: translateX(16px) rotate(6deg); } }
+@keyframes twistL { 0%, 100% { transform: rotate(150deg); } 50% { transform: rotate(90deg); } }
+@keyframes twistR { 0%, 100% { transform: rotate(-90deg); } 50% { transform: rotate(-150deg); } }
+
+.dancer.move-c .whole { animation: spin 1.68s cubic-bezier(.6,0,.4,1) infinite; }
+.dancer.move-c .armL { animation: pumpL .42s ease-in-out infinite; }
+.dancer.move-c .armR { animation: pumpR .42s ease-in-out infinite; }
+.dancer.move-c .legL { animation: kickL .42s ease-in-out infinite; }
+.dancer.move-c .legR { animation: kickR .42s ease-in-out infinite; }
+@keyframes spin { 0% { transform: translateY(0) scaleX(1); } 25% { transform: translateY(-22px) scaleX(-1); } 50% { transform: translateY(0) scaleX(-1); } 75% { transform: translateY(-22px) scaleX(1); } 100% { transform: translateY(0) scaleX(1); } }
+
+/* Party overlay */
+.party[hidden] { display: none; }
+.party {
+  position: fixed; inset: 0; z-index: 50;
+  background: radial-gradient(600px 520px at 50% 35%, rgba(255,182,39,.28), transparent 70%), rgba(18,10,32,.94);
+  display: grid; place-items: center; text-align: center; cursor: pointer;
+  padding: max(20px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+}
+.party canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.party-inner { position: relative; display: grid; gap: 10px; justify-items: center; }
+.party-inner svg { width: min(300px, 62vw); height: auto; }
+.party-title { font-family: var(--display); font-size: clamp(26px, 6vw, 48px); line-height: 1.05; color: var(--marigold); text-wrap: balance; max-width: 18ch; }
+.party-sub { font-size: 18px; font-weight: 600; max-width: 40ch; }
+.party-hint { font-size: 13px; color: var(--ink-dim); }
+
+footer { font-size: 13px; color: var(--ink-dim); text-align: center; }
+
+@media (max-width: 900px) { .months { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) {
+  .months { grid-template-columns: minmax(0, 1fr); }
+  .stage { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: left; }
+  .stage-dancer svg { max-width: 150px; }
+  .bubble::before { left: 40px; top: -10px; border: 10px solid transparent; border-bottom-color: var(--ink); border-top: 0; }
+  .units { gap: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .clock::before, .clock.red .digits, .dancer.idle .whole, .dancer.idle .armR { animation: none; }
+  .boogie { animation-iteration-count: 1; }
+  .dancer.move-a *, .dancer.move-b *, .dancer.move-c * { animation-duration: 1.6s !important; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="dancer" viewBox="0 0 200 260">
+      <ellipse cx="100" cy="246" rx="52" ry="8" fill="rgba(0,0,0,.35)"/>
+      <g class="whole">
+        <g class="legL"><path d="M88 182 L80 236" stroke="#2b2f6b" stroke-width="16" stroke-linecap="round" fill="none"/><ellipse cx="76" cy="238" rx="13" ry="7" fill="#ff4f9a"/></g>
+        <g class="legR"><path d="M112 182 L120 236" stroke="#2b2f6b" stroke-width="16" stroke-linecap="round" fill="none"/><ellipse cx="124" cy="238" rx="13" ry="7" fill="#ff4f9a"/></g>
+        <g class="armL"><path d="M74 116 L52 160" stroke="#ffb627" stroke-width="14" stroke-linecap="round" fill="none"/><circle cx="50" cy="164" r="9" fill="#a8653a"/></g>
+        <g class="armR">
+          <path d="M126 116 L148 160" stroke="#ffb627" stroke-width="14" stroke-linecap="round" fill="none"/>
+          <circle cx="150" cy="164" r="9" fill="#a8653a"/>
+          <g transform="translate(138 160) rotate(-18)"><rect x="0" y="-26" width="34" height="28" rx="3" fill="#fbf1e3" stroke="#2a1600" stroke-width="2"/><path d="M5 -20 H29 M5 -14 H29 M5 -8 H20" stroke="#2a1600" stroke-width="2.4" stroke-linecap="round"/></g>
+        </g>
+        <path d="M72 112 Q100 100 128 112 L134 188 Q100 198 66 188 Z" fill="#ffb627"/>
+        <path d="M100 108 V150" stroke="#c97f00" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="100" cy="128" r="2.8" fill="#c97f00"/><circle cx="100" cy="140" r="2.8" fill="#c97f00"/>
+        <path d="M68 180 Q100 192 132 180 L134 188 Q100 198 66 188 Z" fill="#35d0bf"/>
+        <g class="head">
+          <rect x="92" y="94" width="16" height="14" rx="4" fill="#a8653a"/>
+          <circle cx="100" cy="70" r="32" fill="#a8653a"/>
+          <path d="M68 66 Q70 34 100 36 Q132 36 133 66 Q120 50 100 50 Q80 50 68 66 Z" fill="#1d1030"/>
+          <path d="M70 52 Q100 40 131 54" stroke="#ff4f9a" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <circle cx="87" cy="72" r="9" fill="none" stroke="#1d1030" stroke-width="3"/>
+          <circle cx="113" cy="72" r="9" fill="none" stroke="#1d1030" stroke-width="3"/>
+          <path d="M96 72 H104" stroke="#1d1030" stroke-width="3"/>
+          <circle cx="87" cy="72" r="3" fill="#1d1030"/><circle cx="113" cy="72" r="3" fill="#1d1030"/>
+          <path d="M88 86 Q100 96 112 86" stroke="#1d1030" stroke-width="3.4" fill="none" stroke-linecap="round"/>
+          <circle cx="78" cy="84" r="4" fill="#ff4f9a" opacity=".5"/><circle cx="122" cy="84" r="4" fill="#ff4f9a" opacity=".5"/>
+        </g>
+      </g>
+    </symbol>
+    <symbol id="paper" viewBox="0 0 48 48">
+      <rect x="6" y="8" width="32" height="34" rx="3" fill="none" stroke="currentColor" stroke-width="3"/>
+      <path d="M38 16 H42 V38 a4 4 0 0 1 -4 4" fill="none" stroke="currentColor" stroke-width="3"/>
+      <rect x="11" y="13" width="22" height="7" rx="1" fill="currentColor"/>
+      <path d="M11 26 H33 M11 31 H33 M11 36 H25" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="m-jul" viewBox="0 0 48 48"><path d="M14 30 a8 8 0 0 1 2 -15.6 a11 11 0 0 1 21 3 a6.5 6.5 0 0 1 -1 12.6 Z" fill="#35d0bf"/><path d="M16 35 l-2 6 M24 35 l-2 6 M32 35 l-2 6" stroke="#35d0bf" stroke-width="3" stroke-linecap="round"/></symbol>
+    <symbol id="m-aug" viewBox="0 0 48 48"><path d="M24 4 L40 20 L24 36 L8 20 Z" fill="#ff8a3d"/><path d="M8 20 H40 M24 4 V36" stroke="#1c1030" stroke-width="2"/><path d="M24 36 q-4 4 0 6 q4 2 0 5" stroke="#fbf1e3" stroke-width="2.4" fill="none" stroke-linecap="round"/></symbol>
+    <symbol id="m-sep" viewBox="0 0 48 48"><path d="M6 12 Q16 8 24 13 Q32 8 42 12 V38 Q32 34 24 39 Q16 34 6 38 Z" fill="#b48cff"/><path d="M24 13 V39" stroke="#1c1030" stroke-width="2.4"/></symbol>
+    <symbol id="m-oct" viewBox="0 0 48 48"><path d="M24 6 q7 9 0 16 q-7 -7 0 -16 Z" fill="#ffd37a"/><path d="M6 28 H42 Q40 42 24 42 Q8 42 6 28 Z" fill="#ff4f9a"/><path d="M20 28 Q24 24 28 28" stroke="#ffd37a" stroke-width="2.4" fill="none"/></symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><small>SBI Clerk Mains · 23 Nov 2026</small>Current Affairs <b>Dance Floor</b></div>
+    <button class="chip" id="soundBtn" type="button" aria-pressed="true">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path id="soundIcon" d="M4 9v6h4l5 4V5L8 9H4z M16 8.5a5 5 0 0 1 0 7 M18.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span id="soundLabel">Music on</span>
+    </button>
+  </header>
+
+  <section class="clock" id="clock" aria-labelledby="clockLabel">
+    <div class="clock-label" id="clockLabel">10-day reverse stopwatch</div>
+    <div class="digits" id="digits" aria-live="off">240<span class="sep">:</span>00<span class="sep">:</span>00<span class="cs">.00</span></div>
+    <div class="units" aria-hidden="true"><span>hours</span><span>min</span><span>sec</span></div>
+    <div class="bar" role="progressbar" aria-label="Time left in the sprint" aria-valuemin="0" aria-valuemax="100" id="barWrap"><i id="bar"></i></div>
+    <p class="clock-note" id="clockNote">Loading the clock…</p>
+    <div class="modes" role="group" aria-label="Clock mode">
+      <button type="button" id="modeSprint" aria-pressed="true">10-day sprint</button>
+      <button type="button" id="modeFull" aria-pressed="false">Till exam</button>
+    </div>
+  </section>
+
+  <section class="stage" aria-label="Your progress">
+    <div class="stage-dancer"><svg class="dancer idle" viewBox="0 0 200 260" role="img" aria-label="Chintu the dancer, waiting"><use href="#dancer"/></svg></div>
+    <div class="stage-info">
+      <div class="bubble" id="bubble">Tick a week when you finish it and I'll dance for you.</div>
+      <div class="stats">
+        <div><div class="big" id="doneCount">0<span> / 16</span></div><div class="stat-label">weeks finished</div></div>
+        <div><div class="big" id="monthCount">0<span> / 4</span></div><div class="stat-label">months cleared</div></div>
+      </div>
+      <p class="pace" id="pace"></p>
+      <p class="save-note" id="saveNote">Connecting to your saved progress…</p>
+    </div>
+  </section>
+
+  <section class="months" id="months" aria-label="July to October, week by week"></section>
+
+  <footer>Weeks follow calendar dates: W1 is 1–7, W2 is 8–14, W3 is 15–21, W4 is 22 to month end. Tap a finished week twice to un-tick it. The tune is an original chiptune made in your browser.</footer>
+</div>
+
+<div class="party" id="party" hidden role="dialog" aria-modal="true" aria-labelledby="partyTitle">
+  <canvas id="confetti"></canvas>
+  <div class="party-inner">
+    <svg class="dancer move-a" id="partyDancer" viewBox="0 0 200 260" aria-hidden="true"><use href="#dancer"/></svg>
+    <div class="party-title" id="partyTitle">Week done!</div>
+    <div class="party-sub" id="partySub"></div>
+    <div class="party-hint">Tap anywhere to get back to work</div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // ---------- Dates (IST = UTC+5:30) ----------
+  const IST = (y, m, d, h = 0, min = 0) => Date.UTC(y, m - 1, d, h - 5, min - 30);
+  const EXAM = IST(2026, 11, 23, 0, 0);          // 23 Nov 2026, 00:00 IST
+  const SPRINT_START = EXAM - 10 * 86400000;     // 13 Nov 2026, 00:00 IST
+  const REVISION_FROM = IST(2026, 11, 21, 0, 0); // last 2 days kept for revision
+
+  const MONTHS = [
+    { key: "jul", name: "July", sym: "m-jul", color: "#35d0bf", last: 31, theme: "Monsoon month" },
+    { key: "aug", name: "August", sym: "m-aug", color: "#ff8a3d", last: 31, theme: "Independence month" },
+    { key: "sep", name: "September", sym: "m-sep", color: "#b48cff", last: 30, theme: "Back to books" },
+    { key: "oct", name: "October", sym: "m-oct", color: "#ff4f9a", last: 31, theme: "Festive month" },
+  ];
+  const short = { jul: "Jul", aug: "Aug", sep: "Sep", oct: "Oct" };
+  const WEEKS = [[1, 7], [8, 14], [15, 21], [22, null]];
+  const ALL = MONTHS.flatMap(m => WEEKS.map((_, i) => `${m.key}-${i + 1}`));
+
+  // ---------- State + saving ----------
+  let done = {};          // { "jul-1": "2026-11-07T..." }
+  let ref = null;         // db document, when available
+  let writing = false, pendingWrite = false;
+  const saveNote = document.getElementById("saveNote");
+  const LS_KEY = "ca-dance-floor-v1";
+
+  function lsRead() { try { return JSON.parse(localStorage.getItem(LS_KEY) || "null"); } catch { return null; } }
+  function lsWrite() { try { localStorage.setItem(LS_KEY, JSON.stringify(done)); } catch {} }
+
+  async function persist() {
+    lsWrite();
+    if (!ref) return;
+    if (writing) { pendingWrite = true; return; }
+    writing = true;
+    try {
+      do { pendingWrite = false; await ref.set({ done: { ...done }, updatedAt: new Date().toISOString() }); } while (pendingWrite);
+      saveNote.textContent = "Saved to your account. It follows you to any device where you're signed in.";
+    } catch (e) {
+      saveNote.textContent = "Couldn't save to your account just now. Your ticks are kept in this browser.";
+    } finally { writing = false; }
+  }
+
+  async function connect() {
+    const local = lsRead();
+    if (local && typeof local === "object") { done = local; render(); }
+    try {
+      const [db, user] = await Promise.all([window.claude?.use?.("db"), window.claude?.use?.("user")]);
+      const uid = user ? await user.id() : null;
+      if (!db || !uid) { saveNote.textContent = "Progress is saved in this browser only."; return; }
+      ref = db.collection("data/users/" + uid).doc("progress");
+      let settled = false;
+      const timer = setTimeout(() => { if (!settled) saveNote.textContent = "Can't reach your saved progress yet. Ticks are kept in this browser for now."; }, 10000);
+      ref.onSnapshot(snap => {
+        if (!snap.metadata.fromCache) { settled = true; clearTimeout(timer); }
+        if (snap.exists) {
+          const d = snap.data();
+          if (d && d.done && typeof d.done === "object") { done = { ...d.done }; lsWrite(); render(); }
+        } else if (!snap.metadata.fromCache && Object.keys(done).length) {
+          persist(); // first visit with local ticks: copy them up
+        }
+        if (settled) saveNote.textContent = "Saved to your account. It follows you to any device where you're signed in.";
+      }, () => { settled = true; clearTimeout(timer); saveNote.textContent = "Account saving stopped. Ticks are kept in this browser."; ref = null; });
+    } catch { saveNote.textContent = "Progress is saved in this browser only."; }
+  }
+
+  // ---------- Board ----------
+  const monthsEl = document.getElementById("months");
+  function buildBoard() {
+    monthsEl.innerHTML = "";
+    for (const m of MONTHS) {
+      const card = document.createElement("article");
+      card.className = "month"; card.style.setProperty("--m", m.color); card.dataset.month = m.key;
+      card.innerHTML = `
+        <div class="month-head">
+          <svg aria-hidden="true"><use href="#${m.sym}"/></svg>
+          <div><div class="month-name">${m.name}</div><div class="month-sub">${m.theme}</div></div>
+          <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        </div>
+        <div class="weeks"></div>`;
+      const weeksEl = card.querySelector(".weeks");
+      WEEKS.forEach(([a, b], i) => {
+        const id = `${m.key}-${i + 1}`;
+        const btn = document.createElement("button");
+        btn.type = "button"; btn.className = "week"; btn.dataset.id = id;
+        btn.innerHTML = `<svg class="ico" viewBox="0 0 48 48" aria-hidden="true"><use href="#paper"/><g class="check"><circle cx="36" cy="36" r="10" fill="#1c1030" stroke="currentColor" stroke-width="3"/><path d="M31 36 l4 4 l7 -8" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/></g></svg>
+          <span class="wk">Week ${i + 1}</span>
+          <span class="rng">${a}–${b ?? m.last} ${short[m.key]}</span>
+          <span class="tag">To do</span>`;
+        btn.addEventListener("click", () => onTile(btn, m, i));
+        weeksEl.appendChild(btn);
+      });
+      monthsEl.appendChild(card);
+    }
+  }
+
+  function render() {
+    let count = 0, monthsDone = 0;
+    for (const m of MONTHS) {
+      const card = monthsEl.querySelector(`[data-month="${m.key}"]`);
+      let mc = 0;
+      card.querySelectorAll(".week").forEach(btn => {
+        const on = !!done[btn.dataset.id];
+        if (on) mc++;
+        btn.classList.toggle("done", on);
+        if (!btn.classList.contains("confirm")) btn.querySelector(".tag").textContent = on ? "Done" : "To do";
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+        btn.setAttribute("aria-label", `${m.name} week ${btn.dataset.id.slice(-1)}, ${on ? "done" : "not done"}`);
+      });
+      card.querySelectorAll(".dots i").forEach((d, k) => d.classList.toggle("on", k < mc));
+      card.classList.toggle("complete", mc === 4);
+      count += mc; if (mc === 4) monthsDone++;
+    }
+    document.getElementById("doneCount").innerHTML = `${count}<span> / 16</span>`;
+    document.getElementById("monthCount").innerHTML = `${monthsDone}<span> / 4</span>`;
+    const next = ALL.find(k => !done[k]);
+    const bubble = document.getElementById("bubble");
+    if (!next) bubble.textContent = "All 16 weeks done! Spend the last days revising your notes and doing mock tests.";
+    else {
+      const m = MONTHS.find(x => x.key === next.split("-")[0]);
+      bubble.textContent = count === 0
+        ? `Start with ${m.name} Week ${next.slice(-1)}. Tick it when you finish and I'll dance for you.`
+        : `Nice, ${count} down. Next up: ${m.name} Week ${next.slice(-1)}. Finish it so I can dance again.`;
+    }
+    updatePace(count);
+  }
+
+  function updatePace(count) {
+    const left = 16 - count;
+    const days = (REVISION_FROM - Date.now()) / 86400000;
+    const pace = document.getElementById("pace");
+    if (left === 0) { pace.innerHTML = "<b>Coverage complete.</b> Revise every month once more before 23 Nov."; return; }
+    if (days <= 0) { pace.innerHTML = `Revision days are here and <b>${left} week${left > 1 ? "s" : ""}</b> are still open. Pick the ones with the most banking and economy news.`; return; }
+    const perDay = left / days;
+    pace.innerHTML = `To finish by 20 Nov night you need <b>${perDay.toFixed(1)} week${perDay >= 1.05 ? "s" : ""} a day</b> (${left} left in ${days.toFixed(1)} days). 21–22 Nov stay free for revision.`;
+  }
+
+  let confirmTimer = null;
+  function onTile(btn, m, i) {
+    const id = btn.dataset.id;
+    if (done[id]) {
+      if (btn.classList.contains("confirm")) {
+        clearTimeout(confirmTimer); btn.classList.remove("confirm");
+        delete done[id]; render(); persist();
+      } else {
+        monthsEl.querySelectorAll(".week.confirm").forEach(b => b.classList.remove("confirm"));
+        btn.classList.add("confirm"); btn.querySelector(".tag").textContent = "Tap again to undo";
+        clearTimeout(confirmTimer);
+        confirmTimer = setTimeout(() => { btn.classList.remove("confirm"); render(); }, 3000);
+      }
+      return;
+    }
+    done[id] = new Date().toISOString();
+    render(); persist();
+    const ico = btn.querySelector(".ico");
+    ico.classList.remove("boogie"); void ico.getBoundingClientRect(); ico.classList.add("boogie");
+    ico.addEventListener("animationend", () => ico.classList.remove("boogie"), { once: true });
+
+    const count = Object.keys(done).filter(k => ALL.includes(k)).length;
+    const monthDone = WEEKS.every((_, k) => done[`${m.key}-${k + 1}`]);
+    const level = count === 16 ? 3 : monthDone ? 2 : 1;
+    const left = 16 - count;
+    const titles = {
+      1: [`${m.name} Week ${i + 1} done!`, `${short[m.key]} W${i + 1} cleared!`, `That's Week ${i + 1} of ${m.name}!`],
+      2: [`All of ${m.name} cleared!`],
+      3: [`All 16 weeks done!`],
+    };
+    const subs = {
+      1: [`${left} weeks to go. Keep the streak alive.`, `${left} left. The clock is ticking, so is Chintu.`, `Only ${left} more. Revise this week's notes once tonight.`],
+      2: [`4 out of 4 weeks. ${left ? `${left} weeks left in total.` : ""} Make one-page notes for ${m.name} now.`],
+      3: [`July to October covered. Use the last days for revision and mock tests.`],
+    };
+    const pick = a => a[Math.floor(Math.random() * a.length)];
+    party(level, pick(titles[level]), pick(subs[level]));
+  }
+
+  // ---------- Party: dancer + confetti + tune ----------
+  const partyEl = document.getElementById("party");
+  const partyDancer = document.getElementById("partyDancer");
+  let partyTimer = null, confettiStop = null;
+  function party(level, title, sub) {
+    document.getElementById("partyTitle").textContent = title;
+    document.getElementById("partySub").textContent = sub;
+    partyDancer.classList.remove("move-a", "move-b", "move-c");
+    partyDancer.classList.add(level === 3 ? "move-c" : level === 2 ? "move-b" : (Math.random() < .5 ? "move-a" : "move-b"));
+    partyEl.hidden = false;
+    const secs = playTune(level);
+    confettiStop?.(); confettiStop = confetti(level);
+    clearTimeout(partyTimer);
+    partyTimer = setTimeout(closeParty, (secs + 0.6) * 1000);
+  }
+  function closeParty() {
+    clearTimeout(partyTimer); partyEl.hidden = true; stopTune(); confettiStop?.(); confettiStop = null;
+  }
+  partyEl.addEventListener("click", closeParty);
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !partyEl.hidden) closeParty(); });
+
+  function confetti(level) {
+    const cv = document.getElementById("confetti"), cx = cv.getContext("2d");
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const size = () => { cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; };
+    size();
+    const cols = ["#ffb627", "#ff4f9a", "#35d0bf", "#b48cff", "#fbf1e3", "#ff8a3d"];
+    const n = level === 3 ? 320 : level === 2 ? 220 : 130;
+    const ps = Array.from({ length: n }, () => ({
+      x: Math.random() * cv.width, y: -Math.random() * cv.height * .8,
+      vx: (Math.random() - .5) * 2 * dpr, vy: (2 + Math.random() * 3) * dpr,
+      r: (4 + Math.random() * 5) * dpr, a: Math.random() * 6.3, va: (Math.random() - .5) * .3,
+      c: cols[(Math.random() * cols.length) | 0], s: Math.random() < .3,
+    }));
+    let raf, alive = true;
+    const step = () => {
+      if (!alive) return;
+      cx.clearRect(0, 0, cv.width, cv.height);
+      for (const p of ps) {
+        p.x += p.vx + Math.sin(p.a) * .6; p.y += p.vy; p.a += p.va;
+        if (p.y > cv.height + 20) { p.y = -20; p.x = Math.random() * cv.width; }
+        cx.save(); cx.translate(p.x, p.y); cx.rotate(p.a); cx.fillStyle = p.c;
+        if (p.s) { cx.beginPath(); cx.arc(0, 0, p.r * .6, 0, 6.3); cx.fill(); }
+        else cx.fillRect(-p.r, -p.r * .4, p.r * 2, p.r * .8);
+        cx.restore();
+      }
+      raf = requestAnimationFrame(step);
+    };
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) step();
+    return () => { alive = false; cancelAnimationFrame(raf); cx.clearRect(0, 0, cv.width, cv.height); };
+  }
+
+  // Original chiptune, built with Web Audio. Step = one eighth note at ~143 BPM.
+  let soundOn = true;
+  try { soundOn = localStorage.getItem("ca-dance-sound") !== "off"; } catch {}
+  let actx = null, master = null;
+  const STEP = 0.21;
+  const C5 = 523.25, f = semi => C5 * Math.pow(2, semi / 12);
+  // Lead melody in semitones from C5 (null = rest)
+  const HOOK = [0, 4, 7, 4, 9, 7, 4, null, 5, 9, 12, 9, 7, 4, 2, null];
+  const ANSWER = [0, 4, 7, 12, 14, 12, 9, 7, 9, 7, 4, 2, 0, null, 0, null];
+  const FINALE = [12, 14, 16, 19, 16, 14, 12, 14, 16, 19, 21, 19, 24, null, 24, null];
+  const BASS = [-24, -24, -17, -17, -15, -15, -19, -17]; // C C G G A A F G (per 2 steps)
+
+  function stopTune() {
+    if (master && actx) { try { master.gain.setTargetAtTime(0, actx.currentTime, 0.05); } catch {} }
+    master = null;
+  }
+  function playTune(level) {
+    const bars = level === 3 ? [HOOK, ANSWER, FINALE, FINALE] : level === 2 ? [HOOK, ANSWER, HOOK, FINALE] : [HOOK, ANSWER];
+    const secs = bars.length * 16 * STEP;
+    if (!soundOn) return Math.max(secs, 3);
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === "suspended") actx.resume();
+    } catch { return secs; }
+    stopTune();
+    master = actx.createGain(); master.gain.value = 0.55; master.connect(actx.destination);
+    const out = master, t0 = actx.currentTime + 0.05;
+    const tone = (freq, t, dur, type, vol) => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(vol, t + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(out); o.start(t); o.stop(t + dur + 0.03);
+    };
+    const kick = t => {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.12);
+      g.gain.setValueAtTime(0.5, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+      o.connect(g).connect(out); o.start(t); o.stop(t + 0.18);
+    };
+    const noiseBuf = actx.createBuffer(1, actx.sampleRate * 0.05, actx.sampleRate);
+    const nd = noiseBuf.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+    const hat = (t, vol) => {
+      const s = actx.createBufferSource(), hp = actx.createBiquadFilter(), g = actx.createGain();
+      s.buffer = noiseBuf; hp.type = "highpass"; hp.frequency.value = 7000;
+      g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.045);
+      s.connect(hp).connect(g).connect(out); s.start(t);
+    };
+    const shift = level === 2 ? 5 : 0;
+    bars.forEach((bar, b) => {
+      const key = (level === 2 && b === 2) ? shift : 0;
+      bar.forEach((n, s) => {
+        const t = t0 + (b * 16 + s) * STEP;
+        if (n !== null) tone(f(n + key), t, STEP * 0.95, "square", 0.09);
+        if (s % 2 === 0) tone(f(BASS[s / 2] + key), t, STEP * 1.8, "triangle", 0.22);
+        if (s % 4 === 0) kick(t);
+        hat(t + STEP / 2, s % 4 === 2 ? 0.12 : 0.06);
+      });
+    });
+    tone(f(level === 3 ? 24 : 12), t0 + secs, 0.6, "square", 0.08);
+    tone(f(level === 3 ? 0 : -12), t0 + secs, 0.8, "triangle", 0.25);
+    return secs + 0.5;
+  }
+
+  const soundBtn = document.getElementById("soundBtn");
+  function paintSound() {
+    soundBtn.setAttribute("aria-pressed", soundOn ? "true" : "false");
+    document.getElementById("soundLabel").textContent = soundOn ? "Music on" : "Music off";
+    document.getElementById("soundIcon").setAttribute("d", soundOn
+      ? "M4 9v6h4l5 4V5L8 9H4z M16 8.5a5 5 0 0 1 0 7 M18.5 6a8.5 8.5 0 0 1 0 12"
+      : "M4 9v6h4l5 4V5L8 9H4z M17 9l5 6 M22 9l-5 6");
+  }
+  soundBtn.addEventListener("click", () => {
+    soundOn = !soundOn; paintSound();
+    try { localStorage.setItem("ca-dance-sound", soundOn ? "on" : "off"); } catch {}
+    if (!soundOn) stopTune();
+  });
+  paintSound();
+
+  // ---------- Reverse stopwatch ----------
+  let mode = "sprint", lastNote = "", lastMin = -1;
+  try { if (localStorage.getItem("ca-dance-mode") === "full") mode = "full"; } catch {}
+  const digits = document.getElementById("digits"), bar = document.getElementById("bar"), barWrap = document.getElementById("barWrap");
+  const clockEl = document.getElementById("clock"), note = document.getElementById("clockNote"), label = document.getElementById("clockLabel");
+  const bS = document.getElementById("modeSprint"), bF = document.getElementById("modeFull");
+  const FULL_FROM = IST(2026, 11, 7, 0, 0);
+  function setMode(m) {
+    mode = m; bS.setAttribute("aria-pressed", m === "sprint"); bF.setAttribute("aria-pressed", m === "full");
+    try { localStorage.setItem("ca-dance-mode", m); } catch {}
+    lastNote = "";
+  }
+  bS.addEventListener("click", () => setMode("sprint"));
+  bF.addEventListener("click", () => setMode("full"));
+  setMode(mode);
+
+  const pad = (n, w = 2) => String(n).padStart(w, "0");
+  function tick() {
+    const now = Date.now();
+    let ms, total, msg;
+    if (mode === "sprint") {
+      total = EXAM - SPRINT_START;
+      if (now < SPRINT_START) {
+        ms = total;
+        const h = Math.ceil((SPRINT_START - now) / 3600000);
+        msg = `The 240-hour sprint starts on <strong>13 Nov at 00:00</strong>. That's ${h} hours from now. Use them to get ahead.`;
+      } else {
+        ms = Math.max(0, EXAM - now);
+        msg = ms > 0 ? `Every second on this clock is gone for good. <strong>Close one week before you sleep.</strong>` : `Exam day. You've done the work. All the best!`;
+      }
+      label.textContent = "10-day reverse stopwatch";
+    } else {
+      total = EXAM - FULL_FROM;
+      ms = Math.max(0, EXAM - now);
+      msg = ms > 0 ? `Counting down every second to <strong>23 Nov 2026, 00:00</strong>.` : `Exam day. You've done the work. All the best!`;
+      label.textContent = "Reverse stopwatch to exam day";
+    }
+    const h = Math.floor(ms / 3600000), mi = Math.floor(ms / 60000) % 60, s = Math.floor(ms / 1000) % 60, cs = Math.floor(ms / 10) % 100;
+    digits.innerHTML = `${pad(h, 3)}<span class="sep">:</span>${pad(mi)}<span class="sep">:</span>${pad(s)}<span class="cs">.${pad(cs)}</span>`;
+    const pct = Math.max(0, Math.min(100, ms / total * 100));
+    if (mi !== lastMin) { bar.style.width = pct + "%"; barWrap.setAttribute("aria-valuenow", pct.toFixed(0)); lastMin = mi; updatePace(Object.keys(done).filter(k => ALL.includes(k)).length); }
+    clockEl.classList.toggle("red", ms > 0 && ms < 24 * 3600000 && now >= SPRINT_START);
+    if (msg !== lastNote) { note.innerHTML = msg; lastNote = msg; lastMin = -1; }
+    requestAnimationFrame(tick);
+  }
+
+  buildBoard();
+  render();
+  tick();
+  connect();
+})();
+</script>
