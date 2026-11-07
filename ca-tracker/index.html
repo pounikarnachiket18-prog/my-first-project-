@@ -4,13 +4,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Baloo+2:wght@400;600;800&family=Share+Tech+Mono&display=swap">
 <style>
-/* Layout: a festival-night dance floor. Glass panels float over a slow aurora: alerts, stopwatch + pendulum clock,
-   focus timer + streak, the dancer and success ladder, revisions, daily log, daily news calendar,
-   week boards (quiz-gated study + mock), the mock score chart and the meme soundboard. */
+/* Layout: a sunrise above the Himalaya. A live 3D sky (floating islands, light rays, clouds, gold dust) sits behind
+   glass panels: the Sankat Mochan hero card, alerts, stopwatch + pendulum clock, focus timer + streak, the dancer
+   and success ladder, revisions, daily log, daily news calendar, week boards, mock chart and meme soundboard. */
 :root {
-  --night: #120a35;        /* page ground, deep indigo */
-  --glass: rgba(34, 18, 78, .74);   /* panels */
-  --glass-2: rgba(20, 10, 52, .7);  /* inset rows */
+  --night: #071634;        /* page ground, pre-dawn blue */
+  --glass: rgba(9, 27, 64, .72);    /* panels */
+  --glass-2: rgba(5, 17, 44, .66);  /* inset rows */
+  --gold-glow: rgba(255, 190, 90, .55);
   --line: rgba(255, 255, 255, .13); /* borders */
   --line-2: rgba(255, 255, 255, .22);
   --ink: #fdf3e6;          /* warm cream text */
@@ -33,19 +34,45 @@ body {
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 20px 96px; min-height: 100%; position: relative; overflow-x: hidden;
 }
-.aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
-  background: radial-gradient(1px 1px at 20% 30%, #fff8 50%, transparent 51%) 0 0/160px 140px, radial-gradient(1px 1px at 70% 80%, #fff6 50%, transparent 51%) 0 0/220px 190px, linear-gradient(180deg, #170b45 0%, #120a35 45%, #1d0b3a 100%); }
-.aurora i { position: absolute; width: 60vmax; height: 60vmax; border-radius: 50%; filter: blur(90px); opacity: .45; animation: drift 26s ease-in-out infinite alternate; }
-.aurora i:nth-child(1) { background: #ff3d8b; top: -25vmax; left: -15vmax; }
-.aurora i:nth-child(2) { background: #6a4dff; top: 10vmax; right: -25vmax; animation-duration: 32s; opacity: .5; }
-.aurora i:nth-child(3) { background: #ff8a3d; bottom: -30vmax; left: 10vmax; animation-duration: 38s; opacity: .32; }
-.aurora i:nth-child(4) { background: #1fc8b8; bottom: -20vmax; right: -10vmax; animation-duration: 30s; opacity: .28; }
-@keyframes drift { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(8vmax, 6vmax) scale(1.15); } }
+/* 3D sky. The gradient is the fallback (and first frame) until the WebGL scene draws. */
+.sky { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  background: radial-gradient(60vmax 40vmax at 68% 72%, rgba(255,200,120,.55), transparent 70%), linear-gradient(180deg, #051231 0%, #0d2d63 40%, #24558f 60%, #e9995a 82%, #5b3440 100%); }
+.sky canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 1.2s; }
+.sky.live canvas { opacity: 1; }
+.sky::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(4,12,34,.15), rgba(4,12,34,.35)); }
+
+/* Hero: the mountain lifter in a 3D card */
+.hero { display: grid; grid-template-columns: minmax(0, 330px) minmax(0, 1fr); gap: clamp(20px, 4vw, 44px); align-items: center; padding: 22px clamp(16px, 3vw, 34px); overflow: hidden; }
+.hero-stage { perspective: 1100px; display: grid; place-items: center; padding: 18px 0; }
+.hero-float { animation: heroFloat 6s ease-in-out infinite; transform-style: preserve-3d; }
+@keyframes heroFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.hero-card { --rx: 0deg; --ry: 0deg; --gx: 50%; --gy: 25%; --glow: .45;
+  position: relative; width: min(290px, 70vw); aspect-ratio: 768 / 1376; border-radius: 22px; transform-style: preserve-3d;
+  transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform .18s ease-out;
+  box-shadow: 0 50px 80px -30px rgba(0,0,0,.85), 0 0 0 2px rgba(255,214,140,.7), 0 0 90px -6px rgba(255,180,70,var(--glow)); }
+.hero-card::before { content: ""; position: absolute; inset: -14px; border-radius: 30px; border: 2px solid rgba(255,214,140,.35); transform: translateZ(-50px); background: rgba(255,190,90,.06); }
+.hero-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; display: block; }
+.hero-glare { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; transform: translateZ(30px);
+  background: radial-gradient(circle at var(--gx) var(--gy), rgba(255,255,255,.32), transparent 50%); mix-blend-mode: soft-light; }
+.hero-badge { position: absolute; left: 50%; bottom: -16px; transform: translateX(-50%) translateZ(70px); white-space: nowrap;
+  background: linear-gradient(180deg, #ffd57a, #e59a1d); color: #2a1600; font-family: var(--display); font-size: 15px; padding: 7px 16px; border-radius: 999px; box-shadow: 0 10px 24px -8px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.6); }
+.spark { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: #ffe6a8; box-shadow: 0 0 12px 3px rgba(255,210,120,.9); animation: twinkle 3s ease-in-out infinite; }
+@keyframes twinkle { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
+.hero h1 { font-family: var(--display); font-size: clamp(28px, 5.4vw, 54px); line-height: 1.02; margin: 6px 0 10px; text-wrap: balance; text-shadow: 0 3px 0 rgba(0,0,0,.35), 0 8px 30px rgba(255,170,60,.35); }
+.hero h1 b { color: var(--marigold); font-weight: 400; }
+.hero p { margin: 0 0 14px; max-width: 56ch; color: var(--ink); }
+.lift { display: grid; gap: 8px; max-width: 520px; }
+.lift-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.lift-pct { font-family: var(--display); font-size: 34px; color: var(--marigold); line-height: 1; }
+.lift-bar { height: 14px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,.4); }
+.lift-bar i { display: block; height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, #e07a1f, #ffd36b); box-shadow: 0 0 14px rgba(255,190,80,.8); transition: width .8s cubic-bezier(.3,1.4,.5,1); }
+.lift-parts { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--ink-dim); }
+.lift-parts b { color: var(--ink); }
 .wrap { max-width: 1160px; margin: 0 auto; display: grid; gap: 22px; position: relative; z-index: 1; }
 button, input, textarea, select { font: inherit; color: inherit; }
 button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
 a { color: inherit; }
-.panel { background: var(--glass); border: 1px solid var(--line); border-radius: 22px; padding: 18px clamp(16px, 3vw, 26px); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 18px 50px -24px rgba(0,0,0,.7); min-width: 0; }
+.panel { background: var(--glass); border: 1px solid var(--line); border-radius: 22px; padding: 18px clamp(16px, 3vw, 26px); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: inset 0 1px 0 rgba(255,255,255,.09), 0 24px 60px -26px rgba(0,0,0,.85); min-width: 0; }
 .h2 { font-family: var(--display); font-size: clamp(18px, 3vw, 22px); line-height: 1.1; margin: 0; text-wrap: balance; }
 .h2 b { color: var(--marigold); font-weight: 400; }
 .sub { color: var(--ink-dim); font-size: 14px; margin: 4px 0 0; max-width: 70ch; }
@@ -56,6 +83,12 @@ a { color: inherit; }
 .btn.gold { background: var(--marigold); color: #2a1600; }
 .btn.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--line-2); }
 .btn:disabled { opacity: .45; cursor: default; filter: none; }
+/* Pressable, lit-from-above controls */
+.btn, .chip, .pill, .day, .wkbtn, .cal-all, .meme, .opt, .modes button { transition: transform .08s, box-shadow .08s, border-color .15s, background .15s; }
+.btn { box-shadow: 0 3px 0 rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.45); }
+.btn:active:not(:disabled), .pill:active, .day:active, .wkbtn:active, .cal-all:active, .meme:active, .chip:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,.35); }
+.pill.on, .day.on { box-shadow: 0 3px 0 rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.45), 0 0 14px -4px var(--m); }
+.meme { box-shadow: 0 4px 0 rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.08); }
 .empty { color: var(--ink-dim); font-size: 14px; padding: 12px; border: 1px dashed var(--line-2); border-radius: 12px; margin: 0; }
 .row2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
 
@@ -269,14 +302,14 @@ table.tbl { width: 100%; border-collapse: collapse; font-size: 14px; font-varian
 .meme-set { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 22px; margin-top: 10px; }
 .meme-set label { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 170px); gap: 10px; align-items: center; font-size: 14px; }
 select, .name-in { background: rgba(255,255,255,.06); border: 1px solid var(--line-2); border-radius: 8px; padding: 4px 8px; min-width: 0; width: 100%; }
-select option { background: #1c1030; }
+select option { background: #0e2350; }
 .names { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
 
 /* Modal (quiz) */
 .modal[hidden] { display: none; }
-.modal { position: fixed; inset: 0; z-index: 45; display: grid; place-items: center; background: rgba(10,4,30,.78); backdrop-filter: blur(6px);
+.modal { position: fixed; inset: 0; z-index: 45; display: grid; place-items: center; background: rgba(3,10,30,.78); backdrop-filter: blur(6px);
   padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
-.sheet { width: min(620px, 100%); max-height: 100%; overflow: auto; background: #22124a; border: 1px solid var(--line-2); border-radius: 20px; padding: 18px 20px 20px; display: grid; gap: 12px; }
+.sheet { width: min(620px, 100%); max-height: 100%; overflow: auto; background: #0e2350; border: 1px solid var(--line-2); border-radius: 20px; padding: 18px 20px 20px; display: grid; gap: 12px; }
 .sheet-head { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
 .x { border: 0; background: rgba(255,255,255,.08); width: 34px; height: 34px; border-radius: 50%; cursor: pointer; font-size: 20px; line-height: 1; flex: none; }
 .q-prog { display: flex; gap: 5px; }
@@ -345,7 +378,7 @@ select option { background: #1c1030; }
 /* Party overlay */
 .party[hidden] { display: none; }
 .party { position: fixed; inset: 0; z-index: 50; cursor: pointer; display: grid; place-items: center; text-align: center;
-  background: radial-gradient(600px 520px at 50% 35%, rgba(255,182,39,.3), transparent 70%), rgba(14,6,38,.94);
+  background: radial-gradient(600px 520px at 50% 35%, rgba(255,182,39,.32), transparent 70%), rgba(4,14,40,.94);
   padding: max(20px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(20px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 .party canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .party-inner { position: relative; display: grid; gap: 10px; justify-items: center; }
@@ -358,6 +391,10 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
 
 @media (max-width: 960px) { .cal { grid-template-columns: repeat(2, minmax(0, 1fr)); } .memes, .names { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 860px) {
+  .hero { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; }
+  .hero p, .lift { margin-inline: auto; }
+  .lift-parts { justify-content: center; }
+  .hero-card { width: min(230px, 62vw); }
   .clock-row, .row2, .months, .two, .meme-set { grid-template-columns: minmax(0, 1fr); }
   .wall { grid-template-columns: 110px minmax(0, 1fr); justify-items: start; text-align: left; column-gap: 16px; }
   .wall svg { max-width: 110px; grid-row: span 2; }
@@ -376,7 +413,7 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
   .meme-set label { grid-template-columns: minmax(0, 1fr); gap: 4px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .aurora i, .clock::before, .clock.red .digits, .dancer.idle .whole, .dancer.idle .armR, .revdots i.due, .chip.waiting .led { animation: none; }
+  .hero-float, .spark, .clock::before, .clock.red .digits, .dancer.idle .whole, .dancer.idle .armR, .revdots i.due, .chip.waiting .led { animation: none; }
   .pendulum { animation-duration: 4s; }
   .dancer.move-a *, .dancer.move-b *, .dancer.move-c * { animation-duration: 1.6s !important; }
 }
@@ -397,7 +434,7 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
   </defs>
 </svg>
 
-<div class="aurora" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+<div class="sky" id="sky" aria-hidden="true"></div>
 
 <div class="wrap">
   <header class="top">
@@ -408,6 +445,32 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
       <button class="chip" id="memeBtn" type="button" aria-pressed="true"><span class="led"></span><span id="memeLabel">Memes on</span></button>
     </div>
   </header>
+
+  <section class="hero panel" id="hero" aria-labelledby="heroTitle">
+    <div class="hero-stage" id="heroStage">
+      <div class="hero-float">
+        <div class="hero-card" id="heroCard">
+          <img src="img/hanuman.jpg" alt="Hanuman flying over the hills at sunrise, carrying the mountain on one hand" width="768" height="1376">
+          <div class="hero-glare"></div>
+          <span class="spark" style="left:-18px; top:18%; transform:translateZ(80px)"></span>
+          <span class="spark" style="right:-14px; top:42%; transform:translateZ(110px); animation-delay:.8s"></span>
+          <span class="spark" style="left:12%; bottom:8%; transform:translateZ(60px); animation-delay:1.6s"></span>
+          <span class="spark" style="right:18%; top:6%; transform:translateZ(95px); animation-delay:2.2s"></span>
+          <div class="hero-badge">Jai Bajrang Bali</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="eyebrow">Sankat Mochan mode</div>
+      <h1 id="heroTitle">Lift the <b>whole mountain</b></h1>
+      <p>When Hanuman couldn't tell which herb was Sanjeevani, he didn't guess. He carried the whole mountain. Don't hunt for "important" news only. Cover every day from May to October and every week's quiz and mock.</p>
+      <div class="lift">
+        <div class="lift-top"><span class="eyebrow">Mountain lifted</span><span class="lift-pct" id="liftPct">0%</span></div>
+        <div class="lift-bar" role="progressbar" aria-label="Mountain lifted" aria-valuemin="0" aria-valuemax="100" id="liftWrap"><i id="liftBar"></i></div>
+        <div class="lift-parts" id="liftParts"></div>
+      </div>
+    </div>
+  </section>
 
   <nav class="alerts" id="alerts" aria-label="Today's reminders"></nav>
 
@@ -566,6 +629,7 @@ footer { font-size: 13px; color: var(--ink-dim); text-align: center; max-width: 
 </div>
 <div class="toast" id="toast" hidden role="status"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
@@ -953,6 +1017,11 @@ ${notes.slice(0, 5000)}
     else if (openMock) bubble.textContent = `You passed ${label(openMock)} but haven't taken its mock yet. Take it, then start ${label(next)}.`;
     else bubble.textContent = count === 0 ? `Start with ${label(next)}. Read the news, pass the quiz, and I'll dance for you.` : `Nice, ${count} down. Next up: ${label(next)}. Pass its quiz so I can dance again.`;
     updatePace(count); renderLadder(count);
+    const lifted = (count / 16) * 50 + (mocks.length / 16) * 25 + (daysRead / CAL_TOTAL) * 25;
+    $("liftPct").textContent = `${Math.round(lifted)}%`;
+    $("liftBar").style.width = `${lifted}%`; $("liftWrap").setAttribute("aria-valuenow", Math.round(lifted));
+    $("liftParts").innerHTML = `<span>Weeks <b>${count}/16</b> · half</span><span>Mocks <b>${mocks.length}/16</b> · a quarter</span><span>News days <b>${daysRead}/${CAL_TOTAL}</b> · a quarter</span>`;
+    $("heroCard").style.setProperty("--glow", (0.35 + lifted / 100 * 0.6).toFixed(2));
   }
   function updatePace(count) {
     const left = 16 - count, days = (REVISION_FROM - Date.now()) / 86400000, pace = $("pace");
@@ -1145,7 +1214,7 @@ ${notes.slice(0, 5000)}
       <text x="${CW - PR}" y="${cy(target) - 6}" text-anchor="end" font-size="12" font-weight="800" fill="var(--ink)" font-family="Baloo 2, sans-serif">Target ${target}</text>`;
     if (pts.length > 1) h += `<polyline points="${pts.map(p => `${cx(p.i)},${cy(p.v)}`).join(" ")}" fill="none" stroke="var(--marigold-chart)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
     pts.forEach((p, k) => {
-      h += `<circle cx="${cx(p.i)}" cy="${cy(p.v)}" r="5" fill="var(--marigold-chart)" stroke="#24164a" stroke-width="2"/>`;
+      h += `<circle cx="${cx(p.i)}" cy="${cy(p.v)}" r="5" fill="var(--marigold-chart)" stroke="#10264d" stroke-width="2"/>`;
       if (k === pts.length - 1) h += `<text x="${cx(p.i)}" y="${cy(p.v) - 12}" text-anchor="middle" font-size="13" font-weight="800" fill="var(--ink)" font-family="Baloo 2, sans-serif">${p.v}</text>`;
       h += `<circle class="hit" data-k="${k}" cx="${cx(p.i)}" cy="${cy(p.v)}" r="16" fill="transparent" style="cursor:pointer"/>`;
     });
@@ -1480,9 +1549,153 @@ ${notes.slice(0, 5000)}
     requestAnimationFrame(tick);
   }
 
+  // ---------- Hero 3D tilt ----------
+  const heroEl = $("hero"), heroCard = $("heroCard");
+  heroEl.addEventListener("pointermove", e => {
+    const r = heroCard.getBoundingClientRect(), x = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (r.width * 1.2))), y = Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / (r.height * 1.2)));
+    heroCard.style.setProperty("--ry", `${x * 16}deg`); heroCard.style.setProperty("--rx", `${-y * 12}deg`);
+    heroCard.style.setProperty("--gx", `${50 + x * 50}%`); heroCard.style.setProperty("--gy", `${50 + y * 50}%`);
+  });
+  heroEl.addEventListener("pointerleave", () => { heroCard.style.setProperty("--ry", "0deg"); heroCard.style.setProperty("--rx", "0deg"); });
+
   buildBoard(); buildCalendar(); buildMemes();
   renderAll(); paintChips(); paintFocus();
   tick();
   connect();
+})();
+</script>
+
+<script>
+// ---------- 3D sky: sunrise, floating islands, light rays, clouds, gold dust ----------
+(() => {
+  const host = document.getElementById("sky");
+  if (!window.THREE || !host) return;
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "low-power" }); } catch { return; }
+  if (!renderer.getContext()) return;
+  host.appendChild(renderer.domElement);
+  renderer.setPixelRatio(Math.min(1.5, window.devicePixelRatio || 1));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0x31609a, 70, 300);
+  const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 1500);
+  camera.position.set(0, 4, 60);
+  const sunDir = new THREE.Vector3(0.32, 0.1, -1).normalize();
+
+  // Sky dome with a low sunrise sun
+  const sky = new THREE.Mesh(new THREE.SphereGeometry(900, 48, 24), new THREE.ShaderMaterial({
+    side: THREE.BackSide, depthWrite: false, fog: false, uniforms: { sunDir: { value: sunDir } },
+    vertexShader: "varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }",
+    fragmentShader: `uniform vec3 sunDir; varying vec3 vDir;
+      void main(){
+        vec3 d = normalize(vDir); float h = d.y;
+        vec3 top = vec3(0.02, 0.07, 0.21), mid = vec3(0.11, 0.30, 0.60), hor = vec3(1.0, 0.64, 0.33), low = vec3(0.22, 0.13, 0.18);
+        vec3 col = h > 0.0 ? mix(mix(hor, mid, smoothstep(0.0, 0.22, h)), top, smoothstep(0.22, 0.85, h)) : mix(hor * 0.85, low, smoothstep(0.0, 0.3, -h));
+        float s = max(dot(d, sunDir), 0.0);
+        col += vec3(1.0, 0.72, 0.38) * pow(s, 6.0) * 0.55 + vec3(1.0, 0.92, 0.75) * pow(s, 400.0) * 2.5 + vec3(1.0, 0.85, 0.6) * pow(s, 60.0) * 0.6;
+        gl_FragColor = vec4(col, 1.0);
+      }`
+  }));
+  scene.add(sky);
+
+  // Light from the sun plus sky/ground bounce
+  const sunLight = new THREE.DirectionalLight(0xffd3a0, 2.6); sunLight.position.copy(sunDir).multiplyScalar(100); scene.add(sunLight);
+  scene.add(new THREE.HemisphereLight(0x9cc4ff, 0x4a3324, 0.8));
+
+  // Floating islands: flattened grassy tops, long rocky undersides, little trees
+  const wobble = (x, y, z) => Math.sin(x * 1.7 + y * 0.3) * 0.5 + Math.sin(y * 2.3 + z * 1.1) * 0.3 + Math.sin(z * 3.1 + x * 0.7) * 0.2;
+  const treeMat = new THREE.MeshStandardMaterial({ color: 0x2c5a2a, roughness: 0.9 });
+  const trunkMat = new THREE.MeshStandardMaterial({ color: 0x4a3322, roughness: 1 });
+  function island(r) {
+    const geo = new THREE.IcosahedronGeometry(r, 4), pos = geo.attributes.position, col = new Float32Array(pos.count * 3), v = new THREE.Vector3();
+    const grass = new THREE.Color(0x5a8a36), grass2 = new THREE.Color(0x3f6e2c), rock = new THREE.Color(0x8a7360), dark = new THREE.Color(0x40332a);
+    for (let i = 0; i < pos.count; i++) {
+      v.fromBufferAttribute(pos, i);
+      const n = wobble(v.x / r * 2, v.y / r * 2, v.z / r * 2);
+      if (v.y > 0) v.y *= 0.28; else v.y *= 1.5 + 0.45 * n;
+      v.multiplyScalar(1 + 0.12 * n);
+      pos.setXYZ(i, v.x, v.y, v.z);
+      const c = v.y > r * 0.14 ? (n > 0 ? grass : grass2) : v.y > -r * 0.25 ? rock : dark;
+      col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+    }
+    geo.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    geo.computeVertexNormals();
+    const mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, metalness: 0 }));
+    const trees = Math.round(r * 1.3);
+    for (let t = 0; t < trees; t++) {
+      const a = Math.random() * Math.PI * 2, d = Math.random() * r * 0.65, h = r * (0.22 + Math.random() * 0.28);
+      const baseY = Math.sqrt(Math.max(0, r * r - d * d)) * 0.28 * 0.95;
+      const tree = new THREE.Group();
+      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(h * 0.05, h * 0.07, h * 0.3, 5), trunkMat); trunk.position.y = h * 0.15;
+      const crown = new THREE.Mesh(new THREE.ConeGeometry(h * 0.32, h * 0.85, 7), treeMat); crown.position.y = h * 0.6;
+      tree.add(trunk, crown); tree.position.set(Math.cos(a) * d, baseY, Math.sin(a) * d);
+      mesh.add(tree);
+    }
+    return mesh;
+  }
+  const islands = [];
+  [[-40, 10, -40, 9], [36, -6, -32, 7], [-14, -20, -72, 12], [58, 18, -115, 14], [-74, -8, -125, 16], [12, 28, -170, 11], [24, -32, -18, 4.5], [-28, 30, -95, 6]]
+    .forEach(([x, y, z, r], k) => { const m = island(r); m.position.set(x, y, z); m.rotation.y = k * 1.3; m.userData = { y, sp: 0.25 + Math.random() * 0.35, ph: Math.random() * 6, rot: (Math.random() - 0.5) * 0.003 }; scene.add(m); islands.push(m); });
+
+  // Soft canvas textures
+  function tex(draw, w = 128, h = 128) { const c = document.createElement("canvas"); c.width = w; c.height = h; draw(c.getContext("2d"), w, h); const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t; }
+  const cloudTex = tex(g => { for (let i = 0; i < 16; i++) { const x = 28 + Math.random() * 72, y = 50 + Math.random() * 34, rr = 16 + Math.random() * 26, gr = g.createRadialGradient(x, y, 0, x, y, rr); gr.addColorStop(0, "rgba(255,255,255,.5)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.beginPath(); g.arc(x, y, rr, 0, 6.3); g.fill(); } });
+  const dotTex = tex(g => { const gr = g.createRadialGradient(16, 16, 0, 16, 16, 16); gr.addColorStop(0, "rgba(255,255,255,1)"); gr.addColorStop(0.3, "rgba(255,230,160,.8)"); gr.addColorStop(1, "rgba(255,200,100,0)"); g.fillStyle = gr; g.fillRect(0, 0, 32, 32); }, 32, 32);
+  const rayTex = tex((g, w, h) => { const gr = g.createLinearGradient(0, h, 0, 0); gr.addColorStop(0, "rgba(255,255,255,.9)"); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(0, 0, w, h); const e = g.createLinearGradient(0, 0, w, 0); e.addColorStop(0, "rgba(0,0,0,1)"); e.addColorStop(.5, "rgba(0,0,0,0)"); e.addColorStop(1, "rgba(0,0,0,1)"); g.globalCompositeOperation = "destination-out"; g.fillStyle = e; g.fillRect(0, 0, w, h); }, 32, 256);
+
+  // Clouds below the islands
+  const clouds = [];
+  for (let i = 0; i < 28; i++) {
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloudTex, color: i % 3 ? 0xfff0e0 : 0xffc89a, transparent: true, opacity: 0.5 + Math.random() * 0.35, depthWrite: false }));
+    const sc = 45 + Math.random() * 80; s.scale.set(sc * 1.9, sc, 1);
+    s.position.set((Math.random() - 0.5) * 460, -46 + Math.random() * 30, -50 - Math.random() * 260);
+    s.userData.v = 0.5 + Math.random(); scene.add(s); clouds.push(s);
+  }
+
+  // Gold dust
+  const N = 650, dp = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) { dp[i * 3] = (Math.random() - 0.5) * 220; dp[i * 3 + 1] = (Math.random() - 0.5) * 130; dp[i * 3 + 2] = 40 - Math.random() * 170; }
+  const dGeo = new THREE.BufferGeometry(); dGeo.setAttribute("position", new THREE.BufferAttribute(dp, 3));
+  const dust = new THREE.Points(dGeo, new THREE.PointsMaterial({ size: 1.3, map: dotTex, color: 0xffd27a, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }));
+  scene.add(dust);
+
+  // Light rays fanning out of the sun
+  const rays = new THREE.Group(), fan = new THREE.Group(); rays.add(fan);
+  for (let k = 0; k < 14; k++) {
+    const w = 8 + Math.random() * 26, p = new THREE.Mesh(new THREE.PlaneGeometry(w, 900), new THREE.MeshBasicMaterial({ map: rayTex, color: 0xffdca8, transparent: true, opacity: 0.07 + Math.random() * 0.1, blending: THREE.AdditiveBlending, depthWrite: false, fog: false, side: THREE.DoubleSide }));
+    p.geometry.translate(0, 450, 0); p.rotation.z = (k / 14) * Math.PI * 2 + Math.random() * 0.15; fan.add(p);
+  }
+  rays.position.copy(sunDir).multiplyScalar(600); rays.lookAt(camera.position); scene.add(rays);
+
+  function size() { const w = window.innerWidth, h = window.innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+  size(); window.addEventListener("resize", () => { size(); if (reduce) draw(0); });
+  let px = 0, py = 0;
+  window.addEventListener("pointermove", e => { px = e.clientX / window.innerWidth - 0.5; py = e.clientY / window.innerHeight - 0.5; }, { passive: true });
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const t0 = performance.now();
+  function draw(now) {
+    const t = (now - t0) / 1000, max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight), sy = window.scrollY / max;
+    camera.position.x += (px * 10 - camera.position.x) * 0.05;
+    camera.position.y += ((6 - sy * 34 - py * 6) - camera.position.y) * 0.05;
+    camera.lookAt(0, -sy * 24, -100);
+    rays.lookAt(camera.position);
+    if (!reduce) {
+      islands.forEach(m => { m.position.y = m.userData.y + Math.sin(t * m.userData.sp + m.userData.ph) * 1.6; m.rotation.y += m.userData.rot; });
+      clouds.forEach(c => { c.position.x += c.userData.v * 0.06; if (c.position.x > 240) c.position.x = -240; });
+      dust.rotation.y = t * 0.012; dust.position.y = Math.sin(t * 0.2) * 3;
+      fan.rotation.z = t * 0.01;
+    }
+    renderer.render(scene, camera);
+  }
+  let last = 0;
+  function loop(now) {
+    requestAnimationFrame(loop);
+    if (document.hidden || now - last < 33) return; // ~30 fps is plenty for a background
+    last = now; draw(now);
+  }
+  if (reduce) { draw(performance.now()); window.addEventListener("scroll", () => draw(performance.now()), { passive: true }); }
+  else requestAnimationFrame(loop);
+  host.classList.add("live");
 })();
 </script>
