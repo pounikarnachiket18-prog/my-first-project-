@@ -34,6 +34,9 @@ Open `image-studio/index.html` in Chrome, Edge or Firefox. Double-click the file
 - **Editor:** reel/story (1080×1920), Instagram post, YouTube thumbnail and other sizes; drag to frame, adjust brightness/contrast/blur, add a dark fade, bold headline text (`*word*` = highlighted), Hindi font, and an `@handle` watermark. Export as PNG or JPG, or copy to the clipboard.
 - You can also drop, paste or upload your own photos.
 
+### Caption Studio (in your browser)
+Open `caption-studio/index.html`. Pick a topic and pillar to get hooks, then build a caption with key points, a call to action and hashtags, in English, Hinglish or Hindi, for Instagram Reels or YouTube Shorts. Save captions to an idea bank and track each one from Idea to Posted. See [`caption-studio/README.md`](caption-studio/README.md).
+
 ### Download free images from the terminal
 ```bash
 cd reels

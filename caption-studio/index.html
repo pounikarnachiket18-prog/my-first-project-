@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caption Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0e0f13;--panel:#171920;--panel2:#1d2029;--line:#2a2d38;--text:#e9eaf0;--muted:#9097a8;--accent:#ffcc00;--accent-ink:#111;--ok:#3ecf8e;--warn:#ff8a4c;--bad:#ff5d6c}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#f4f5f8;--panel:#fff;--panel2:#f7f8fb;--line:#dde0e8;--text:#15171d;--muted:#5d6475;--accent:#1d4ed8;--accent-ink:#fff;--ok:#11875a;--warn:#c2530f;--bad:#c81e3a}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,"Noto Sans Devanagari",sans-serif}
+header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+header h1{font-size:18px;margin:0 8px 0 0}
+header .sub{color:var(--muted);font-size:13px}
+.tabs{display:flex;gap:6px;margin-left:auto}
+.tab{background:none;border:1px solid var(--line);color:var(--text);padding:7px 14px;border-radius:999px;cursor:pointer;font:inherit}
+.tab.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.tab .count{display:inline-block;min-width:18px;margin-left:4px;font-size:12px;opacity:.8}
+main{padding:16px;max-width:1300px;margin:0 auto}
+.view{display:none}.view.on{display:block}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:900px){.layout{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px}
+.panel h2{font-size:15px;margin:0 0 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.panel h2 .step{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--accent-ink);font-size:12px}
+.panel h2 .right{margin-left:auto;display:flex;gap:6px}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media (max-width:520px){.grid2{grid-template-columns:1fr}}
+input[type=text],select,textarea{width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:9px 11px;font:inherit;min-width:0}
+textarea{resize:vertical}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button.btn{background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer}
+button.ghost{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px 11px;font:inherit;font-size:13px;cursor:pointer}
+button.ghost:hover{border-color:var(--accent)}
+button.small{padding:4px 9px;font-size:12px}
+.note{color:var(--muted);font-size:13px;margin:6px 0 0}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+.seg button{background:var(--panel2);color:var(--text);border:0;border-right:1px solid var(--line);padding:7px 12px;font:inherit;font-size:13px;cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--accent);color:var(--accent-ink);font-weight:600}
+.hooks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.hook{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px}
+.hook.picked{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.hook .txt{flex:1;min-width:0}
+.hook .meta{font-size:12px;color:var(--muted);margin-top:2px}
+.hook .acts{display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;border:1px solid var(--ok);color:var(--ok)}
+.tag.long{border-color:var(--warn);color:var(--warn)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:999px;padding:4px 10px;font-size:13px;cursor:pointer}
+.chip.on{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 18%,var(--panel2))}
+.chip.off{opacity:.5;text-decoration:line-through}
+.preview{white-space:pre-wrap;word-wrap:break-word;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px;min-height:140px;font-size:14px}
+.meter{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px;gap:8px;flex-wrap:wrap}
+.meter .bad{color:var(--bad);font-weight:600}
+.meter .good{color:var(--ok)}
+.check{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text);margin:8px 0 0;cursor:pointer}
+input[type=range]{width:160px;accent-color:var(--accent)}
+.ideas{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin-top:12px}
+.idea{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.idea .top{display:flex;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--muted);align-items:center}
+.idea .pill{border:1px solid var(--line);border-radius:999px;padding:1px 8px}
+.idea .hk{font-weight:600}
+.idea .cap{white-space:pre-wrap;font-size:13px;color:var(--muted);max-height:120px;overflow:auto;border-top:1px dashed var(--line);padding-top:6px}
+.idea .acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:auto}
+.idea select{width:auto;padding:5px 8px;font-size:13px}
+.status-Idea{border-left:4px solid var(--muted)}
+.status-Scripted{border-left:4px solid #6aa8ff}
+.status-Shot{border-left:4px solid var(--warn)}
+.status-Posted{border-left:4px solid var(--ok)}
+.empty{color:var(--muted);text-align:center;padding:40px 10px;border:1px dashed var(--line);border-radius:12px;margin-top:12px}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);padding:9px 16px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:.2s}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1>✍️ Caption Studio</h1>
+  <span class="sub">Hooks, captions &amp; hashtags for Mindset Mode India</span>
+  <nav class="tabs" role="tablist">
+    <button class="tab on" data-view="write" role="tab">Write</button>
+    <button class="tab" data-view="bank" role="tab">Idea bank <span class="count" id="bankCount">0</span></button>
+  </nav>
+</header>
+
+<main>
+<!-- ============ WRITE ============ -->
+<section class="view on" id="view-write">
+  <div class="layout">
+    <div>
+      <div class="panel">
+        <h2><span class="step">1</span> What is the video about?</h2>
+        <label for="topic">Topic</label>
+        <div class="row">
+          <input type="text" id="topic" placeholder="e.g. waking up early, overthinking, phone addiction" style="flex:1 1 220px">
+          <button class="ghost" id="randomTopic" title="Pick a topic idea for this pillar">🎲 Idea</button>
+        </div>
+        <div>
+          <div>
+            <label>Pillar</label>
+            <div class="seg" id="pillar">
+              <button data-v="Mindset" class="on">Mindset</button><button data-v="Discipline">Discipline</button><button data-v="Focus">Focus</button><button data-v="Growth">Growth</button>
+            </div>
+          </div>
+          <div>
+            <label>Language</label>
+            <div class="seg" id="lang">
+              <button data-v="en" class="on">English</button><button data-v="hinglish">Hinglish</button><button data-v="hi">हिंदी</button>
+            </div>
+          </div>
+        </div>
+        <label>Platform</label>
+        <div class="seg" id="platform">
+          <button data-v="ig" class="on">Instagram Reel</button><button data-v="yt">YouTube Shorts</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2><span class="step">2</span> Pick a hook <span class="right"><button class="ghost" id="shuffle">🔀 Shuffle</button></span></h2>
+        <p class="note" style="margin:-4px 0 10px">The first line decides if people keep watching. Aim for 12 words or fewer. Click a hook to use it.</p>
+        <ul class="hooks" id="hooks"></ul>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <h2><span class="step">3</span> Build the caption</h2>
+        <label for="hook">Hook (first line)</label>
+        <input type="text" id="hook" placeholder="Pick a hook on the left or write your own">
+        <label for="points">Key points (one per line)</label>
+        <textarea id="points" rows="4" placeholder="Sleep at the same time every night&#10;Keep your phone outside the bedroom&#10;Start with just 15 minutes earlier"></textarea>
+        <div class="grid2">
+          <div>
+            <label for="bullet">Bullet style</label>
+            <select id="bullet">
+              <option value="✅">✅ Check marks</option>
+              <option value="👉">👉 Pointing hand</option>
+              <option value="🔥">🔥 Fire</option>
+              <option value="num">1. 2. 3. Numbers</option>
+              <option value="—">— Dashes</option>
+            </select>
+          </div>
+          <div>
+            <label for="cta">Call to action</label>
+            <select id="cta">
+              <option value="save">Save this</option>
+              <option value="share">Send to a friend</option>
+              <option value="comment">Comment a keyword</option>
+              <option value="follow">Follow for more</option>
+              <option value="none">No call to action</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid2">
+          <div id="keywordWrap" class="hidden">
+            <label for="keyword">Comment keyword</label>
+            <input type="text" id="keyword" value="READY">
+          </div>
+          <div>
+            <label for="handle">Your @handle (optional)</label>
+            <input type="text" id="handle" placeholder="@yourhandle">
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>#️⃣ Hashtags <span class="right"><span class="note" style="margin:0">How many: <b id="tagN">8</b></span></span></h2>
+        <input type="range" id="tagCount" min="0" max="30" value="8" aria-label="Number of hashtags">
+        <p class="note">Click a tag to turn it off. Instagram allows up to 30, but 5–10 focused tags work best. On YouTube only the first 3 show above the title.</p>
+        <div class="chips" id="chips" style="margin-top:8px"></div>
+        <label class="check"><input type="checkbox" id="hideTags"> Push hashtags below a few dots (cleaner look)</label>
+      </div>
+
+      <div class="panel">
+        <h2>👀 Preview <span class="right"><button class="ghost" id="saveIdea">💾 Save to idea bank</button><button class="btn" id="copyAll">Copy</button></span></h2>
+        <div id="ytTitleWrap" class="hidden">
+          <label for="ytTitle">Shorts title</label>
+          <div class="row"><input type="text" id="ytTitle" style="flex:1"><button class="ghost" id="copyTitle">Copy title</button></div>
+          <div class="meter"><span>Keep it under 70 characters so it isn't cut off.</span><span id="titleMeter"></span></div>
+          <label>Description</label>
+        </div>
+        <div class="preview" id="preview" aria-live="polite"></div>
+        <div class="meter"><span id="capMeter"></span><span id="tagMeter"></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ IDEA BANK ============ -->
+<section class="view" id="view-bank">
+  <div class="panel">
+    <div class="row">
+      <div class="seg" id="filter">
+        <button data-v="all" class="on">All</button><button data-v="Idea">Idea</button><button data-v="Scripted">Scripted</button><button data-v="Shot">Shot</button><button data-v="Posted">Posted</button>
+      </div>
+      <input type="text" id="search" placeholder="Search ideas…" style="flex:1 1 180px;width:auto">
+      <button class="ghost" id="exportCsv">⬇️ Export CSV</button>
+      <button class="ghost" id="backup">⬇️ Backup</button>
+      <button class="ghost" id="restore">⬆️ Restore</button>
+      <input type="file" id="restoreFile" accept="application/json,.json" class="hidden">
+    </div>
+    <p class="note">Ideas are saved in this browser only. Use Backup to keep a copy or move them to another computer.</p>
+  </div>
+  <div class="ideas" id="ideas"></div>
+  <div class="empty hidden" id="emptyBank">No ideas yet. Write a caption and press <b>Save to idea bank</b>.</div>
+</section>
+</main>
+
+<div id="toast" role="status"></div>
+
+<script>
+"use strict";
+
+/* ---------------- Content library ---------------- */
+// {t} is replaced with the topic. Edit or add your own lines here.
+const HOOKS = {
+  en: {
+    any: [
+      "Nobody tells you this about {t}.",
+      "Stop doing this if you're serious about {t}.",
+      "I tried {t} for 30 days. Here's what changed.",
+      "3 mistakes people make with {t}.",
+      "Struggling with {t}? Watch this till the end.",
+      "{T} isn't about motivation. It's about this.",
+      "Why {t} feels so hard (and the simple fix).",
+      "Read this before you give up on {t}.",
+      "One rule that changed how I see {t}.",
+      "Unpopular opinion: you don't need more tips on {t}.",
+      "The 2-minute rule for {t}.",
+      "If {t} scares you, this is for you."
+    ],
+    Mindset: ["Your mind is lying to you about {t}.", "Change this one thought about {t}."],
+    Discipline: ["Discipline beats motivation. Especially with {t}.", "Do this daily and {t} gets easy."],
+    Focus: ["Your attention is being stolen. {T} is how you get it back.", "Put your phone down for 60 seconds. Let's talk {t}."],
+    Growth: ["The version of you that masters {t} is waiting.", "Nobody is born good at {t}. Here's how to start."]
+  },
+  hinglish: {
+    any: [
+      "{T} ke baare mein ye koi nahi batata.",
+      "Agar {t} mein struggle kar rahe ho, ye end tak dekhna.",
+      "3 galtiyan jo log {t} mein karte hain.",
+      "Maine 30 din {t} try kiya. Ye badla.",
+      "{T} motivation se nahi, is ek cheez se hota hai.",
+      "Give up karne se pehle ye zaroor suno.",
+      "Is ek rule ne {t} ke baare mein meri soch badal di.",
+      "Sach bolun? {T} utna mushkil nahi jitna lagta hai.",
+      "Kal se nahi, aaj se. {T} ka simple formula.",
+      "{T} se darr lagta hai? Ye video tumhare liye hai."
+    ],
+    Mindset: ["Tumhara dimaag {t} ke baare mein jhooth bol raha hai.", "Bas ye ek soch badlo, {t} badal jayega."],
+    Discipline: ["Motivation aata-jaata hai, discipline rehta hai. {T} bhi.", "Roz bas ye karo, {t} aasaan ho jayega."],
+    Focus: ["Tumhara focus chori ho raha hai. {T} se wapas lo.", "60 second phone side mein rakho. {T} ki baat karte hain."],
+    Growth: ["Koi bhi {t} mein pehle din se expert nahi hota.", "Jo {t} seekh leta hai, uski life badal jaati hai."]
+  },
+  hi: {
+    any: [
+      "{t} के बारे में ये बात कोई नहीं बताता।",
+      "अगर {t} में मुश्किल हो रही है, तो ये आखिर तक देखो।",
+      "3 गलतियाँ जो लोग {t} में करते हैं।",
+      "मैंने 30 दिन {t} ट्राई किया। ये बदला।",
+      "{t} मोटिवेशन से नहीं, इस एक चीज़ से होता है।",
+      "हार मानने से पहले ये ज़रूर सुनो।",
+      "इस एक नियम ने {t} पर मेरी सोच बदल दी।",
+      "सच कहूँ? {t} उतना मुश्किल नहीं जितना लगता है।",
+      "कल से नहीं, आज से। {t} का आसान फॉर्मूला।",
+      "{t} से डर लगता है? ये वीडियो आपके लिए है।"
+    ],
+    Mindset: ["आपका दिमाग {t} के बारे में झूठ बोल रहा है।", "बस ये एक सोच बदलो, {t} बदल जाएगा।"],
+    Discipline: ["मोटिवेशन आता-जाता है, अनुशासन रहता है।", "रोज़ बस ये करो, {t} आसान हो जाएगा।"],
+    Focus: ["आपका फोकस चोरी हो रहा है। {t} से उसे वापस लो।", "60 सेकंड फोन साइड में रखो। {t} की बात करते हैं।"],
+    Growth: ["कोई भी {t} में पहले दिन से एक्सपर्ट नहीं होता।", "जो {t} सीख लेता है, उसकी ज़िंदगी बदल जाती है।"]
+  }
+};
+
+const CTAS = {
+  en: {
+    save: "Save this for the day you feel like quitting.",
+    share: "Send this to a friend who needs to hear it.",
+    comment: 'Comment "{k}" if you\'re starting today.',
+    follow: "Follow {h} for daily mindset upgrades."
+  },
+  hinglish: {
+    save: "Isse save karlo, jis din give up karne ka mann kare tab kaam aayega.",
+    share: "Ye us dost ko bhejo jise iski zarurat hai.",
+    comment: 'Aaj se shuru kar rahe ho toh comment karo "{k}".',
+    follow: "Roz ke mindset upgrade ke liye {h} ko follow karo."
+  },
+  hi: {
+    save: "इसे सेव कर लो, जिस दिन हार मानने का मन करे उस दिन काम आएगा।",
+    share: "ये उस दोस्त को भेजो जिसे इसकी ज़रूरत है।",
+    comment: 'आज से शुरू कर रहे हो तो कमेंट करो "{k}"।',
+    follow: "रोज़ के माइंडसेट अपग्रेड के लिए {h} को फॉलो करो।"
+  }
+};
+const FOLLOW_NO_HANDLE = { en: "Follow for more.", hinglish: "Aise aur videos ke liye follow karo.", hi: "ऐसे और वीडियो के लिए फॉलो करो।" };
+
+const TOPIC_IDEAS = {
+  Mindset: ["overthinking", "fear of failure", "comparing yourself to others", "self-doubt", "handling rejection", "negative thoughts"],
+  Discipline: ["waking up early", "staying consistent", "a daily gym habit", "no zero days", "beating procrastination", "a morning routine"],
+  Focus: ["phone addiction", "deep work", "studying for long hours", "a social media detox", "doomscrolling", "single-tasking"],
+  Growth: ["public speaking", "building confidence", "learning a new skill", "talking to strangers", "better communication", "reading every day"]
+};
+
+const TAGS = {
+  brand: ["#mindsetmodeindia"],
+  Mindset: ["#mindset", "#growthmindset", "#mindsetshift", "#positivemindset", "#mentalstrength", "#selfbelief", "#thinkbig", "#mindsetmatters"],
+  Discipline: ["#discipline", "#selfdiscipline", "#consistency", "#dailyhabits", "#nozerodays", "#5amclub", "#hardwork", "#habits"],
+  Focus: ["#focus", "#deepwork", "#productivity", "#digitaldetox", "#studymotivation", "#concentration", "#timemanagement", "#nodistractions"],
+  Growth: ["#selfgrowth", "#selfimprovement", "#personaldevelopment", "#confidence", "#communicationskills", "#bettereveryday", "#levelup", "#learneveryday"],
+  india: ["#motivationindia", "#hindimotivation", "#successmindset", "#motivation", "#indianyoutuber", "#dailymotivation"],
+  ig: ["#reels", "#instareels", "#explorepage"],
+  yt: ["#shorts", "#youtubeshorts"]
+};
+
+const LIMITS = { ig: { caption: 2200, tags: 30 }, yt: { caption: 5000, tags: 15, title: 100 } };
+
+/* ---------------- Storage (never required) ---------------- */
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("cs:" + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem("cs:" + k, JSON.stringify(v)); } catch { /* storage blocked: work in memory */ } }
+};
+
+/* ---------------- State ---------------- */
+const $ = id => document.getElementById(id);
+const state = {
+  pillar: "Mindset", lang: "en", platform: "ig",
+  hooks: [], offTags: new Set(), ideas: store.get("ideas", []), filter: "all"
+};
+
+/* ---------------- Helpers ---------------- */
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast.timer); toast.timer = setTimeout(() => t.classList.remove("show"), 1600);
+}
+async function copy(text, label) {
+  try { await navigator.clipboard.writeText(text); }
+  catch {
+    const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand("copy"); ta.remove();
+  }
+  toast((label || "Copied") + " ✓");
+}
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function fill(tpl, topic) {
+  const t = topic || (state.lang === "hi" ? "ये आदत" : state.lang === "hinglish" ? "ye aadat" : "this habit");
+  const T = t.charAt(0).toUpperCase() + t.slice(1);
+  return tpl.replace(/\{T\}/g, T).replace(/\{t\}/g, t);
+}
+function words(s) { return s.trim().split(/\s+/).filter(Boolean).length; }
+function topicTag(topic) {
+  const clean = topic.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+  return clean.length > 2 && clean.length < 30 ? "#" + clean : null;
+}
+function download(name, text, type) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type }));
+  a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+function handle() { let h = $("handle").value.trim(); if (h && !h.startsWith("@")) h = "@" + h; return h; }
+
+/* ---------------- Segmented controls ---------------- */
+function segment(id, onChange) {
+  $(id).addEventListener("click", e => {
+    const b = e.target.closest("button[data-v]"); if (!b) return;
+    $(id).querySelectorAll("button").forEach(x => x.classList.toggle("on", x === b));
+    onChange(b.dataset.v);
+  });
+}
+function setSeg(id, v) { $(id).querySelectorAll("button").forEach(x => x.classList.toggle("on", x.dataset.v === v)); }
+
+/* ---------------- Hooks ---------------- */
+function makeHooks() {
+  const lib = HOOKS[state.lang];
+  state.hooks = shuffle(lib[state.pillar]).concat(shuffle(lib.any)).slice(0, 8);
+  renderHooks();
+}
+function renderHooks() {
+  const topic = $("topic").value.trim();
+  const current = $("hook").value.trim();
+  $("hooks").innerHTML = state.hooks.map((tpl, i) => {
+    const text = fill(tpl, topic), n = words(text);
+    return `<li class="hook${text === current ? " picked" : ""}" data-i="${i}">
+      <div class="txt"><div>${esc(text)}</div>
+        <div class="meta"><span class="tag${n > 12 ? " long" : ""}">${n} words${n > 12 ? " · long" : ""}</span></div></div>
+      <div class="acts"><button class="ghost small" data-act="use">Use</button><button class="ghost small" data-act="copy">Copy</button></div>
+    </li>`;
+  }).join("");
+}
+$("hooks").addEventListener("click", e => {
+  const li = e.target.closest(".hook"); if (!li) return;
+  const topic = $("topic").value.trim();
+  const text = fill(state.hooks[+li.dataset.i], topic);
+  if (e.target.dataset.act === "copy") return copy(text, "Hook copied");
+  $("hook").value = text; $("hook").dataset.auto = "1"; $("hook").dataset.topic = topic;
+  renderHooks(); update();
+});
+
+/* ---------------- Hashtags ---------------- */
+function tagPool() {
+  const topic = topicTag($("topic").value);
+  const pool = [topic, ...TAGS.brand, ...TAGS[state.platform].slice(0, 1),
+    ...TAGS[state.pillar].slice(0, 4), ...TAGS.india.slice(0, 2), ...TAGS[state.pillar].slice(4),
+    ...TAGS.india.slice(2), ...TAGS[state.platform].slice(1)];
+  return [...new Set(pool.filter(Boolean))];
+}
+function activeTags() {
+  const n = +$("tagCount").value;
+  return tagPool().slice(0, n).filter(t => !state.offTags.has(t));
+}
+function renderChips() {
+  const n = +$("tagCount").value;
+  $("tagN").textContent = n;
+  $("chips").innerHTML = tagPool().map((t, i) => {
+    const cls = i >= n ? "" : state.offTags.has(t) ? " off" : " on";
+    return `<button class="chip${cls}" data-t="${esc(t)}" ${i >= n ? 'title="Raise the count to include this"' : ""}>${esc(t)}</button>`;
+  }).join("");
+}
+$("chips").addEventListener("click", e => {
+  const c = e.target.closest(".chip"); if (!c) return;
+  const t = c.dataset.t, pool = tagPool(), idx = pool.indexOf(t);
+  if (idx >= +$("tagCount").value) { $("tagCount").value = idx + 1; state.offTags.delete(t); }
+  else if (state.offTags.has(t)) state.offTags.delete(t); else state.offTags.add(t);
+  update();
+});
+
+/* ---------------- Caption ---------------- */
+function buildCaption() {
+  const L = state.lang;
+  const hook = $("hook").value.trim();
+  const pts = $("points").value.split("\n").map(s => s.trim()).filter(Boolean);
+  const style = $("bullet").value;
+  const body = pts.map((p, i) => (style === "num" ? `${i + 1}. ` : style + " ") + p).join("\n");
+  const ctaKey = $("cta").value;
+  let cta = "";
+  if (ctaKey === "follow") cta = handle() ? CTAS[L].follow.replace("{h}", handle()) : FOLLOW_NO_HANDLE[L];
+  else if (ctaKey !== "none") cta = CTAS[L][ctaKey].replace("{k}", ($("keyword").value.trim() || "READY").toUpperCase());
+  const tags = activeTags().join(" ");
+  const parts = [hook, body, cta].filter(Boolean);
+  let out = parts.join("\n\n");
+  if (tags) out += ($("hideTags").checked ? "\n.\n.\n.\n" : "\n\n") + tags;
+  return out;
+}
+function syncTitle() {
+  if (state.platform !== "yt") return;
+  const t = $("ytTitle");
+  if (!t.dataset.edited) {
+    const firstTag = activeTags().includes("#shorts") ? " #shorts" : "";
+    t.value = ($("hook").value.trim() || "").slice(0, 100 - firstTag.length) + firstTag;
+  }
+  const len = [...t.value].length;
+  $("titleMeter").innerHTML = `<span class="${len > 100 ? "bad" : len > 70 ? "" : "good"}">${len} / 100</span>`;
+}
+function update() {
+  renderChips();
+  const cap = buildCaption();
+  $("preview").textContent = cap || "Your caption will appear here.";
+  const lim = LIMITS[state.platform], len = [...cap].length, nTags = activeTags().length;
+  $("capMeter").innerHTML = `<span class="${len > lim.caption ? "bad" : ""}">${len.toLocaleString()} / ${lim.caption.toLocaleString()} characters</span>`;
+  $("tagMeter").innerHTML = `<span class="${nTags > lim.tags ? "bad" : ""}">${nTags} hashtags${nTags > lim.tags ? ` (max ${lim.tags})` : ""}</span>`;
+  $("ytTitleWrap").classList.toggle("hidden", state.platform !== "yt");
+  syncTitle();
+  saveDraft();
+}
+
+/* ---------------- Draft persistence ---------------- */
+const DRAFT_FIELDS = ["topic", "hook", "points", "bullet", "cta", "keyword", "handle", "tagCount"];
+function saveDraft() {
+  const d = { pillar: state.pillar, lang: state.lang, platform: state.platform, hideTags: $("hideTags").checked };
+  DRAFT_FIELDS.forEach(f => d[f] = $(f).value);
+  store.set("draft", d);
+}
+function loadDraft() {
+  const d = store.get("draft", null); if (!d) return;
+  DRAFT_FIELDS.forEach(f => { if (d[f] != null) $(f).value = d[f]; });
+  ["pillar", "lang", "platform"].forEach(k => { if (d[k]) { state[k] = d[k]; setSeg(k, d[k]); } });
+  $("hideTags").checked = !!d.hideTags;
+}
+
+/* ---------------- Write view wiring ---------------- */
+segment("pillar", v => { state.pillar = v; state.offTags.clear(); makeHooks(); update(); });
+segment("lang", v => { state.lang = v; makeHooks(); update(); });
+segment("platform", v => {
+  state.platform = v; state.offTags.clear();
+  $("tagCount").value = v === "yt" ? 3 : 8;
+  update();
+});
+$("topic").addEventListener("input", () => {
+  // keep the hook in sync with the topic while it still comes straight from a template
+  const prev = $("hook").dataset.topic;
+  if ($("hook").dataset.auto && prev != null) {
+    const tpl = state.hooks.find(h => fill(h, prev) === $("hook").value.trim());
+    if (tpl) $("hook").value = fill(tpl, $("topic").value.trim());
+    $("hook").dataset.topic = $("topic").value.trim();
+  }
+  renderHooks(); update();
+});
+$("randomTopic").addEventListener("click", () => {
+  const list = TOPIC_IDEAS[state.pillar].filter(t => t !== $("topic").value);
+  $("topic").value = list[Math.floor(Math.random() * list.length)];
+  $("topic").dispatchEvent(new Event("input"));
+});
+$("shuffle").addEventListener("click", makeHooks);
+$("hook").addEventListener("input", () => { delete $("hook").dataset.auto; renderHooks(); update(); });
+["points", "bullet", "keyword", "handle", "hideTags"].forEach(id => $(id).addEventListener("input", update));
+$("cta").addEventListener("input", () => { $("keywordWrap").classList.toggle("hidden", $("cta").value !== "comment"); update(); });
+$("tagCount").addEventListener("input", update);
+$("ytTitle").addEventListener("input", () => { $("ytTitle").dataset.edited = $("ytTitle").value ? "1" : ""; if (!$("ytTitle").value) delete $("ytTitle").dataset.edited; syncTitle(); });
+$("copyTitle").addEventListener("click", () => copy($("ytTitle").value, "Title copied"));
+$("copyAll").addEventListener("click", () => {
+  if (!$("hook").value.trim()) return toast("Add a hook first");
+  copy(buildCaption(), state.platform === "yt" ? "Description copied" : "Caption copied");
+});
+
+/* ---------------- Idea bank ---------------- */
+const STATUSES = ["Idea", "Scripted", "Shot", "Posted"];
+const LANG_NAME = { en: "English", hinglish: "Hinglish", hi: "हिंदी" };
+const PLAT_NAME = { ig: "Instagram", yt: "Shorts" };
+function persistIdeas() { store.set("ideas", state.ideas); $("bankCount").textContent = state.ideas.length; }
+
+$("saveIdea").addEventListener("click", () => {
+  const hook = $("hook").value.trim();
+  if (!hook) return toast("Add a hook first");
+  state.ideas.unshift({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    created: new Date().toISOString(), topic: $("topic").value.trim(),
+    pillar: state.pillar, lang: state.lang, platform: state.platform,
+    hook, title: state.platform === "yt" ? $("ytTitle").value : "",
+    caption: buildCaption(), status: "Idea"
+  });
+  persistIdeas(); renderIdeas(); toast("Saved to idea bank");
+});
+
+function renderIdeas() {
+  const q = $("search").value.trim().toLowerCase();
+  const list = state.ideas.filter(i =>
+    (state.filter === "all" || i.status === state.filter) &&
+    (!q || [i.topic, i.hook, i.caption, i.pillar].join(" ").toLowerCase().includes(q)));
+  $("ideas").innerHTML = list.map(i => `
+    <article class="idea status-${esc(i.status)}" data-id="${esc(i.id)}">
+      <div class="top"><span class="pill">${esc(i.pillar)}</span><span class="pill">${esc(PLAT_NAME[i.platform] || i.platform)}</span><span class="pill">${esc(LANG_NAME[i.lang] || i.lang)}</span><span>${new Date(i.created).toLocaleDateString()}</span></div>
+      ${i.topic ? `<div style="font-size:13px;color:var(--muted)">Topic: ${esc(i.topic)}</div>` : ""}
+      <div class="hk">${esc(i.hook)}</div>
+      <div class="cap">${esc(i.caption)}</div>
+      <div class="acts">
+        <select data-act="status" aria-label="Status">${STATUSES.map(s => `<option${s === i.status ? " selected" : ""}>${s}</option>`).join("")}</select>
+        <button class="ghost small" data-act="copy">Copy</button>
+        <button class="ghost small" data-act="load">Edit</button>
+        <button class="ghost small" data-act="del">Delete</button>
+      </div>
+    </article>`).join("");
+  $("emptyBank").classList.toggle("hidden", list.length > 0);
+  $("emptyBank").innerHTML = state.ideas.length ? "No ideas match this filter." : "No ideas yet. Write a caption and press <b>Save to idea bank</b>.";
+}
+$("ideas").addEventListener("click", e => {
+  const card = e.target.closest(".idea"), act = e.target.dataset.act; if (!card || !act || act === "status") return;
+  const idx = state.ideas.findIndex(i => i.id === card.dataset.id), idea = state.ideas[idx];
+  if (act === "copy") copy((idea.title ? idea.title + "\n\n" : "") + idea.caption, "Caption copied");
+  if (act === "del" && confirm("Delete this idea?")) { state.ideas.splice(idx, 1); persistIdeas(); renderIdeas(); }
+  if (act === "load") {
+    state.pillar = idea.pillar; state.lang = idea.lang; state.platform = idea.platform;
+    ["pillar", "lang", "platform"].forEach(k => setSeg(k, state[k]));
+    $("topic").value = idea.topic; $("hook").value = idea.hook; delete $("hook").dataset.auto;
+    if (idea.title) { $("ytTitle").value = idea.title; $("ytTitle").dataset.edited = "1"; }
+    makeHooks(); update(); showView("write"); window.scrollTo(0, 0);
+    toast("Loaded. Key points and hashtags are as you left them.");
+  }
+});
+$("ideas").addEventListener("change", e => {
+  if (e.target.dataset.act !== "status") return;
+  const idea = state.ideas.find(i => i.id === e.target.closest(".idea").dataset.id);
+  idea.status = e.target.value; persistIdeas(); renderIdeas();
+});
+segment("filter", v => { state.filter = v; renderIdeas(); });
+$("search").addEventListener("input", renderIdeas);
+
+$("exportCsv").addEventListener("click", () => {
+  if (!state.ideas.length) return toast("Nothing to export yet");
+  const cols = ["created", "status", "pillar", "platform", "lang", "topic", "hook", "title", "caption"];
+  const cell = v => '"' + String(v ?? "").replace(/"/g, '""') + '"';
+  const csv = "﻿" + [cols.join(","), ...state.ideas.map(i => cols.map(c => cell(i[c])).join(","))].join("\r\n");
+  download("caption-ideas.csv", csv, "text/csv;charset=utf-8");
+});
+$("backup").addEventListener("click", () => download("caption-studio-backup.json", JSON.stringify(state.ideas, null, 2), "application/json"));
+$("restore").addEventListener("click", () => $("restoreFile").click());
+$("restoreFile").addEventListener("change", async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (!Array.isArray(data)) throw new Error();
+    const have = new Set(state.ideas.map(i => i.id));
+    const added = data.filter(i => i && i.id && i.hook && !have.has(i.id));
+    state.ideas = added.concat(state.ideas); persistIdeas(); renderIdeas();
+    toast(`Restored ${added.length} idea${added.length === 1 ? "" : "s"}`);
+  } catch { toast("That file isn't a Caption Studio backup"); }
+  e.target.value = "";
+});
+
+/* ---------------- Tabs ---------------- */
+function showView(v) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.dataset.view === v));
+  document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === "view-" + v));
+  if (v === "bank") renderIdeas();
+}
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => showView(t.dataset.view)));
+
+/* ---------------- Start ---------------- */
+loadDraft();
+$("keywordWrap").classList.toggle("hidden", $("cta").value !== "comment");
+makeHooks(); update(); persistIdeas();
+</script>
+</body>
+</html>
