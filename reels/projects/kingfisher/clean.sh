@@ -16,7 +16,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-ORDER=(cold A B C D E 01 02 03 04 05 06 07 08 09 10 11 12 tree-landscape outro-logo)   # loop.mp4 removed: reel ends on the logo
+ORDER=(A B C D E 01 02 03 04 05 06 07 08 09 10 11 12 tree-landscape outro-logo)   # cold.mp4 and loop.mp4 removed: reel opens on clip A, ends on the logo
 ENDING_CLIP=loop   # closing chime + announcement go on this clip...
 [ -f clips/loop.mp4 ] || ENDING_CLIP=outro-logo   # ...or on the logo until it exists
 
@@ -67,7 +67,7 @@ cue() {  # cue <clip> <seconds-into-clip> <file> <gain> [max-length] - skipped i
   [ -n "${START[$1]:-}" ] || return 0
   add "$3" "$(awk "BEGIN{print ${START[$1]}+$2}")" "$4" "${5:-}"
 }
-add audio/chime.wav 0 0.9
+# opening chime removed along with the cold-open clip
 add audio/announce-open.wav 1 1.0
 # closing chime removed along with the loop clip
 add audio/announce-close.wav $((end_t + 1)) 1.0
@@ -91,21 +91,20 @@ cue 11  1.70 $M/meme09.mp3 0.90 1.0  # "Hello? chacha?" -> in the pause before "
 #     vo <source-start> <source-end> <timeline-start>
 VO=audio/voiceover.mp3; VOL=()
 vo() { VOL+=("$1 $2 $3"); }
-vo  0.00  4.47  1.00   # Kingfisher flight 2005... boarding (announcement)
-vo  4.87 11.19  5.72   # Ek waqt tha... luxury ki pehchaan thi
-vo 11.90 17.74 12.29   # 2005 mein... naye sapne ke saath
-vo 18.20 20.81 20.00   # Har passenger ke liye... royal safar
-vo 21.38 26.98 24.00   # Sheher se sheher... udne laga
-vo 27.57 34.06 32.00   # Premium seats... badal gaya
-vo 34.67 39.40 39.20   # Phir 2007 mein, Air Deccan... bada ho gaya
-vo 39.94 42.68 44.18   # Lekin expansion... karz bhi badhta gaya
-vo 43.24 47.34 48.00   # Salaries ruk gayi... bharosa toot gaya
-vo 48.14 53.74 52.35   # Phir aaya 20 October 2012... suspend  ("20 October" lands on the stamp)
-vo 54.18 57.83 58.20   # Planes zameen par... licence bhi expire
-vo 58.46 61.96 62.10   # Success ki misaal... failure ki kahaani
-vo 62.74 65.21 66.95   # Is kahaani ka sabse bada lesson kya hai?
-vo 65.72 69.81 69.67   # Sirf bade sapne... financial discipline
-vo 70.33 75.91 74.01   # Kyunki empire banana mushkil hai... zyada mushkil
+vo  4.87 11.19  0.30   # Ek waqt tha... luxury ki pehchaan thi
+vo 11.90 17.74  8.29   # 2005 mein... naye sapne ke saath
+vo 18.20 20.81 16.00   # Har passenger ke liye... royal safar
+vo 21.38 26.98 20.00   # Sheher se sheher... udne laga
+vo 27.57 34.06 28.00   # Premium seats... badal gaya
+vo 34.67 39.40 35.20   # Phir 2007 mein, Air Deccan... bada ho gaya
+vo 39.94 42.68 40.18   # Lekin expansion... karz bhi badhta gaya
+vo 43.24 47.34 44.00   # Salaries ruk gayi... bharosa toot gaya
+vo 48.14 53.74 48.35   # Phir aaya 20 October 2012... suspend  ("20 October" lands on the stamp)
+vo 54.18 57.83 54.20   # Planes zameen par... licence bhi expire
+vo 58.46 61.96 58.10   # Success ki misaal... failure ki kahaani
+vo 62.74 65.21 62.95   # Is kahaani ka sabse bada lesson kya hai?
+vo 65.72 69.81 65.67   # Sirf bade sapne... financial discipline
+vo 70.33 75.91 70.01   # Kyunki empire banana mushkil hai... zyada mushkil
 # closing announcement (76.66-80.20 in the recording) dropped: no room once the loop clip was removed
 have_vo=0
 if [ -f "$VO" ]; then
