@@ -69,6 +69,9 @@ cue() {  # cue <clip> <seconds-into-clip> <file> <gain> [max-length] - skipped i
   add "$3" "$(awk "BEGIN{print ${START[$1]}+$2}")" "$4" "${5:-}"
 }
 # opening chime removed along with the cold-open clip
+# "Kingfisher" in the narrator's voice opens the reel: cut from the voiceover at 13.29-14.03 s into its own
+# file, because reading the recording out of order inside the voice split can stall the render
+add audio/kingfisher-word.wav 0.15 1.0
 add audio/announce-open.wav 1 1.0
 # closing chime removed along with the loop clip
 add audio/announce-close.wav $((end_t + 1)) 1.0
@@ -92,7 +95,6 @@ cue 11  1.70 $M/meme09.mp3 0.90 1.0  # "Hello? chacha?" -> in the pause before "
 #     vo <source-start> <source-end> <timeline-start>
 VO=audio/voiceover.mp3; VOL=()
 vo() { VOL+=("$1 $2 $3"); }
-vo 13.29 14.03  0.15   # "Kingfisher" in the narrator's voice (from "Kingfisher ne Indian skies...") opens the reel
 vo  4.87 11.19  1.10   # Ek waqt tha... luxury ki pehchaan thi
 vo 11.90 17.74  8.29   # 2005 mein... naye sapne ke saath
 vo 18.20 20.81 16.00   # Har passenger ke liye... royal safar
@@ -144,7 +146,7 @@ k=$(awk "BEGIN{printf \"%.6f\", $t/$TARGET}"); fps=$(awk "BEGIN{printf \"%.4f\",
 OUT=../../output/kingfisher-${TARGET}s.mp4
 TITLE=title.png   # big "KINGFISHER" title in the first second (make_cards.py)
 if [ -f "$TITLE" ]; then
-  fc+=";movie=$TITLE,loop=loop=-1:size=1,setpts=N/24/TB,format=rgba,fade=t=in:st=0:d=0.15:alpha=1,fade=t=out:st=1.15:d=0.35:alpha=1,trim=duration=1.5[tt];[v][tt]overlay=0:0:eof_action=pass[vt]"
+  fc+=";movie=$TITLE,loop=loop=35:size=1,setpts=N/24/TB,format=rgba,fade=t=in:st=0:d=0.15:alpha=1,fade=t=out:st=1.15:d=0.35:alpha=1,trim=duration=1.5[tt];[v][tt]overlay=0:0:eof_action=pass[vt]"
 else
   fc+=";[v]null[vt]"
 fi
@@ -152,6 +154,6 @@ fc+=";[vt]setpts=PTS/$k[vf];[a]atempo=$k,atrim=0:$TARGET[af]"
 
 [ -n "${DUMP_FC:-}" ] && { printf "%s\n" "$fc" > "$DUMP_FC"; printf "%s\n" "${inputs[@]}" > "$DUMP_FC.inputs"; exit 0; }
 ffmpeg -v error -y "${inputs[@]}" -filter_complex "$fc" -map "[vf]" -map "[af]" \
-  -r "$fps" -c:v libx264 -preset slow -tune animation -crf 12 -pix_fmt yuv420p \
+  -t "$TARGET" -r "$fps" -c:v libx264 -preset slow -tune animation -crf 12 -pix_fmt yuv420p \
   -c:a aac -b:a 256k -ar 48000 -movflags +faststart "$OUT"
 echo "done -> $OUT (${TARGET}s from ${t}s, x$k, ${fps} fps)"
