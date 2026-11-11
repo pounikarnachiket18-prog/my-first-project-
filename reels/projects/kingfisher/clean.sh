@@ -92,7 +92,7 @@ cue 11  1.70 $M/meme09.mp3 0.90 1.0  # "Hello? chacha?" -> in the pause before "
 #     vo <source-start> <source-end> <timeline-start>
 VO=audio/voiceover.mp3; VOL=()
 vo() { VOL+=("$1 $2 $3"); }
-vo  0.05  0.69  0.15   # "Kingfisher" (first word of the old announcement) opens the reel
+vo 13.29 14.03  0.15   # "Kingfisher" in the narrator's voice (from "Kingfisher ne Indian skies...") opens the reel
 vo  4.87 11.19  1.10   # Ek waqt tha... luxury ki pehchaan thi
 vo 11.90 17.74  8.29   # 2005 mein... naye sapne ke saath
 vo 18.20 20.81 16.00   # Har passenger ke liye... royal safar
