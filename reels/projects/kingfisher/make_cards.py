@@ -151,23 +151,27 @@ def logo_card():
 
 
 def title():
-    font = ImageFont.truetype(F_BLACK, 150)
+    """Opening hook: big KINGFISHER plus a two-line curiosity question underneath."""
     lay = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     d = ImageDraw.Draw(lay)
-    txt, y = "KINGFISHER", 560
-    tw = d.textlength(txt, font=font)
-    while tw > W - 90:
+    font = ImageFont.truetype(F_BLACK, 150)
+    while d.textlength("KINGFISHER", font=font) > W - 90:
         font = ImageFont.truetype(F_BLACK, font.size - 4)
-        tw = d.textlength(txt, font=font)
-    d.text((W / 2, y), txt, font=font, fill=RED + (255,), anchor="ms",
+    d.text((W / 2, 520), "KINGFISHER", font=font, fill=RED + (255,), anchor="ms",
            stroke_width=12, stroke_fill=(255, 250, 238, 255))
+    q = ImageFont.truetype(F_BOLD, 66)
+    for txt, y in (("Aasman ki raja airline\u2026", 650), ("zameen par kaise aa gayi?", 738)):
+        d.text((W / 2, y), txt, font=q, fill=NAVY + (255,), anchor="ms",
+               stroke_width=8, stroke_fill=(255, 250, 238, 255))
     out = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     out.alpha_composite(shadow_of(lay, blur=14, off=(0, 12), alpha=0.40))
     out.alpha_composite(lay)
     out.save(os.path.join(HERE, "title.png"))
-    print("wrote title.png", font.size)
+    print("wrote title.png")
 
 
 if __name__ == "__main__":
+    import sys
     title()
-    logo_card()
+    if "--title-only" not in sys.argv:
+        logo_card()

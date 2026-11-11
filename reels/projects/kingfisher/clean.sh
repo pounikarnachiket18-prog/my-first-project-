@@ -144,9 +144,9 @@ fi
 TARGET=${TARGET:-70}   # final length in seconds; every frame is kept, frame rate rises, voice pitch unchanged
 k=$(awk "BEGIN{printf \"%.6f\", $t/$TARGET}"); fps=$(awk "BEGIN{printf \"%.4f\", 24*$t/$TARGET}")
 OUT=../../output/kingfisher-${TARGET}s.mp4
-TITLE=title.png   # big "KINGFISHER" title in the first second (make_cards.py)
+TITLE=title.png   # opening hook: KINGFISHER + curiosity question, first 4.5 s of the timeline (3 s at 1.52x) (make_cards.py)
 if [ -f "$TITLE" ]; then
-  fc+=";movie=$TITLE,loop=loop=35:size=1,setpts=N/24/TB,format=rgba,fade=t=in:st=0:d=0.15:alpha=1,fade=t=out:st=1.15:d=0.35:alpha=1,trim=duration=1.5[tt];[v][tt]overlay=0:0:eof_action=pass[vt]"
+  fc+=";movie=$TITLE,loop=loop=107:size=1,setpts=N/24/TB,format=rgba,fade=t=in:st=0:d=0.15:alpha=1,fade=t=out:st=4.0:d=0.5:alpha=1,trim=duration=4.5[tt];[v][tt]overlay=0:0:eof_action=pass[vt]"
 else
   fc+=";[v]null[vt]"
 fi
