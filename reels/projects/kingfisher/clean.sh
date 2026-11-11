@@ -16,7 +16,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-ORDER=(A B C D E 01 02 03 04 05 06 07 08 09 10 11 12 tree-landscape outro-logo)   # cold.mp4 and loop.mp4 removed: reel opens on clip A, ends on the logo
+ORDER=(A B C D E 01 02 03 04 05 06 07 08 09 10 11 12 tree logo-card)   # all 9:16; logo-card made by make_cards.py; old 16:9 clips in clips/old-16x9/
 ENDING_CLIP=loop   # closing chime + announcement go on this clip...
 [ -f clips/loop.mp4 ] || ENDING_CLIP=outro-logo   # ...or on the logo until it exists
 
@@ -35,7 +35,7 @@ for c in "${ORDER[@]}"; do
     fc+="[$n:v]$CLEAN,scale=1080:1920:flags=lanczos,$SHARP,setsar=1[c$n];"
     wx=900; wy=1740   # corner sparkle of a 360x640 clip, scaled 3x
   fi
-  WMPOS+=("$wx $wy")
+  if [ "$c" = "logo-card" ]; then WMPOS+=("none"); else WMPOS+=("$wx $wy"); fi
   fc+="[$n:a]atrim=0:4,asetpts=PTS-STARTPTS,aresample=48000,aformat=channel_layouts=stereo[a$n];"
   [ "$c" = "$ENDING_CLIP" ] && end_t=$t
   START[$c]=$t
@@ -45,6 +45,7 @@ if [ -f "$WM" ]; then
   fc+="movie=$WM,format=rgba,scale=$WMS:$WMS:flags=lanczos,colorchannelmixer=aa=0.92,split=$n"
   for i in $(seq 0 $((n-1))); do fc+="[w$i]"; done; fc+=";"
   for i in $(seq 0 $((n-1))); do read -r wx wy <<<"${WMPOS[$i]}"
+    if [ "$wx" = "none" ]; then fc+="[w$i]nullsink;[c$i]null[v$i];"; continue; fi
     fc+="[c$i][w$i]overlay=$((wx - WMS/2)):$((wy - WMS/2)):format=auto:eof_action=repeat[v$i];"; done
 else
   for i in $(seq 0 $((n-1))); do fc+="[c$i]null[v$i];"; done
@@ -91,7 +92,8 @@ cue 11  1.70 $M/meme09.mp3 0.90 1.0  # "Hello? chacha?" -> in the pause before "
 #     vo <source-start> <source-end> <timeline-start>
 VO=audio/voiceover.mp3; VOL=()
 vo() { VOL+=("$1 $2 $3"); }
-vo  4.87 11.19  0.30   # Ek waqt tha... luxury ki pehchaan thi
+vo  0.05  0.69  0.15   # "Kingfisher" (first word of the old announcement) opens the reel
+vo  4.87 11.19  1.10   # Ek waqt tha... luxury ki pehchaan thi
 vo 11.90 17.74  8.29   # 2005 mein... naye sapne ke saath
 vo 18.20 20.81 16.00   # Har passenger ke liye... royal safar
 vo 21.38 26.98 20.00   # Sheher se sheher... udne laga
@@ -140,7 +142,13 @@ fi
 TARGET=${TARGET:-70}   # final length in seconds; every frame is kept, frame rate rises, voice pitch unchanged
 k=$(awk "BEGIN{printf \"%.6f\", $t/$TARGET}"); fps=$(awk "BEGIN{printf \"%.4f\", 24*$t/$TARGET}")
 OUT=../../output/kingfisher-${TARGET}s.mp4
-fc+=";[v]setpts=PTS/$k[vf];[a]atempo=$k,atrim=0:$TARGET[af]"
+TITLE=title.png   # big "KINGFISHER" title in the first second (make_cards.py)
+if [ -f "$TITLE" ]; then
+  fc+=";movie=$TITLE,loop=loop=-1:size=1,setpts=N/24/TB,format=rgba,fade=t=in:st=0:d=0.15:alpha=1,fade=t=out:st=1.15:d=0.35:alpha=1,trim=duration=1.5[tt];[v][tt]overlay=0:0:eof_action=pass[vt]"
+else
+  fc+=";[v]null[vt]"
+fi
+fc+=";[vt]setpts=PTS/$k[vf];[a]atempo=$k,atrim=0:$TARGET[af]"
 
 [ -n "${DUMP_FC:-}" ] && { printf "%s\n" "$fc" > "$DUMP_FC"; printf "%s\n" "${inputs[@]}" > "$DUMP_FC.inputs"; exit 0; }
 ffmpeg -v error -y "${inputs[@]}" -filter_complex "$fc" -map "[vf]" -map "[af]" \
