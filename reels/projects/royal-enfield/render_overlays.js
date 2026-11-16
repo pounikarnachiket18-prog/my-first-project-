@@ -12,16 +12,16 @@ const css = `
   html,body{margin:0;width:1080px;height:1920px;background:transparent;overflow:hidden}
   body{font-family:'Inter';font-weight:800;color:#fff}
   .t{position:absolute;left:70px;right:70px;text-align:center;letter-spacing:-0.5px;
-     -webkit-text-stroke:9px #111;paint-order:stroke fill;
+     -webkit-text-stroke:7px #111;paint-order:stroke fill;
      text-shadow:0 5px 0 #111,0 8px 18px rgba(0,0,0,.45)}
-  .cap{top:1290px;font-size:60px;line-height:1.18}
-  .title{top:640px;font-size:96px;line-height:1.08;font-weight:900}
-  .title y{font-size:150px}
+  .cap{top:1340px;left:110px;right:110px;font-size:44px;line-height:1.2}
+  .title{top:700px;font-size:70px;line-height:1.1;font-weight:900}
+  .title y{font-size:104px}
   y{color:#FFD21F} r{color:#FF3B30}
   .logo{position:absolute;left:858px;top:1700px;width:76px;height:76px;border-radius:50%;
         background:#E0262F;display:flex;align-items:center;justify-content:center;
         font:900 38px Inter;color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.35)}
-  .disc{position:absolute;left:80px;right:80px;top:1540px;text-align:center;font:700 30px Inter;
+  .disc{position:absolute;left:80px;right:80px;top:1520px;text-align:center;font:700 24px Inter;
         color:#fff;opacity:.9;text-shadow:0 2px 4px rgba(0,0,0,.8)}
   .banner{position:absolute;left:190px;width:700px;top:880px;padding:34px 20px;text-align:center;
           background:#F4E9D2;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.35);
