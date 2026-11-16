@@ -16,7 +16,7 @@ const css = `
      text-shadow:0 5px 0 #111,0 8px 18px rgba(0,0,0,.45)}
   .cap{top:1290px;font-size:60px;line-height:1.18}
   .title{top:200px;font-size:112px;line-height:1.05;font-weight:900}
-  .title y{font-size:150px}
+  .title y{font-size:124px;white-space:nowrap}
   y{color:#FFD21F} r{color:#FF3B30}
   .logo{position:absolute;left:858px;top:1700px;width:76px;height:76px;border-radius:50%;
         background:#E0262F;display:flex;align-items:center;justify-content:center;

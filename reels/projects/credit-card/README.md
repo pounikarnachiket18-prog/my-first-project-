@@ -1,4 +1,4 @@
-# Credit card reel: "Bank aapse kaise kamata hai?"
+# Credit card reel: "Credit card paise kaise kamata hai?"
 
 Paper-craft reel in the Kodak style: 19 Google Flow clips (4s, 720x1280) with Hinglish captions, a logo, an original music bed and synthesized SFX. Output: `reels/output/credit-card-reel.mp4` (1080x1920, 30 fps, 71.8s).
 
