@@ -7,7 +7,7 @@ ends = starts[1:] + [DUR]
 inputs = []
 for i in range(1, N + 1):
     inputs += ["-i", f"seg/{i:02d}.mp4"]
-ov = [f"ov/cap{i:02d}.png" for i in range(1, N + 1)] + ["ov/title.png", "ov/logo.png", "ov/disc.png", "ov/banner.png"]
+ov = [f"ov/cap{i:02d}.png" for i in range(1, N + 1)] + ["ov/title.png", "ov/logo.png", "ov/disc.png", "ov/banner.png", "ov/bannertext.png"]
 for p in ov:
     inputs += ["-loop", "1", "-framerate", "30", "-t", f"{DUR:.3f}", "-i", p]
 inputs += ["-i", "soundtrack.wav"]
@@ -27,6 +27,10 @@ for i in range(1, N):
     over(N + i, starts[i] + 0.15, ends[i] - 0.04, f"c{i}")
 over(N + N + 1, 0.0, DUR, "lg")               # logo covers generator watermark
 over(N + N + 3, starts[14] + 1.8, DUR, "bn")  # follow banner
+t0 = starts[4] + 2.35
+f.append(f"[{N+N+4}:v]format=rgba,fade=in:st={t0:.3f}:d=0.3:alpha=1[btx]")
+f.append(f"[{cur}][btx]overlay=0:0:enable='between(t,{t0:.3f},{starts[5]-0.04:.3f})'[bt]")
+cur = "bt"
 f.append(f"[{cur}]format=yuv420p[v]")
 
 subprocess.run(["ffmpeg", "-v", "error", "-y", *inputs, "-filter_complex", ";".join(f),

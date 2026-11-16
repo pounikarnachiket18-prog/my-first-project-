@@ -9,3 +9,7 @@ Sound (`audio_re.py`, all synthesized): patakas and revving on the hook, a recor
 Watermark: `reels/assets/mindset-mode-logo-80.png` sits at 860,1700 and covers the Flow ✦ mark.
 
 Rebuild: put the trimmed segments in `seg/` (see `list.txt`), then run `node render_overlays.js`, `python3 audio_re.py` and `python3 assemble.py`.
+
+## Banner text and voiceover
+- Clip 05's blank banner gets "Oh! Wow… DREAM BIKE!" (`banner_text.js` → `ov/bannertext.png`). It fades in 2.35s into the clip, once the banner has fully unrolled.
+- `reels/output/royal-enfield-reel-voiceover.mp4` adds Devika's voiceover, sped up 1.13x from 59.9s to 53.0s (`voiceover_53s.mp3`). It starts at 2.4s on the freeze frame, and the music and SFX duck under it.
