@@ -12,3 +12,9 @@ python3 audio.py          # music bed + SFX -> soundtrack.wav, timeline.json
 python3 assemble.py       # -> credit_card_reel.mp4
 ```
 Edit captions and the handle in `captions.json`.
+
+## Voiceover version
+`reels/output/credit-card-reel-voiceover.mp4` adds the ElevenLabs voiceover (Devika), sped up 1.096x from 76.7s to 70.0s with pitch kept (`voiceover_70s.mp3`). It starts at 0.15s, and the music and SFX duck under the voice:
+```bash
+ffmpeg -i credit_card_reel.mp4 -i vo70.wav -filter_complex "[1:a]adelay=150|150,aformat=channel_layouts=stereo,loudnorm=I=-16:TP=-1.5:LRA=7,asplit=2[vo][sc];[0:a]volume=0.55[bed];[bed][sc]sidechaincompress=threshold=0.03:ratio=6:attack=20:release=350[duck];[duck][vo]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.95[a]" -map 0:v -map "[a]" -c:v copy -c:a aac -b:a 192k credit_card_reel_vo.mp4
+```
