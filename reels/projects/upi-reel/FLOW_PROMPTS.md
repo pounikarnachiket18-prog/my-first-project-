@@ -1,26 +1,23 @@
-# UPI Reel: "Speaker Babu" 🔊 (meme edition, ~96s)
+# UPI Reel: "Speaker Babu" 🔊 (meme edition, 4-second shots)
 
-**Length:** 96 seconds (12 clips × 8s), with a **60-second cut** marked below · **Format:** 9:16 · **Language:** Hinglish
-**Tool:** Google Flow (Veo 3.1) for the clips. Meme sounds, text and captions go on in CapCut.
+**Length:** 24 shots × 4s = **96 seconds**, with a **72-second cut** marked ✂️ · **Format:** 9:16 · **Language:** Hinglish
+**Tool:** Google Flow (Veo 3.1) for the shots. Meme sounds, text and captions go on in CapCut.
 
 ## The idea
-The same three characters, but **every 8 seconds is a different meme format** everyone in India recognises:
-sigma walk → triple dramatic zoom → expectation vs reality → "wait for it" → the look to camera → moye moye → approve/reject → better luck next time → galaxy brain → sigma era over → final loop.
-
 **Bunty** thinks UPI is free and PhonePe does charity. **Speaker Babu**, the payment speaker on the counter, roasts him with the real numbers. **Raju**, the chaiwala, is tired of both of them.
-
-**Why ~96s and not 120s:** your viewers currently leave at 10–16 seconds. A long reel only works if every 8-second block is its own joke, so that's how this is built. At 120s you'd be adding filler. If the 96s version loses people, post the **60s cut** (section 4).
+There's a new meme beat every 8 seconds, and a **new shot every 4 seconds**, so the screen never sits still.
 
 ---
 
-## 0. Rules before you start
+## 0. Rules for 4-second shots
 
-1. **No text or logos inside the AI video.** Veo garbles letters, and brand logos are a trademark risk. All numbers, "PhonePe" and meme captions go in as **CapCut text overlays**.
-2. **Meme sounds:** Veo makes the basic sound effects. Add the actual meme sounds ("are baap re", "moye moye", phonk, sad trombone) from **CapCut's sound effects library** or Instagram's audio library. Don't rip clips from movies or YouTube; they can get your reel muted.
-3. **No real people.** We recreate meme *formats* with our own characters and never copy actors or film scenes. That keeps it original and safe.
-4. **Dialogue:** the lines are in the prompts so Veo animates the mouths. If the Hindi sounds off, keep the clip and dub the line yourself in CapCut.
-5. Test each clip on **Veo 3.1 Fast**, then regenerate the keeper once on **Quality**. Set **Portrait 9:16** every time.
-6. **Trend check on posting day:** open Instagram → Reels camera → audio → look for the ↗ "trending" arrow. If a trending track fits the sigma walk (Clip 1) or the ending, use it there. That gives you a current trend on top of these evergreen formats.
+1. **Duration:** if Flow lets you pick the length, choose **4s**. If it only makes 8s, generate it and **keep the best 4 seconds**. Every prompt puts the action right at the start, so the first 4s is usually the one to keep.
+2. **One action per shot.** Four seconds fits one thing happening. Don't add more to a prompt.
+3. **Dialogue: max ~8 words per shot.** Every line below is already cut to fit. If Veo's Hindi sounds off, keep the shot and dub the line yourself in CapCut.
+4. **No text or logos inside the AI video.** All numbers, "PhonePe" and meme captions go in as CapCut overlays.
+5. **Meme sounds** ("are baap re", "moye moye", phonk, sad trombone) come from **CapCut's or Instagram's audio library**, never ripped from movies or YouTube, or the reel can be muted.
+6. **No real people.** These are meme *formats* acted by our own characters.
+7. Test on **Veo 3.1 Fast**, regenerate keepers on **Quality**, and set **Portrait 9:16** every time.
 
 ---
 
@@ -48,144 +45,251 @@ Stylized 3D animated small Indian roadside chai stall at golden hour, steaming a
 
 ---
 
-## 2. Transitions (so it feels like one continuous video)
+## 2. Transitions
 
-- **Same scene continues** (marked **EXTEND**): use **Extend** on the previous clip, or **Frames to Video** with the previous clip's last frame as the first frame.
-- **Jump to a fantasy** (Clips 3, 4, 10): the clip ends on a full-frame flash (purple light, white glow) and the next clip starts on that flash. Cut on the brightest frame.
-- **Meme cuts** (zooms, freezes, the look to camera) are *supposed* to be hard cuts; that's the meme style. Don't smooth them.
-- **Clip 12** uses **end frame = first frame of Clip 1**, so the reel **loops** and replays count as rewatches.
-- In CapCut, add a 2–4 frame cross-dissolve only on the flash transitions.
+Each shot is marked with one of these:
+- **🔗 CHAIN:** the same scene continues. Use **Frames to Video** with **first frame = last frame of the previous shot**, so the cut is invisible.
+- **⚡ FLASH:** the previous shot ends on a full-frame flash (purple light, white glow, golden light). This shot starts on that flash. Cut on the brightest frame.
+- **✂️ HARD CUT:** a deliberate meme cut (zoom, freeze, panel). Don't smooth it.
+- **🔁 LOOP (shot 12B):** set **end frame = first frame of shot 1A**, so the reel replays without a visible restart.
+
+In CapCut, add a 2–4 frame cross-dissolve only on ⚡ FLASH cuts.
+
+**Style line:** every prompt ends with the same style line. Keep it, because it keeps all 24 shots matching.
 
 ---
 
-## 3. The 12 clips (copy-paste prompts)
+## 3. The 24 shots (copy-paste prompts)
 
-Every prompt ends with the same style line. Keep it, because it keeps all 12 clips looking the same.
+### 1A · 0:00–0:04 · SIGMA WALK (HOOK) · ✂️ HARD CUT (opening) · Ingredients B D
+```
+The clip starts mid-stride. Slow-motion low-angle shot: Bunty struts toward a roadside chai stall like a movie hero, sunglasses on, chin up, orange jacket flapping in the wind, dust and dry leaves blowing past.
+Camera: low-angle 24mm slow-motion tracking shot moving backward in front of him.
+Audio: heavy bass-boosted beat, wind whoosh. No dialogue.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+```
+**Overlay:** `POV: tumhe lagta hai UPI free hai 😎` · **Sound:** trending phonk / sigma beat
 
-### CLIP 1 · SIGMA WALK (HOOK) · 0:00–0:08 · Ingredients A B C D
+### 1B · 0:04–0:08 · THE BRAG · 🔗 CHAIN from 1A · Ingredients A B C D
 ```
-The clip starts mid-action. Slow-motion low-angle shot: Bunty struts toward the chai stall like a movie hero, orange jacket flapping in the wind, dust and dry leaves blowing, sunglasses on, chin up. He stops at the counter, taps his phone on the blank QR stand without even looking, and the little purple speaker chimes and announces in a polite robotic voice: "Das rupaye prapt hue." Bunty lowers his sunglasses and says smugly to Raju: "UPI free hai bhai… PhonePe toh charity karta hai." In the final second, the speaker's LED eyes slowly open wide and turn toward Bunty.
-Camera: low-angle 24mm slow-motion tracking shot, then a medium shot at the counter.
-Audio: heavy bass-boosted beat under the slow-motion walk, wind whoosh, payment chime, robotic announcement, Bunty's line, a comedic "boing" when the eyes open.
-Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+At the chai counter, Bunty taps his phone on the blank QR stand without even looking; the small purple speaker chimes and announces in a polite robotic voice: "Das rupaye prapt hue." Bunty lowers his sunglasses and says smugly to Raju: "PhonePe toh charity karta hai!"
+Camera: 35mm medium shot at counter height.
+Audio: tap, two-note payment chime, robotic announcement, Bunty's smug line, street ambience.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
 ```
-**Overlay:** `POV: tumhe lagta hai UPI free hai 😎` · **Meme sound:** trending phonk / sigma beat under the walk
+**Overlay:** `"UPI free hai bhai" 😎`
 
-### CLIP 2 · TRIPLE DRAMATIC ZOOM · 0:08–0:16 · EXTEND · Ingredients A B C
+### 2A · 0:08–0:12 · SPEAKER WAKES UP · ✂️ HARD CUT · Ingredient C
 ```
-Continuing the scene. The purple speaker, LED eyes half-closed in a deadpan look, says in a calm robotic voice: "Charity? Beta, saal ka saat hazaar crore revenue." Bunty, mid-sip of chai, freezes; then the camera does three sudden, jerky dramatic zooms onto his face, each closer than the last: eyes, then shocked open mouth, then one trembling eyeball. Then he does a huge slow-motion spit-take; chai sprays everywhere and his sunglasses fly off. Raju wipes the counter without looking up.
-Camera: 35mm, three snap zoom-ins, then slow motion for the spit-take.
-Audio: robotic deadpan line, three loud dramatic zoom "dhun" stings, a splash, sunglasses clattering.
-Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+Close-up of the small purple speaker on the wooden counter. Its LED eyes snap open, then narrow into a deadpan, unimpressed look, and it says in a calm robotic voice: "Charity? Saal ka saat hazaar crore revenue."
+Camera: static 50mm close-up, straight on.
+Audio: a comedic "boing" as the eyes open, then the deadpan robotic line.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
 ```
-**Overlay:** `PhonePe revenue: ₹7,115 Cr (FY25) 🤯` · **Meme sound:** "Are baap re" on the third zoom
+**Overlay:** `PhonePe revenue: ₹7,115 Cr (FY25) 🤯`
 
-### CLIP 3 · EXPECTATION vs REALITY · 0:16–0:24 · Ingredient B ✂️ *(cut for 60s version)*
+### 2B · 0:12–0:16 · TRIPLE ZOOM + SPIT-TAKE · ✂️ HARD CUT · Ingredient B
 ```
-A dreamy fantasy shot in Bunty's imagination: a glowing purple temple in the clouds where cheerful cartoon monks in purple robes throw handfuls of shiny coins down to happy people below, golden light rays, flowers floating, everyone smiling. Bunty floats in the middle with a halo, arms wide, blissful. Halfway through, the dream suddenly cracks like glass and shatters; Bunty drops back down with a thud onto the chai stall stool, chai-soaked and confused. A robotic voice says: "Reality: har UPI payment pe kamaai… lagbhag zero."
-Camera: slow dreamy crane down, then a hard snap back to a medium shot.
-Audio: heavenly choir "aaah", harp glissando, a loud glass shatter, a comedic thud, robotic line.
-Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+Bunty mid-sip of chai. The camera does three sudden, jerky zooms onto his face, eyes, then open mouth, then one trembling eyeball, and then he does a huge slow-motion spit-take; chai sprays everywhere and his sunglasses fly off his head.
+Camera: 35mm, three snap zoom-ins, then slow motion.
+Audio: three loud dramatic zoom stings, a big splash, sunglasses clattering. No dialogue.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
 ```
-**Overlays:** `EXPECTATION 😇` (dream) → `REALITY 💀` (after the shatter)
+**Sound:** "Are baap re" on the third zoom
 
-### CLIP 4 · "WAIT FOR IT" · THREE SECRET DOORS · 0:24–0:32 · Ingredients B C
+### 3A · 0:16–0:20 · EXPECTATION · ⚡ (start on a soft white glow) · Ingredient B · ✂️ *cut in 72s version*
 ```
-At the chai stall, Bunty throws his hands up and shouts: "Toh paisa kahan se aata hai?!" The purple speaker's LED eyes narrow with a sly look and it says: "Teen secret darwaze." The camera rushes straight into the speaker's glowing LED eyes; a purple flash; we land in a dark mysterious stone hall where three tall carved wooden doors stand in a row, golden light leaking from their edges and dust floating in the air. Bunty, tiny in the frame, tiptoes toward them like a treasure hunter.
-Camera: 35mm, fast push into the eyes, purple flash, then a slow dolly forward in the hall.
-Audio: Bunty's shout, sly robotic line, a whoosh into the flash, deep mysterious drone, a creaky echo.
-Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+The clip starts on a soft white glow that opens into a dreamy fantasy: a glowing purple temple in the clouds where cheerful cartoon monks in purple robes throw handfuls of shiny coins to happy people below. Bunty floats in the middle with a golden halo, arms wide, blissfully smiling.
+Camera: slow dreamy crane down.
+Audio: heavenly choir "aaah", harp glissando. No dialogue.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, dreamy golden light. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
 ```
-**Overlays:** `24.5 BILLION UPI payments / month` → `Toh paisa KAHAN se? 🤔` → `Wait for it… 🚪`
+**Overlay:** `EXPECTATION 😇`
 
-### CLIP 5 · SECRET #1, THE RENT + LOOK TO CAMERA · 0:32–0:40 · Ingredients A B C D
+### 3B · 0:20–0:24 · REALITY · 🔗 CHAIN from 3A · Ingredients B D · ✂️ *cut in 72s version*
 ```
-The first door swings open with golden light and we are back at the chai stall. The purple speaker puffs up proudly, LED eyes sparkling: "Secret number one: main. Raju bhaiya mujhe har mahine rent dete hain." Bunty turns to Raju, shocked. Raju, holding a few small coins, says flatly: "Haan… aur ye har baar chillata bhi hai." Then Raju slowly turns his head and stares directly into the camera with a completely blank, tired expression for two full seconds.
-Camera: 50mm two-shot, then a static straight-on close-up of Raju staring into the lens.
-Audio: door creak, proud robotic line, Raju's flat line, a cricket chirp in the awkward silence.
-Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+The dream suddenly cracks like glass and shatters into pieces; Bunty drops down with a thud onto the stool at the chai stall, chai-soaked and confused. A robotic voice says: "Har payment pe kamaai… lagbhag zero."
+Camera: snap from wide to a medium shot of Bunty landing.
+Audio: loud glass shatter, comedic thud, robotic line.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
 ```
-**Overlay:** `SECRET #1: Speaker ka RENT 🔊`
+**Overlay:** `REALITY 💀`
 
-### CLIP 6 · SECRET #2, LOAN + MOYE MOYE · 0:40–0:48 · Ingredients A B C D
+### 4A · 0:24–0:28 · "TOH PAISA KAHAN SE?" · ✂️ HARD CUT · Ingredients B C D
 ```
-Bunty's phone buzzes loudly; a shiny golden card with no printing pops out of the screen and floats in the air. Bunty's eyes turn into huge sparkles and he bursts into an over-the-top happy bhangra dance next to the chai counter. The purple speaker says calmly: "Secret number two: loan aur insurance… har ek pe commission." The music cuts. Bunty freezes mid-dance with one leg up, his smile slowly melting; the golden card wilts and droops like a sad flower; he slowly sinks to sit on the stool, looking at the ground.
-Camera: low-angle 35mm for the dance, then a slow push-in on Bunty's sad face.
-Audio: phone buzz, magical sparkle, an energetic dhol beat that stops dead, robotic line, silence, then a slow sad melody begins.
-Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+At the chai stall, Bunty throws both hands up and shouts: "Toh paisa kahan se?!" The purple speaker's LED eyes narrow slyly and it says: "Teen secret darwaze." The camera rushes into the speaker's glowing LED eyes until purple light fills the whole frame.
+Camera: 35mm two-shot, then a fast push-in into the eyes.
+Audio: Bunty's shout, sly robotic line, rising whoosh into a flash.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
 ```
-**Overlay:** `SECRET #2: Loan + Insurance = COMMISSION 💰` · **Meme sound:** "Moye moye" over the sad part
+**Overlays:** `24.5 BILLION UPI payments/month` → `Kamaai per payment ≈ ₹0`
 
-### CLIP 7 · APPROVE / REJECT · THE APP'S STRATEGY · 0:48–0:56 · Ingredient B ✂️ *(cut for 60s version)*
+### 4B · 0:28–0:32 · WAIT FOR IT · ⚡ FLASH from 4A · Ingredient B
 ```
-A clean two-panel comedy setup against a bright saffron background, split horizontally into top and bottom halves. Top half: Bunty, dressed as a smug app company boss in a purple suit, turns his head away in disgust and holds up his hand in a firm "no" gesture at a single tiny copper coin. Bottom half: the same Bunty smiles widely and points with both fingers in delight at a huge glowing golden card and a shiny umbrella floating beside him. Each half animates with a little bounce.
-Camera: static, straight-on, centred framing for both halves.
-Audio: a buzzer "nope" sound for the top, a cheerful "ding ding" for the bottom, light comedic beat.
-Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+The clip starts on a frame filled with purple light that clears into a dark mysterious stone hall: three tall carved wooden doors stand in a row, golden light leaking from their edges, dust floating. Tiny Bunty tiptoes toward them like a treasure hunter; in the final moment the first door bursts open and warm golden light floods the frame.
+Camera: slow dolly forward.
+Audio: deep mysterious drone, creaky echo, a door bursting open. No dialogue.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
 ```
-**Overlays:** top `₹0 UPI fee lena ❌` · bottom `Loan + insurance bechna ✅`
+**Overlay:** `Wait for it… 🚪`
 
-### CLIP 8 · SECRET #3, BETTER LUCK NEXT TIME · 0:56–1:04 · Ingredients B C
+### 5A · 0:32–0:36 · SECRET #1, THE RENT · ⚡ FLASH from 4B · Ingredients A B C D
 ```
-Close-up: a giant shiny silver scratch card with no printing floats in front of Bunty's hopeful face. He scratches it frantically with a coin, sparks flying, eyes shining with hope, and it reveals absolutely nothing: one single tiny piece of confetti flutters down sadly. Bunty's face goes completely deadpan, one eye twitching. The purple speaker, off to the side, says: "Aur wo offers? Brands ka ad paisa." Bunty slowly turns and stares at the camera, betrayed.
-Camera: 50mm close-up on Bunty's face, slow push-in.
-Audio: frantic scratching, a hopeful drumroll that ends with a sad trombone "wah-wah", a single paper flutter, robotic line.
-Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+The clip starts on warm golden light that resolves into the chai stall. The purple speaker puffs itself up proudly, LED eyes sparkling, and says: "Number one: main! Raju bhaiya mujhe rent dete hain." Bunty turns to Raju, shocked.
+Camera: 50mm, medium shot of the speaker with Bunty beside it.
+Audio: proud robotic line, a shocked gasp from Bunty.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
 ```
-**Overlays:** `Better luck next time 🥲` (on the card) → `SECRET #3: ADS 📺`
+**Overlay:** `SECRET 1/3: Speaker ka RENT 🔊`
 
-### CLIP 9 · SECRET #3b, THE TINY FEE THAT BECOMES CRORES · 1:04–1:12 · Ingredients B C ✂️ *(cut for 60s version)*
+### 5B · 0:36–0:40 · THE LOOK TO CAMERA · 🔗 CHAIN from 5A · Ingredients A D
 ```
-Bunty taps his phone to recharge; one tiny shiny coin hops out of his phone and lands on the counter with a little clink. He shrugs, unbothered. The purple speaker says: "Recharge pe chhoti si platform fee… ab isko crore logon se guna karo." The single coin suddenly multiplies, two, four, a hundred, thousands, until a giant glittering mountain of coins rises behind the stall and towers into the sky, casting a shadow over Bunty, whose jaw drops to the floor.
-Camera: 35mm, starts tight on the coin, then a fast tilt up and pull-back to reveal the mountain.
-Audio: a tiny clink, robotic line, a rapidly accelerating cascade of coins, a huge rumbling crescendo.
-Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+Raju, holding a few small coins, says flatly: "Aur ye har baar chillata bhi hai." Then he slowly turns his head and stares directly into the camera with a completely blank, tired expression.
+Camera: static straight-on close-up of Raju, staring into the lens.
+Audio: Raju's flat line, then awkward silence with a single cricket chirp.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+```
+
+### 6A · 0:40–0:44 · LOAN DANCE · ✂️ HARD CUT · Ingredients B D
+```
+Bunty's phone buzzes and a shiny golden card with no printing pops out of the screen and floats in the air. His eyes turn into huge sparkles and he bursts into an over-the-top happy bhangra dance beside the chai counter.
+Camera: low-angle 35mm, slight handheld bounce.
+Audio: phone buzz, magical sparkle, energetic dhol beat. No dialogue.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+```
+**Overlay:** `"Pre-approved loan" 🤑`
+
+### 6B · 0:44–0:48 · MOYE MOYE · 🔗 CHAIN from 6A · Ingredients B C D
+```
+The purple speaker says calmly: "Number two: loan, insurance… har ek pe commission." The music stops dead. Bunty freezes mid-dance with one leg up; his smile melts, the golden card wilts like a sad flower, and he slowly sinks onto the stool.
+Camera: slow push-in on Bunty's sad face.
+Audio: robotic line, dhol cuts off abruptly, silence, then a slow sad melody begins.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+```
+**Overlay:** `SECRET 2/3: Loan + Insurance = COMMISSION 💰` · **Sound:** "Moye moye"
+
+### 7A · 0:48–0:52 · REJECT ❌ · ✂️ HARD CUT · Ingredient B · ✂️ *cut in 72s version*
+```
+Against a flat bright saffron background, Bunty, dressed as a smug app company boss in a purple suit, turns his head away in disgust and holds up one hand in a firm "no" gesture at a single tiny copper coin floating beside him.
+Camera: static, straight-on, centred.
+Audio: a buzzer "nope" sound, light comedic beat. No dialogue.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+```
+**Overlay:** `₹0 UPI fee lena ❌`
+
+### 7B · 0:52–0:56 · APPROVE ✅ · 🔗 CHAIN from 7A · Ingredient B · ✂️ *cut in 72s version*
+```
+Same flat saffron background and same boss outfit: Bunty turns back with a huge delighted grin and points with both fingers at a big glowing golden card and a shiny umbrella floating beside him, doing a little happy bounce.
+Camera: static, straight-on, centred, matching the previous framing exactly.
+Audio: cheerful "ding ding", light comedic beat. No dialogue.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+```
+**Overlay:** `Loan + insurance bechna ✅`
+
+### 8A · 0:56–1:00 · THE SCRATCH CARD · ✂️ HARD CUT · Ingredient B
+```
+Close-up: a giant shiny silver scratch card with no printing floats in front of Bunty's hopeful face. He scratches it frantically with a coin, sparks flying, and it reveals absolutely nothing; one single tiny piece of confetti flutters down sadly.
+Camera: 50mm close-up, slight push-in.
+Audio: frantic scratching, a hopeful drumroll ending in a sad trombone "wah-wah", a paper flutter. No dialogue.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+```
+**Overlay:** `Better luck next time 🥲` (on the card)
+
+### 8B · 1:00–1:04 · BETRAYED · 🔗 CHAIN from 8A · Ingredients B C
+```
+Bunty's face goes completely deadpan, one eye twitching. The purple speaker beside him says: "Aur wo offers? Brands ka ad paisa." Bunty slowly turns and stares at the camera, betrayed.
+Camera: 50mm close-up on Bunty, speaker at the edge of the frame.
+Audio: robotic line, a single eye-twitch "tink" sound.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+```
+**Overlay:** `SECRET 3/3: ADS 📺`
+
+### 9A · 1:04–1:08 · THE TINY FEE · ✂️ HARD CUT · Ingredients B C D · ✂️ *cut in 72s version*
+```
+Bunty taps his phone to recharge; one tiny shiny coin hops out of his phone and lands on the counter with a little clink. He shrugs, unbothered. The purple speaker says: "Recharge pe chhoti si platform fee…"
+Camera: 35mm, tight on the coin and Bunty's hand.
+Audio: tap, tiny clink, robotic line.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+```
+
+### 9B · 1:08–1:12 · COIN MOUNTAIN · 🔗 CHAIN from 9A · Ingredients B D · ✂️ *cut in 72s version*
+```
+The single coin on the counter suddenly multiplies, two, ten, thousands, into a giant glittering mountain of coins that rises behind the chai stall and towers into the sky, casting a shadow over Bunty, whose jaw drops to the floor. A robotic voice says: "…crore logon se guna karo."
+Camera: fast tilt up and pull-back to reveal the mountain.
+Audio: accelerating cascade of coins, huge rumbling crescendo, robotic line.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
 ```
 **Overlay:** `Chhoti fee × crore users = 🏔️💰`
 
-### CLIP 10 · GALAXY BRAIN · THE BIG LESSON · 1:12–1:20 · Ingredients B C
+### 10A · 1:12–1:16 · GALAXY BRAIN · ✂️ HARD CUT · Ingredients B C
 ```
-Bunty sits still, eyes closed, and his head starts to glow: first a small soft light, then brighter, then his whole head turns into a swirling glowing galaxy with stars and planets orbiting, light beams shooting out into a cosmic purple sky. The purple speaker floats beside him like a wise guru and says: "UPI dukaan nahi hai, beta… UPI free darwaza hai. Dukaan andar hai." Bunty opens his eyes, full of cosmic realisation, and whispers: "Hum hi product hain…"
-Camera: 35mm, a slow push-in as the glow grows, ending in a dramatic close-up of Bunty's enlightened face.
-Audio: a rising cosmic synth, three ascending "power-up" whooshes, wise robotic line, Bunty's whisper.
-Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, cosmic. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+Bunty sits with eyes closed while his head glows brighter and brighter until it becomes a swirling glowing galaxy with planets orbiting. The purple speaker floats beside him like a wise guru and says: "UPI dukaan nahi… free darwaza hai."
+Camera: slow push-in as the glow grows.
+Audio: rising cosmic synth, ascending power-up whooshes, wise robotic line.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, cosmic. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
 ```
-**Overlays:** `Brain level 1: UPI free hai` → `Level 2: Speaker rent` → `Level 3: Loan commission` → `Level 4: UPI = FREE DARWAZA 🚪🧠`
+**Overlays (fast, ~1s each):** `Brain lvl 1: UPI free hai` → `lvl 2: Speaker rent` → `lvl 3: Loan commission`
 
-### CLIP 11 · "SIGMA ERA OVER" · THE PUNCHLINE · 1:20–1:28 · Ingredients A B C D
+### 10B · 1:16–1:20 · "HUM HI PRODUCT HAIN" · 🔗 CHAIN from 10A · Ingredients B C
 ```
-Back at the chai stall. Bunty, determined, puts his sunglasses back on, dramatically slaps a large banknote down on the counter and declares: "Toh aaj se sirf cash!" Raju looks at the note, then at Bunty, and says flatly: "Chhutta nahi hai… UPI kar do." Bunty's shoulders drop; in slow motion his sunglasses slide down his nose and fall off; he lets out a long defeated sigh.
-Camera: 35mm medium shot, then a slow-motion close-up of the sunglasses falling.
-Audio: a loud note slap with a dramatic "dhan-dhan" sting, Raju's flat line, a slowed-down, pitched-down version of the heavy bass beat from the start, a long sigh.
-Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+The galaxy glow around Bunty's head pulses at its brightest. The speaker says softly: "Dukaan andar hai." Bunty opens his eyes, full of cosmic realisation, and whispers: "Hum hi product hain…"
+Camera: dramatic close-up of Bunty's enlightened face.
+Audio: soft cosmic hum, robotic line, Bunty's whisper, a deep "bwong" of realisation.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, cosmic. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+```
+**Overlay:** `lvl 4: UPI = FREE DARWAZA 🚪🧠`
+
+### 11A · 1:20–1:24 · "AAJ SE SIRF CASH!" · ✂️ HARD CUT · Ingredients A B D
+```
+Back at the chai stall, Bunty, determined, puts his sunglasses back on and dramatically slaps a large banknote down on the counter, declaring: "Toh aaj se sirf cash!"
+Camera: 35mm medium shot, a small punch-in on the slap.
+Audio: a loud note slap with a dramatic "dhan-dhan" sting, Bunty's line.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+```
+
+### 11B · 1:24–1:28 · "CHHUTTA NAHI HAI" · 🔗 CHAIN from 11A · Ingredients A B D
+```
+Raju looks at the banknote, then at Bunty, and says flatly: "Chhutta nahi hai… UPI kar do." In slow motion, Bunty's sunglasses slide down his nose and fall off as his shoulders drop in defeat.
+Camera: 35mm, Raju in the foreground, then slow motion on the falling sunglasses.
+Audio: Raju's flat line, a slowed-down, pitched-down version of the heavy bass beat, a long defeated sigh.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
 ```
 **Overlay:** `Chhutta nahi hai 💀` → `Bunty ka sigma era: OVER`
 
-### CLIP 12 · THE LOOP · 1:28–1:36 · EXTEND · END FRAME = first frame of Clip 1 · Ingredients A B C D
+### 12A · 1:28–1:32 · DEFEATED SCAN · 🔗 CHAIN from 11B · Ingredients A B C D
 ```
-Continuing the scene. Bunty, defeated, picks up his phone and taps it on the blank QR stand; the purple speaker chimes and announces: "Das rupaye prapt hue." Then the speaker turns to the camera, winks one LED eye, and says: "Follow karo… warna agla roast tumhara." The camera pulls back and Bunty, already forgetting everything, puts his sunglasses back on and starts strutting away in slow motion again.
-Camera: 35mm close-up on the speaker, a wink straight to lens, then a pull-back to a low-angle slow-motion shot of Bunty walking.
-Audio: tap, payment chime, robotic announcement, robotic line, a wink "ting", the heavy bass beat starting again.
-Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+Bunty, defeated, picks up his phone and taps it on the blank QR stand; the purple speaker chimes and announces: "Das rupaye prapt hue." Then it turns and winks one LED eye straight at the camera.
+Camera: 35mm, ending in a close-up of the speaker winking into the lens.
+Audio: tap, payment chime, robotic announcement, a wink "ting".
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
+```
+
+### 12B · 1:32–1:36 · THE LOOP · 🔗 CHAIN from 12A · 🔁 END FRAME = first frame of 1A · Ingredients B C D
+```
+The speaker, still facing the camera, says: "Follow karo… warna agla roast tumhara." The camera pulls back as Bunty, already forgetting everything, puts his sunglasses back on and starts strutting in slow motion again, ending on a low-angle shot of him mid-stride.
+Camera: pull-back to a low-angle 24mm slow-motion shot.
+Audio: robotic line, the heavy bass-boosted beat starting again, wind whoosh.
+Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
 ```
 **Overlay:** `Us dost ko bhejo jo bolta hai "UPI free hai" 📲`
 
 ---
 
-## 4. The 60-second cut (if you want shorter)
+## 4. The 72-second cut
 
-Drop the ✂️ clips: **3, 7 and 9**. Keep **1, 2, 4, 5, 6, 8, 10, 11, 12** (9 clips × ~6.7s, trimmed tight).
-Post the 96s version first. If Instagram shows average watch time under 20s after 24 hours, post the 60s cut as a fresh reel a few days later, with a different cover.
+Drop the 6 shots marked ✂️: **3A, 3B, 7A, 7B, 9A, 9B**. 18 shots × 4s = 72s.
+Since 3B is gone, the "kamaai ≈ ₹0" fact stays as the overlay on 4A, so nothing is lost.
+Post the 96s version first. If Instagram shows average watch time under 20s after 24 hours, post the 72s cut a few days later with a new cover.
 
 ---
 
 ## 5. CapCut finishing
 
+- **Trim each shot to 3.5–4s.** Cut every dead frame at the start and end.
 - **Text:** huge bold font, max 5–6 words, inside the middle 70% of the frame. Key numbers in yellow.
-- **Auto-captions** for every dialogue line (most people watch on mute).
-- **Meme sounds from the library:** phonk/sigma beat (Clips 1, 11, 12), "Are baap re" (Clip 2), heavenly choir and glass shatter (Clip 3), "Moye moye" (Clip 6), sad trombone (Clip 8). Turn the volume up loud; they're the punchlines.
-- **Pacing:** cut every dead half-second. Meme cuts should feel snappy and abrupt.
-- **Progress hook:** keep a small `Secret 1/3`, `2/3`, `3/3` tag in the top corner so people stay to see all three.
+- **Auto-captions** for every dialogue line.
+- **Meme sounds:** phonk (1A, 11B, 12B), "Are baap re" (2B), choir and glass shatter (3A/3B), "Moye moye" (6B), sad trombone (8A). Keep them loud; they're the punchlines.
+- Keep a small **`Secret 1/3 · 2/3 · 3/3`** tag in the top corner so people stay for all three.
 
 ---
 
@@ -220,7 +324,7 @@ Source: PhonePe DRHP (FY25), NPCI (Aug 2026)
 
 **Posting checklist:**
 - Turn on Instagram's **AI label** ("AI info").
-- Post between **7 and 9 PM IST** and keep the same slot for the next reels.
-- Share it to your story right after posting, with a poll: "UPI free hai? Haan / Nahi".
+- Post between **7 and 9 PM IST**; on posting day, check Instagram's trending audio (↗ arrow) for something that fits shot 1A.
+- Share it to your story with a poll: "UPI free hai? Haan / Nahi".
 - Pin a comment with the fact sheet and reply to every comment in the first hour.
-- **Speaker Babu is your mascot now.** Next episodes could be "Speaker Babu roasts Zomato / credit cards / Swiggy".
+- **Speaker Babu is your mascot now.** Next: "Speaker Babu roasts Zomato / credit cards / Swiggy".
