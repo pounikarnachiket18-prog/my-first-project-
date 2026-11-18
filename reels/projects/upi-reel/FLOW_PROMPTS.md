@@ -4,13 +4,13 @@
 **Tool:** Google Flow (Veo 3.1) for the shots. Meme sounds, text and captions go on in CapCut.
 
 ## The idea
-**Bunty** thinks UPI is free and PhonePe does charity. **Speaker Babu**, the payment speaker on the counter, roasts him with the real numbers. **Raju**, the chaiwala, is tired of both of them.
+**Bunty** thinks UPI is free and the apps do charity. **Speaker Babu**, the white-and-navy payment soundbox on the counter (the one on every shop counter), roasts him with the real numbers. **Raju**, the chaiwala, is tired of both of them.
 There's a new shot every 4 seconds and a meme beat every 8 seconds.
 
 | Time | Shots | Beat | Meme format |
 |---|---|---|---|
-| 0:00–0:08 | 1–2 | Bunty brags: "PhonePe toh charity karta hai!" | Sigma walk |
-| 0:08–0:16 | 3–4 | "Saal ka ₹7,000 crore revenue" | Triple zoom + spit-take |
+| 0:00–0:08 | 1–2 | Bunty brags: "UPI apps toh charity karte hain!" | Sigma walk |
+| 0:08–0:16 | 3–4 | "Akele PhonePe ka ₹7,000 crore revenue" | Triple zoom + spit-take |
 | 0:16–0:20 | 5 | "Toh paisa kahan se?" → "Teen secret darwaze" | — |
 | 0:20–0:28 | 6–7 | Secret 1: speaker rent | Look to camera |
 | 0:28–0:36 | 8–9 | Secret 2: loan commission | Moye moye |
@@ -43,9 +43,12 @@ Stylized 3D animated character, a friendly but tired-looking Indian chai stall o
 Stylized 3D animated character, a confident Indian college guy in his early 20s, spiky gelled hair, black sunglasses, bright orange bomber jacket over a white t-shirt, gold chain, smug grin, holding a smartphone, full body, neutral pose, plain light grey background, soft studio lighting, matte clay-like materials, exaggerated cartoon expressions. No text, no logos.
 ```
 
-**C — Speaker Babu (the hero)**
+**C — Speaker Babu (the hero): the classic shop-counter soundbox**
+
+> **Best result:** take a photo of a real soundbox at any local shop, **cover or turn away the logo**, and upload it as this ingredient instead of (or together with) the prompt below. Veo will copy the exact shape. Keep the logo out of frame, because a real brand logo in the video is a trademark risk and Veo garbles it anyway. If the colours below don't match the box in your area, change them to match.
+
 ```
-Stylized 3D animated cute character: a small purple cylindrical smart speaker on a wooden counter, with a glowing ring on top and a small round front screen showing two big expressive glowing LED cartoon eyes and a tiny LED mouth, sassy raised-eyebrow expression, plain light grey background, soft studio lighting, matte clay-like materials. No text, no letters, no logos.
+Stylized 3D animated cute character: a compact payment soundbox of the kind found on every Indian shop counter. A small rounded rectangular box about the size of a brick, glossy white body, dark navy-blue front panel with a large round perforated speaker grille, a small rectangular digital display strip above the grille showing two big expressive glowing cartoon LED eyes and a tiny LED mouth, three small rubber buttons on top, a short black power cable. Sassy raised-eyebrow expression. Plain light grey background, soft studio lighting, matte clay-like materials. No text, no letters, no logos, no brand names on the device.
 ```
 
 **D — The chai stall**
@@ -79,7 +82,7 @@ Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated 
 
 ### SHOT 2 · 0:04–0:08 · THE BRAG · 🔗 CHAIN from 1 · Ingredients A B C D
 ```
-At the chai counter, Bunty taps his phone on the blank QR stand without even looking; the small purple speaker chimes and announces in a polite robotic voice: "Das rupaye prapt hue." Bunty lowers his sunglasses and says smugly to Raju: "PhonePe toh charity karta hai!"
+At the chai counter, Bunty taps his phone on the blank QR stand without even looking; the white-and-navy soundbox chimes and announces in a polite robotic voice: "Das rupaye prapt hue." Bunty lowers his sunglasses and says smugly to Raju: "UPI apps toh charity karte hain!"
 Camera: 35mm medium shot at counter height.
 Audio: tap, two-note payment chime, robotic announcement, Bunty's smug line, street ambience.
 Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
@@ -88,7 +91,7 @@ Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated 
 
 ### SHOT 3 · 0:08–0:12 · SPEAKER WAKES UP · ✂️ HARD CUT · Ingredient C
 ```
-Close-up of the small purple speaker on the wooden counter. Its LED eyes snap open, then narrow into a deadpan, unimpressed look, and it says in a calm robotic voice: "Charity? Saal ka saat hazaar crore revenue."
+Close-up of the white-and-navy soundbox on the wooden counter. Its LED eyes snap open, then narrow into a deadpan, unimpressed look, and it says in a calm robotic voice: "Charity? Akele PhonePe ka saat hazaar crore revenue."
 Camera: static 50mm close-up, straight on.
 Audio: a comedic "boing" as the eyes open, then the deadpan robotic line.
 Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
@@ -106,7 +109,7 @@ Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated 
 
 ### SHOT 5 · 0:16–0:20 · "TOH PAISA KAHAN SE?" · ✂️ HARD CUT · Ingredients B C D
 ```
-At the chai stall, chai-soaked Bunty throws both hands up and shouts: "Toh paisa kahan se?!" The purple speaker's LED eyes narrow slyly and it says: "Teen secret darwaze." The camera rushes into the speaker's glowing LED eyes until purple light fills the whole frame.
+At the chai stall, chai-soaked Bunty throws both hands up and shouts: "Toh paisa kahan se?!" The soundbox's LED eyes narrow slyly and it says: "Teen secret darwaze." The camera rushes into the soundbox's glowing LED eyes until purple light fills the whole frame.
 Camera: 35mm two-shot, then a fast push-in into the eyes.
 Audio: Bunty's shout, sly robotic line, rising whoosh into a flash.
 Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
@@ -115,7 +118,7 @@ Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated 
 
 ### SHOT 6 · 0:20–0:24 · SECRET #1, THE RENT · ⚡ FLASH from 5 · Ingredients A B C D
 ```
-The clip starts on a frame filled with purple light that fades back to the chai stall. The purple speaker puffs itself up proudly, LED eyes sparkling, and says: "Number one: main! Raju bhaiya mujhe rent dete hain." Bunty turns to Raju, shocked.
+The clip starts on a frame filled with purple light that fades back to the chai stall. The soundbox puffs itself up proudly, LED eyes sparkling, and says: "Number one: main! Raju bhaiya mujhe rent dete hain." Bunty turns to Raju, shocked.
 Camera: 50mm, medium shot of the speaker with Bunty beside it.
 Audio: soft flash whoosh, proud robotic line, a shocked gasp from Bunty.
 Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
@@ -141,7 +144,7 @@ Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated 
 
 ### SHOT 9 · 0:32–0:36 · MOYE MOYE · 🔗 CHAIN from 8 · Ingredients B C D
 ```
-The purple speaker says calmly: "Number two: loan, insurance… har ek pe commission." The music stops dead. Bunty freezes mid-dance with one leg up; his smile melts, the golden card wilts like a sad flower, and he slowly sinks onto the stool.
+The soundbox says calmly: "Number two: loan, insurance… har ek pe commission." The music stops dead. Bunty freezes mid-dance with one leg up; his smile melts, the golden card wilts like a sad flower, and he slowly sinks onto the stool.
 Camera: slow push-in on Bunty's sad face.
 Audio: robotic line, dhol cuts off abruptly, silence, then a slow sad melody begins.
 Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
@@ -159,7 +162,7 @@ Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated 
 
 ### SHOT 11 · 0:40–0:44 · BETRAYED · 🔗 CHAIN from 10 · Ingredients B C
 ```
-Bunty's face goes completely deadpan, one eye twitching. The purple speaker beside him says: "Aur wo offers? Brands ka ad paisa." Bunty slowly turns and stares at the camera, betrayed.
+Bunty's face goes completely deadpan, one eye twitching. The soundbox beside him says: "Aur wo offers? Brands ka ad paisa." Bunty slowly turns and stares at the camera, betrayed.
 Camera: 50mm close-up on Bunty, speaker at the edge of the frame.
 Audio: robotic line, a single eye-twitch "tink" sound.
 Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
@@ -168,7 +171,7 @@ Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated 
 
 ### SHOT 12 · 0:44–0:48 · GALAXY BRAIN · ✂️ HARD CUT · Ingredients B C
 ```
-Bunty sits with eyes closed while his head glows brighter and brighter until it becomes a swirling glowing galaxy with planets orbiting. The purple speaker floats beside him like a wise guru and says: "UPI dukaan nahi… free darwaza hai."
+Bunty sits with eyes closed while his head glows brighter and brighter until it becomes a swirling glowing galaxy with planets orbiting. The soundbox floats beside him like a wise guru and says: "UPI dukaan nahi… free darwaza hai."
 Camera: slow push-in as the glow grows.
 Audio: rising cosmic synth, ascending power-up whooshes, wise robotic line.
 Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, cosmic. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
@@ -203,7 +206,7 @@ Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated 
 
 ### SHOT 16 · 1:00–1:04 · DEFEATED SCAN + WINK (then loop) · 🔗 CHAIN from 15 · Ingredients A B C D
 ```
-Bunty, defeated, picks up his phone and taps it on the blank QR stand; the purple speaker chimes and announces: "Das rupaye prapt hue." Then it turns and winks one LED eye straight at the camera.
+Bunty, defeated, picks up his phone and taps it on the blank QR stand; the soundbox chimes and announces: "Das rupaye prapt hue." Then it turns and winks one LED eye straight at the camera.
 Camera: 35mm, ending in a close-up of the speaker winking into the lens.
 Audio: tap, payment chime, robotic announcement, a wink "ting", and the heavy bass beat kicking back in on the last frame.
 Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated cartoon expressions, deep purple, saffron and teal palette, golden-hour Indian street. 4 seconds. Vertical 9:16. No on-screen text, no letters, no logos, no brand names.
@@ -230,6 +233,7 @@ Style: stylized 3D animated comedy, soft matte clay-like materials, exaggerated 
 - PhonePe revenue from operations **₹7,114.86 crore in FY25** (PhonePe DRHP). This is *revenue*, not profit. PhonePe reported a net loss of about ₹1,172 crore in FY25, with positive adjusted profit. Say "revenue", never "profit".
 - UPI hit a record **24.51 billion transactions in August 2026** (NPCI).
 - PhonePe about **46%** and Google Pay about **33%** of UPI volume in May 2026, together **about 79–80%** (NPCI data).
+- Soundbox rental is a real business for both Paytm and PhonePe: merchants pay a monthly subscription for the device.
 - There's **zero MDR** (no merchant fee) on most UPI payments. PhonePe's money comes from merchant services (incl. smart speaker rental), lending and insurance distribution, platform fees on recharges and bills, and ads. It also gets small government UPI incentives (₹164.73 Cr in FY25).
 
 Sources: [Finshots – PhonePe DRHP](https://finshots.in/archive/breaking-down-the-phonepe-drhp/) · [Inc42 – PhonePe profit puzzle](https://inc42.com/features/phonepe-profit-puzzle-upi-dominance-diversification/) · [IndMoney – DRHP explained](https://www.indmoney.com/blog/ipo/phonepe-drhp-explained) · [Free Press Journal – Aug 2026 UPI record](https://www.freepressjournal.in/india/upi-transactions-hit-record-2451-billion-in-august-festive-demand-drives-growth) · [Inc42 – May 2026 UPI share](https://inc42.com/buzz/upi-transactions-jump-3-8-mom-in-may-cross-23-bn-mark/) · [Outlook Business – share below 80%](https://www.outlookbusiness.com/economy-and-policy/phonepe-google-pay-combined-upi-market-share-drops-below-80-for-first-time)
