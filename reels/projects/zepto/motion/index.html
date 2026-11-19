@@ -104,6 +104,33 @@
   .actions .a { width: 150px; padding: 18px 0; border-radius: 30px; background: rgba(10,6,20,.75); border: 3px solid rgba(255,255,255,.4);
     text-align: center; font-size: 30px; font-weight: 900; opacity: 0; }
   .actions .a .emoji { display: block; font-size: 64px; }
+
+  /* ---------- intro: phone home screen -> tap Zepto -> app opens into the video */
+  #intro { position: absolute; inset: 0; overflow: hidden; transform-origin: 50% 64%;
+    background: radial-gradient(ellipse 90% 60% at 30% 20%, #7b3fe4 0%, transparent 60%),
+                radial-gradient(ellipse 80% 60% at 80% 90%, #ff3e7f 0%, transparent 60%), linear-gradient(170deg, #1d0b3d, #3b1478 55%, #6a1b6e); }
+  #intro .status { position: absolute; top: 34px; left: 70px; right: 70px; display: flex; justify-content: space-between;
+    font-size: 36px; font-weight: 800; }
+  #intro .clock { position: absolute; top: 150px; left: 0; right: 0; text-align: center; font-size: 250px; font-weight: 800;
+    letter-spacing: -.04em; line-height: 1; text-shadow: 0 10px 40px rgba(0,0,0,.35); }
+  #intro .date { position: absolute; top: 420px; left: 0; right: 0; text-align: center; font-size: 42px; font-weight: 700; opacity: .85; }
+  #intro .app { position: absolute; width: 190px; text-align: center; }
+  #intro .app .ic { width: 190px; height: 190px; border-radius: 48px; display: grid; place-items: center; font-family: var(--emoji);
+    font-size: 104px; box-shadow: 0 14px 30px rgba(0,0,0,.35), inset 0 0 0 2px rgba(255,255,255,.12); }
+  #intro .app .lb { margin-top: 12px; font-size: 30px; font-weight: 700; text-shadow: 0 2px 8px rgba(0,0,0,.6); }
+  #intro .dock { position: absolute; left: 50px; right: 50px; bottom: 80px; height: 250px; border-radius: 70px;
+    background: rgba(255,255,255,.16); box-shadow: inset 0 0 0 2px rgba(255,255,255,.18); }
+  #intro .badge1 { position: absolute; top: -16px; right: -16px; width: 66px; height: 66px; border-radius: 50%; background: #ff3b30;
+    display: grid; place-items: center; font-size: 38px; font-weight: 900; box-shadow: 0 6px 14px rgba(0,0,0,.4); }
+  #intro .glow { position: absolute; inset: -26px; border-radius: 64px; background: radial-gradient(circle, rgba(255,212,59,.75), transparent 70%); opacity: 0; }
+  #finger { position: absolute; font-family: var(--emoji); font-size: 230px; opacity: 0; filter: drop-shadow(0 18px 24px rgba(0,0,0,.5)); }
+  #ripple { position: absolute; width: 240px; height: 240px; margin: -120px 0 0 -120px; border-radius: 50%; border: 10px solid rgba(255,255,255,.9); opacity: 0; }
+  #appopen { position: absolute; opacity: 0; overflow: hidden; display: grid; place-items: center;
+    background: radial-gradient(circle at 50% 40%, #9b5cff, #4a1a8c 70%); }
+  #appopen .sp { text-align: center; opacity: 0; }
+  #appopen .sp .e { font-family: var(--emoji); font-size: 300px; line-height: 1.1; }
+  #appopen .sp .t { font-size: 110px; font-weight: 900; letter-spacing: .02em; }
+  #appopen .sp .s { font-size: 44px; font-weight: 800; letter-spacing: .3em; opacity: .85; }
 </style>
 </head>
 <body>
@@ -113,6 +140,7 @@
   <div id="vignette"></div>
   <div id="layer"></div>
   <div id="chapter"></div>
+  <div id="intro"></div>
   <div id="leak"></div>
   <div id="flash"></div>
   <div id="grain"></div>
@@ -278,25 +306,83 @@ TL.clips.forEach((c, i) => {
   else { punch(c.start, 0.04, 0.35); sfx(c.start - 0.05, "swish", 0.25); }
 });
 
+
+/* ================================================================ INTRO: phone home screen -> tap Zepto -> app opens (0 - 2.1 s) */
+{
+  const I = $("#intro");
+  I.innerHTML = `<div class="status"><span>10:00</span><span>${E("📶")} ${E("🔋")}</span></div>
+    <div class="clock">10:00</div><div class="date">Bhookh lagi? ${E("🍜")}</div>`;
+  const apps = [["📷","Camera","#3a3a46"],["🎵","Music","#ff2d55"],["💬","Chats","#25c25a"],["🗺️","Maps","#3b8cff"],
+                ["📧","Mail","#2f80ed"],["🎮","Games","#7b5cff"],["🖼️","Photos","#ffffff"],["🗒️","Notes","#ffcc00"],
+                ["💳","Pay","#111827"],["ZEPTO","Zepto",""],["🌦️","Weather","#38bdf8"],["⏰","Clock","#1f2937"],
+                ["🎬","Videos","#ef4444"],["📚","Books","#f97316"],["🏏","Cricket","#16a34a"],["⚙️","Settings","#6b7280"]];
+  const col = (i) => 60 + (i % 4) * 240 + 25, row = (i) => 560 + Math.floor(i / 4) * 290;
+  let zx = 0, zy = 0, zepto;
+  const others = [];
+  apps.forEach(([e, lb, bg], i) => {
+    const a = el("", "app", { left: col(i) + "px", top: row(i) + "px" }, I);
+    if (e === "ZEPTO") {
+      a.innerHTML = `<i class="glow"></i><div class="ic" style="background:linear-gradient(135deg,#9b5cff,#4a1a8c);position:relative">🛍️<span class="badge1">1</span></div><div class="lb">${lb}</div>`;
+      zepto = a; zx = col(i) + 95; zy = row(i) + 95;
+    } else {
+      a.innerHTML = `<div class="ic" style="background:${bg}">${e}</div><div class="lb">${lb}</div>`;
+      others.push(a);
+    }
+  });
+  const dock = el("", "dock", {}, I);
+  [["📞","#25c25a"],["🔍","#3b8cff"],["💬","#25c25a"],["📸","#ff2d8a"]].forEach(([e, bg], i) => {
+    const a = el(`<div class="ic" style="background:${bg};width:170px;height:170px;font-size:92px">${e}</div>`, "app", { left: 55 + i * 238 + "px", top: "40px", width: "170px" }, dock);
+    others.push(a);
+  });
+  const glow = zepto.querySelector(".glow"), zic = zepto.querySelector(".ic");
+  tl.set(I, { opacity: 1, scale: 1 }, 0);
+  tl.fromTo(glow, { opacity: 0.2, scale: 0.9 }, { opacity: 1, scale: 1.08, duration: 0.45, yoyo: true, repeat: 1, ease: "sine.inOut", immediateRender: true }, 0);
+  tl.fromTo(zic, { scale: 1 }, { scale: 1.07, duration: 0.45, yoyo: true, repeat: 1, ease: "sine.inOut" }, 0);
+  // finger comes in and taps
+  const finger = el("👆", "", { left: zx - 92 + "px", top: zy - 26 + "px" }, I); finger.id = "finger";
+  tl.fromTo(finger, { opacity: 0, x: 360, y: 620, rotation: -18 }, { opacity: 1, x: 0, y: 0, rotation: -8, duration: 0.6, ease: "power3.out", immediateRender: false }, 0.3);
+  sfx(0.32, "swish", 0.35);
+  const ripple = el("", "", { left: zx + "px", top: zy + "px" }, I); ripple.id = "ripple";
+  tl.to(finger, { scale: 0.86, duration: 0.07, yoyo: true, repeat: 1 }, 1.0);
+  tl.to(zic, { scale: 0.84, duration: 0.07, yoyo: true, repeat: 1 }, 1.0);
+  tl.fromTo(ripple, { opacity: 0.95, scale: 0.3 }, { opacity: 0, scale: 1.7, duration: 0.45, ease: "power2.out", immediateRender: false }, 1.02);
+  sfx(1.0, "key", 0.7); sfx(1.02, "pop", 0.4);
+  tl.to(finger, { opacity: 0, y: 180, duration: 0.25, ease: "power2.in" }, 1.12);
+  // home screen recedes, the icon expands into the app (like a real phone)
+  tl.to(others, { scale: 0.82, opacity: 0, duration: 0.4, ease: "power2.in", stagger: 0.008 }, 1.12);
+  tl.to([I.querySelector(".clock"), I.querySelector(".date"), I.querySelector(".status")], { opacity: 0, y: -60, duration: 0.3, ease: "power2.in" }, 1.12);
+  const ao = el(`<div class="sp"><div class="e">🛍️</div><div class="t">10 MIN</div><div class="s">DELIVERY</div></div>`, "", {}, I); ao.id = "appopen";
+  tl.fromTo(ao, { opacity: 1, left: zx - 95, top: zy - 95, width: 190, height: 190, borderRadius: 48 },
+    { left: 0, top: 0, width: 1080, height: 1920, borderRadius: 0, duration: 0.42, ease: "power3.inOut", immediateRender: false }, 1.14);
+  tl.set(zepto, { opacity: 0 }, 1.15);
+  sfx(1.1, "whoosh", 0.45);
+  const sp = ao.querySelector(".sp");
+  tl.fromTo(sp, { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2.2)", immediateRender: false }, 1.42);
+  sfx(1.45, "pop_high", 0.35);
+  // zoom through the splash into the video
+  tl.to(sp, { scale: 2.4, opacity: 0, duration: 0.3, ease: "power2.in" }, 1.8);
+  tl.to(I, { opacity: 0, scale: 1.18, duration: 0.28, ease: "power2.in" }, 1.84);
+  flash(2.1, 0.35); punch(2.1, 0.1, 0.55);
+  sfx(1.78, "whoosh_long", 0.4);
+}
 /* ================================================================ HOOK (first clip): notification -> 10:00 timer -> DELIVERED -> loss meter */
 {
   const c = clip("hook"), end = c.end;
-  const tDeliver = Math.min(4.9, end * 0.62), tLoss = tDeliver + 0.55;
+  const tDeliver = 5.0, tLoss = 5.55;            // after the 2 s phone intro
   const n = el(`<div class="ic">${E("🛍️")}</div><div style="flex:1"><div class="tt">Zepto <span>abhi</span></div>
     <div class="bd">Aapka order <b>10 min</b> mein aa raha hai ${E("🛵")}</div></div>`, "", {});
   n.id = "notif";
-  tl.fromTo(n, { opacity: 0, y: -260 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.6)", immediateRender: false }, 0.15);
-  sfx(0.15, "ding", 0.5);
+  tl.fromTo(n, { opacity: 0, y: -260 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.6)", immediateRender: false }, 2.2);
+  sfx(2.2, "ding", 0.5);
   tl.to(n, { y: -300, opacity: 0, duration: 0.35, ease: "power2.in" }, tDeliver + 0.2);
   // big countdown ring, visible on the very first frame (it is the cover)
   const ring = el(`<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="rgba(10,6,20,.78)" stroke="rgba(255,255,255,.22)" stroke-width="7"/>
     <circle class="arc" cx="50" cy="50" r="44" fill="none" stroke="#ffd43b" stroke-width="7" stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="0"/></svg>
     <div class="t ol">10:00</div><div class="sub ol">DELIVERY ${E("🛵")}</div>`, "ring", {});
   ring.id = "timer";
-  tl.set(ring, { opacity: 1, scale: 1 }, 0);
-  tl.fromTo(ring, { scale: 0.92 }, { scale: 1, duration: 0.6, ease: "elastic.out(1,0.5)", immediateRender: false }, 0.05);
+  tl.fromTo(ring, { opacity: 0, scale: 0.3 }, { opacity: 1, scale: 1, duration: 0.6, ease: "elastic.out(1,0.55)", immediateRender: false }, 2.0);
   const arc = ring.querySelector(".arc"), txt = ring.querySelector(".t"), sub = ring.querySelector(".sub");
-  const c0 = 0.7, c1 = tDeliver, accel = gsap.parseEase("power2.in");
+  const c0 = 2.55, c1 = tDeliver, accel = gsap.parseEase("power2.in");
   updaters.push((t) => {
     if (t > end) return;
     if (t < c0) { txt.textContent = "10:00"; arc.style.strokeDashoffset = 0; return; }
@@ -495,7 +581,8 @@ sticker("🧠", at("aadat", 0.5), clip("aadat").end, 800, 560);
   sfx(c.start + 0.3, "whoosh", 0.35); sfx(c.start + 0.75, "ding", 0.4);
 }
 
-tl.to("#badge", { scale: 1.18, duration: 0.18, yoyo: true, repeat: 1, ease: "power1.inOut" }, 0.3);   // always visible: it covers the Flow mark
+tl.set("#badge", { opacity: 0 }, 0);                              // hidden while the phone intro covers the footage
+tl.fromTo("#badge", { opacity: 1, scale: 0, rotation: -90 }, { scale: 1, rotation: 0, duration: 0.3, ease: "back.out(2)", immediateRender: false }, 1.65);
 tl.fromTo("#progress", { scaleX: 0 }, { scaleX: 1, duration: TOTAL, ease: "none" }, 0);
 tl.set({}, {}, TOTAL);
 
