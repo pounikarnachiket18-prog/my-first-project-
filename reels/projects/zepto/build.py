@@ -186,6 +186,7 @@ VO_LINES = os.path.join(HERE, "audio", "vo_lines.json")   # line start times in 
 VO_LEAD = 0.0         # keep the voiceover from its very first sample (only sped up 1.5x)
 TAIL = 1.3            # seconds of picture after the last word
 F_MIN, F_MAX = 0.75, 1.5   # clip speed limits: 0.75 = 1.33x faster, 1.5 = slow-motion (24 -> 30 fps)
+DELOGO = "delogo=x=568:y=1128:w=64:h=64"   # the Flow mark in the 720x1280 clips (measured: x 576-623, y 1136-1183)
 HOLD_AT = {"N2 funding": 0.45, "N3 kirana": 0.5, "proof": 0.5, "N5 tips": 0.72}   # where a long line pauses
 
 
@@ -212,13 +213,14 @@ def make_segment(i, length, path):
     f = min(max(length / L, F_MIN), F_MAX)
     played = L * f
     hold = max(0.0, length - played)
-    norm = f"scale={W}:{H}:flags=lanczos,fps={FPS},format=yuv420p,setsar=1"
+    # delogo removes the Flow mark from the 720x1280 source before any speed change or Ken Burns hold
+    norm = f"{DELOGO},scale={W}:{H}:flags=lanczos,fps={FPS},format=yuv420p,setsar=1"
     tempo = max(0.5, min(2.0, 1 / f))
     cmd = ["ffmpeg", "-v", "error", "-y", "-i", inp]
     if hold > 0.05:
         h = HOLD_AT.get(label, 0.6) * L
         still = os.path.join(BUILD, f"hold{i:02d}.png")
-        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{h:.3f}", "-i", inp, "-frames:v", "1", still], check=True)
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{h:.3f}", "-i", inp, "-vf", DELOGO, "-frames:v", "1", still], check=True)
         nk = max(2, round(hold * FPS))
         cmd += ["-loop", "1", "-framerate", str(FPS), "-t", f"{hold:.3f}", "-i", still]
         g = (f"[0:v]trim=0:{h:.3f},setpts=(PTS-STARTPTS)*{f:.4f},{norm}[A];"

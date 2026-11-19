@@ -72,9 +72,9 @@
   #notif .tt { font-size: 34px; font-weight: 800; display: flex; justify-content: space-between; }
   #notif .tt span { color: #888; font-weight: 600; font-size: 28px; }
   #notif .bd { font-size: 38px; font-weight: 700; margin-top: 6px; line-height: 1.2; }
-  #timer { left: 280px; top: 470px; width: 520px; height: 520px; }
-  #timer .t { font-size: 150px; }
-  #timer .sub { position: absolute; left: 0; right: 0; top: 340px; text-align: center; font-size: 38px; font-weight: 900; letter-spacing: .12em; color: #fff; }
+  #timer { left: 370px; top: 520px; width: 340px; height: 340px; }
+  #timer .t { font-size: 96px; }
+  #timer .sub { position: absolute; left: 0; right: 0; top: 224px; text-align: center; font-size: 26px; font-weight: 900; letter-spacing: .12em; color: #fff; }
   #lossmeter { position: absolute; left: 70px; right: 70px; top: 430px; padding: 34px 20px 40px; border-radius: 48px; opacity: 0; text-align: center;
     background: rgba(30,0,6,.82); border: 5px solid var(--red); box-shadow: 0 0 80px rgba(255,40,60,.55); }
   #lossmeter .lbl { font-size: 46px; font-weight: 900; letter-spacing: .16em; color: #ffb3b3; }
@@ -398,7 +398,7 @@ TL.clips.forEach((c, i) => {
   tl.set(sub, { innerHTML: "DELIVERED!", color: "#2fd36b" }, c1);
   tl.set(arc, { attr: { stroke: "#2fd36b" }, strokeDashoffset: 0 }, c1);
   tl.fromTo(ring, { scale: 1.25 }, { scale: 1, duration: 0.5, ease: "elastic.out(1,0.45)", immediateRender: false }, c1);
-  confetti(c1, 540, 730); punch(c1, 0.07); sfx(c1, "ding", 0.55);
+  confetti(c1, 540, 690); punch(c1, 0.07); sfx(c1, "ding", 0.55);
   tl.to(ring, { scale: 0.2, opacity: 0, rotation: 120, duration: 0.3, ease: "power3.in" }, tLoss - 0.15);
   const lm = el(`<div class="lbl">ZEPTO KA LOSS</div><div class="num ol">−₹0</div><div class="yr">sirf 1 saal mein ${E("💀")}</div>`, "", {});
   lm.id = "lossmeter";
