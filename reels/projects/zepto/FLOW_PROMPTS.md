@@ -148,23 +148,25 @@ A warm cardboard room filled with falling colourful paper confetti; Thaila stand
 
 ---
 
-## 4. Full voiceover for ElevenLabs (Devika, about 52 s after a 1.1× speed-up)
+## 4. Voiceover v2: the "4 jebein" script (Devika, about 58–60 s at 1.1×)
+The list captions change from "Kamaai #1–4" to **"Jeb #1–4"**.
 ```
-10 minute mein delivery… phir bhi ek saal mein 3,367 crore ka loss? Toh ye kamaata kaise hai?
-Shuru kiya do 19 saal ke Stanford dropouts ne… 2021 mein.
-Raaz hai — dark stores. Aapke ghar ke paas chhupe chhote godown.
-Customer andar nahi jaata, sirf orders pack hote hain. India mein 1,100 se zyada.
-Order aaya, rack pe light, aur minute bhar mein pack.
-Rider pehle se ready — ghar bas 2-3 kilometre door.
-Ab kamaai. Number 1 — har product pe margin.
-Number 2 — handling fee, delivery fee, small-cart fee.
-Number 3 — ads. Jo product sabse upar dikhta hai… usne paise diye hain. Aur number 4 — Zepto Pass.
-Phir loss kyun? Kyunki Blinkit, Instamart se race mein… har naya store, har discount — paisa jalta hai.
-FY25: sales 9,669 crore… loss 3,367 crore. Ek saal mein 177 percent zyada.
-Matlab Zepto ka asli product grocery nahi… aapki 10-minute wali aadat hai.
-Comment karo — last Zepto se kya mangaya? Aur bhejo us dost ko jo ek Maggi ke liye bhi Zepto karta hai.
+[ding-dong] Aapki Maggi 10 minute mein aati hai… aur Zepto ke ek saal mein 3,367 crore chale jaate hain. [record scratch]
+Kaise? Aur end mein bataunga… Zepto asal mein bechta kya hai.
+2021. Do 19 saal ke ladke. Stanford chhoda… sapna nahi.
+Aapke mohalle mein ek dukaan hai… jismein aap kabhi ghus nahi sakte. Naam? Dark store.
+Bahar se godown, andar poora supermarket. India mein 1,100 se zyada.
+Order aaya — stopwatch on. Shelf pe light, haath, bag band.
+Aur rider? Wo pehle se gate pe khada hai.
+Ab paisa. Zepto ki chaar jebein. Jeb ek: har product pe margin.
+Jeb do: handling fee, delivery fee, small-cart fee. Chhoti… par roz.
+Jeb teen, sabse chalaak: jo product sabse upar dikhe… usne paise diye hain. Jeb chaar: Zepto Pass.
+Chaar jebein bhari… phir bhi khaali kyun? Kyunki Blinkit, Instamart se race hai… aur speed sasti nahi aati.
+FY25: 9,669 crore ki sales… 3,367 crore ka loss. Pichhle saal se 177 percent zyada.
+Toh Zepto bech kya raha hai? Grocery nahi… [1 sec silence] aadat. Ek baar 10 minute ki aadat lagi… toh 30 minute bhi late lagta hai.
+Sach batao, last Zepto se kya mangaya? Comment karo… aur bhejo us dost ko jo ek Maggi ke liye bhi Zepto karta hai.
 ```
-Pause briefly before every number. Stress "phir bhi", "dark stores", "ads", "paisa jalta hai" and "aadat".
+Delivery: like a friend telling a secret. Go fast through the lists, and slow down, almost whispering, on "aadat". Pause briefly before every number.
 
 ---
 
