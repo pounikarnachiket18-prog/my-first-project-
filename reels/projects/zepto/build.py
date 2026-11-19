@@ -238,7 +238,8 @@ def make_segment(i, length, path):
     print(f"  seg {i + 1:2d} {label:<11} {length:5.2f}s  ({note})")
 
 
-def build(out, vo=None, preview=False):
+def build(out, vo=None, preview=False, base=False):
+    """base=True: clips + audio only (no burned-in text); writes build/timeline.json for motion/."""
     os.makedirs(BUILD, exist_ok=True)
     os.makedirs(OUT, exist_ok=True)
     if vo:
@@ -252,6 +253,16 @@ def build(out, vo=None, preview=False):
     else:
         starts, total = timeline()
         srcs = [f"{UP}/{src}.mp4" for _, src, _, _ in CLIPS]
+
+    if base:
+        tl = {"total": total, "fps": FPS, "clips": []}
+        for i, (label, src, join, caps) in enumerate(CLIPS):
+            s, d = starts[i]
+            nxt = starts[i + 1][0] if i + 1 < len(CLIPS) else total
+            tl["clips"].append({"label": label, "start": s, "end": nxt, "join": "cut" if join == CUT else
+                                ("dissolve" if join else None), "captions": [list(c) for c in caps]})
+        with open(os.path.join(BUILD, "timeline.json"), "w") as f:
+            json.dump(tl, f, indent=1, ensure_ascii=False)
 
     # ---- overlay images
     overlays = []                                                    # (png, t0, t1)
@@ -267,6 +278,8 @@ def build(out, vo=None, preview=False):
     s_last = starts[-1][0]
     follow = os.path.join(BUILD, "follow.png"); follow_png(follow); overlays.append((follow, s_last + 0.4, total))
     badge = os.path.join(BUILD, "badge.png"); badge_png(badge); overlays.append((badge, 0.0, total))
+    if base:
+        overlays = []
 
     # ---- ffmpeg graph
     cmd = ["ffmpeg", "-v", "error", "-y"]
@@ -311,7 +324,7 @@ def build(out, vo=None, preview=False):
     print(f"{n} clips, {len(overlays)} overlays, {total:.1f}s -> {out}")
     subprocess.run(cmd, check=True)
 
-    if True:
+    if not base:
         sheet = out.rsplit(".", 1)[0] + "-contact.jpg"
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", out, "-vf",
                         f"fps=24/{total:.2f},scale=216:384,tile=6x4:padding=4:color=gray", "-frames:v", "1", sheet],
@@ -325,5 +338,8 @@ def build(out, vo=None, preview=False):
 if __name__ == "__main__":
     a = sys.argv[1:]
     vo = a[a.index("--vo") + 1] if "--vo" in a else None
-    build(os.path.join(OUT, "zepto-reel.mp4" if not vo else "zepto-reel-voiceover.mp4"), vo=vo,
-          preview="--preview" in a)
+    if "--base" in a:
+        build(os.path.join(BUILD, "zepto-base.mp4"), vo=vo, base=True)
+    else:
+        build(os.path.join(OUT, "zepto-reel.mp4" if not vo else "zepto-reel-voiceover.mp4"), vo=vo,
+              preview="--preview" in a)
