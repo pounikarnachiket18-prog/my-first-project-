@@ -36,9 +36,10 @@ CUT, DIS = 1 / FPS, 0.22                                 # join types (seconds o
 # (label, source file, join INTO this clip from the previous one, captions)
 # caption = (start fraction, end fraction, text, y-centre); *word* = yellow, ~word~ = red
 CLIPS = [
-    ("hook",       "b734d0ac-771940358_1795116909552955", None, [
-        (0.00, 0.50, "Aapki Maggi *10 minute* mein…", 1360),
-        (0.50, 1.00, "…aur Zepto ke *₹3,367 crore* ~gaye?~", 1360)]),
+    ("cold open",  "dd55ec4f-332744694_1795116959065049", None, [
+        (0.00, 1.00, "Aapki Maggi *10 minute* mein aati hai…", 1585)]),
+    ("hook",       "b734d0ac-771940358_1795116909552955", DIS, [
+        (0.00, 1.00, "…aur Zepto ke *₹3,367 crore* ~gaye?~", 1360)]),
     ("promise",    "0db13558-9470849_1795116908144005", DIS, [
         (0.00, 1.00, "Kaise? *End mein* bataunga… Zepto *asal mein* kya bechta hai", 1360)]),
     ("rise",       "cfb5f02f-387929739_1795116906777838", DIS, [
@@ -247,7 +248,7 @@ def build(out, vo=None, preview=False):
         starts, total = vo_timeline()
         srcs = []
         for i, (_, length) in enumerate(starts):
-            p = os.path.join(BUILD, f"seg{i:02d}_{length:.3f}.mkv")
+            p = os.path.join(BUILD, f"seg_{CLIPS[i][1][:8]}_{length:.3f}.mkv")
             if not os.path.exists(p):
                 make_segment(i, length, p)
             srcs.append(p)
