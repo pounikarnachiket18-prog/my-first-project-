@@ -2,63 +2,88 @@
 <html lang="hi-Latn">
 <head>
 <meta charset="utf-8">
-<title>Zepto Motion Layer</title>
+<title>Zepto Motion</title>
 <script src="../../../node_modules/gsap/dist/gsap.min.js"></script>
 <style>
-  /* Transparent motion-graphics layer that sits on top of build/zepto-base.mp4 */
+  /* Full composition: the base footage (one JPEG per frame) sits inside a "camera" rig that can
+     drift, punch-zoom, shake and whip-pan; all motion graphics sit on top. */
   :root {
-    --yellow: #ffd43b; --red: #ff4848; --purple: #7b3fe4; --white: #fff; --ink: #0b0b0d;
+    --yellow: #ffd43b; --red: #ff4848; --purple: #7b3fe4; --green: #2fd36b; --white: #fff; --ink: #0b0b0d;
     --display: "Inter Display", "Inter", system-ui, sans-serif;
     --emoji: "Noto Color Emoji";
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { width: 1080px; height: 1920px; overflow: hidden; background: transparent; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #000; }
   body { font-family: var(--display); color: var(--white); -webkit-font-smoothing: antialiased; }
-  #stage { position: absolute; inset: 0; overflow: hidden; }
+  #stage { position: absolute; inset: 0; overflow: hidden; background: #000; }
+  .rig { position: absolute; inset: 0; transform-origin: 50% 46%; }
+  #foot { position: absolute; inset: 0; width: 1080px; height: 1920px; }
   .emoji { font-family: var(--emoji); font-weight: 400; text-shadow: none !important; }
-  /* thick black outline, like the credit card reel */
   .ol { text-shadow:
       0 0 2px #000, 5px 0 0 #000, -5px 0 0 #000, 0 5px 0 #000, 0 -5px 0 #000,
-      4px 4px 0 #000, -4px 4px 0 #000, 4px -4px 0 #000, -4px -4px 0 #000,
-      6px 9px 0 rgba(0,0,0,.55); }
+      4px 4px 0 #000, -4px 4px 0 #000, 4px -4px 0 #000, -4px -4px 0 #000, 6px 10px 0 rgba(0,0,0,.55); }
 
   /* ---------- look */
   #vignette { position: absolute; inset: 0; pointer-events: none;
-    background: radial-gradient(ellipse 80% 68% at 50% 46%, transparent 58%, rgba(0,0,0,.42) 100%); }
-  #grain { position: absolute; inset: -200px; opacity: .05; pointer-events: none;
+    background: radial-gradient(ellipse 80% 68% at 50% 46%, transparent 58%, rgba(0,0,0,.45) 100%); }
+  #grain { position: absolute; inset: -200px; opacity: .06; pointer-events: none;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.2 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+  #tint { position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(255,40,40,.0), rgba(200,0,20,.55)); }
   #flash { position: absolute; inset: 0; background: #fff; opacity: 0; }
-  #leak { position: absolute; inset: -20%; opacity: 0; mix-blend-mode: normal;
+  #leak { position: absolute; inset: -20%; opacity: 0;
     background: radial-gradient(ellipse 50% 40% at 20% 30%, rgba(255,190,90,.55), transparent 70%),
                 radial-gradient(ellipse 40% 35% at 85% 75%, rgba(255,80,140,.35), transparent 70%); }
-  #progress { position: absolute; left: 0; bottom: 0; height: 9px; width: 100%; transform-origin: 0 50%; transform: scaleX(0);
+  #progress { position: absolute; left: 0; bottom: 0; height: 10px; width: 100%; transform-origin: 0 50%; transform: scaleX(0);
     background: linear-gradient(90deg, var(--yellow), #ff9f1a, var(--red)); box-shadow: 0 0 18px rgba(255,180,40,.7); }
   #badge { position: absolute; left: 848px; top: 1684px; width: 104px; height: 104px; }
+  #chapter { position: absolute; left: 44px; top: 96px; padding: 12px 24px; border-radius: 999px; font-size: 32px; font-weight: 900;
+    letter-spacing: .08em; background: rgba(10,6,20,.72); border: 3px solid rgba(255,212,59,.7); color: var(--yellow); opacity: 0; }
 
   /* ---------- captions */
-  .cap { position: absolute; left: 60px; right: 60px; text-align: center; font-weight: 900; font-size: 70px;
+  .cap { position: absolute; left: 56px; right: 56px; text-align: center; font-weight: 900; font-size: 70px;
     line-height: 1.12; letter-spacing: -.01em; transform: translateY(-50%); }
-  .cap .w { display: inline-block; opacity: 0; margin: 0 .12em; position: relative; will-change: transform; }
+  .cap .w { display: inline-block; opacity: 0; margin: 0 .12em; position: relative; }
   .cap .w.y { color: var(--yellow); } .cap .w.r { color: var(--red); }
-  .cap .w .bar { position: absolute; left: -4px; right: -4px; bottom: 2px; height: 12px; border-radius: 6px;
-    transform: scaleX(0); transform-origin: 0 50%; z-index: -1; opacity: .85; }
-  .cap .w.y .bar { background: rgba(255,212,59,.45); } .cap .w.r .bar { background: rgba(255,72,72,.5); }
-  .cap.huge { font-size: 190px; letter-spacing: .02em; }
+  .cap .w .bar { position: absolute; left: -6px; right: -6px; bottom: 2px; height: 14px; border-radius: 7px;
+    transform: scaleX(0); transform-origin: 0 50%; z-index: -1; }
+  .cap .w.y .bar { background: rgba(255,212,59,.5); } .cap .w.r .bar { background: rgba(255,72,72,.55); }
+  .cap.huge { font-size: 200px; letter-spacing: .02em; }
 
-  /* ---------- stickers / stamps / stats */
+  /* ---------- graphic pieces */
   .stamp { position: absolute; font-weight: 900; text-align: center; opacity: 0; white-space: nowrap; }
   .pill { position: absolute; padding: 18px 34px; border-radius: 999px; font-weight: 900; font-size: 52px; opacity: 0;
     white-space: nowrap; box-shadow: 0 14px 40px rgba(0,0,0,.45); }
   .stat { position: absolute; left: 0; right: 0; text-align: center; opacity: 0; }
-  .stat .lbl { font-size: 46px; font-weight: 800; letter-spacing: .14em; color: #fff; }
-  .stat .num { font-size: 150px; font-weight: 900; letter-spacing: -.03em; line-height: 1; }
-  .ring { position: absolute; width: 250px; height: 250px; right: 70px; top: 230px; opacity: 0; }
+  .stat .lbl { font-size: 46px; font-weight: 800; letter-spacing: .14em; }
+  .stat .num { font-size: 150px; font-weight: 900; letter-spacing: -.03em; line-height: 1; display: inline-block; }
+  .sticker { position: absolute; font-family: var(--emoji); font-size: 130px; opacity: 0; filter: drop-shadow(0 12px 18px rgba(0,0,0,.45)); }
+  .piece { position: absolute; width: 22px; height: 34px; border-radius: 4px; opacity: 0; }
+  .money { position: absolute; font-family: var(--emoji); font-size: 90px; opacity: 0; }
+  .speed { position: absolute; height: 8px; border-radius: 8px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.9)); opacity: 0; }
+  .ring { position: absolute; opacity: 0; }
   .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
-  .ring .t { position: absolute; inset: 0; display: grid; place-items: center; font-size: 70px; font-weight: 900; }
+  .ring .t { position: absolute; inset: 0; display: grid; place-items: center; font-weight: 900; font-variant-numeric: tabular-nums; }
+
+  /* hook: phone notification + delivery timer + loss meter */
+  #notif { position: absolute; left: 50px; right: 50px; top: 120px; padding: 26px 30px; border-radius: 44px; opacity: 0;
+    background: rgba(250,250,252,.93); color: #111; display: flex; gap: 24px; align-items: center; box-shadow: 0 24px 60px rgba(0,0,0,.45); }
+  #notif .ic { flex: none; width: 104px; height: 104px; border-radius: 26px; display: grid; place-items: center; font-size: 60px;
+    background: linear-gradient(135deg, #8b4cff, #4a1a8c); }
+  #notif .tt { font-size: 34px; font-weight: 800; display: flex; justify-content: space-between; }
+  #notif .tt span { color: #888; font-weight: 600; font-size: 28px; }
+  #notif .bd { font-size: 38px; font-weight: 700; margin-top: 6px; line-height: 1.2; }
+  #timer { left: 280px; top: 470px; width: 520px; height: 520px; }
+  #timer .t { font-size: 150px; }
+  #timer .sub { position: absolute; left: 0; right: 0; top: 340px; text-align: center; font-size: 38px; font-weight: 900; letter-spacing: .12em; color: #fff; }
+  #lossmeter { position: absolute; left: 70px; right: 70px; top: 430px; padding: 34px 20px 40px; border-radius: 48px; opacity: 0; text-align: center;
+    background: rgba(30,0,6,.82); border: 5px solid var(--red); box-shadow: 0 0 80px rgba(255,40,60,.55); }
+  #lossmeter .lbl { font-size: 46px; font-weight: 900; letter-spacing: .16em; color: #ffb3b3; }
+  #lossmeter .num { font-size: 150px; font-weight: 900; color: var(--red); line-height: 1.05; font-variant-numeric: tabular-nums; }
+  #lossmeter .yr { font-size: 44px; font-weight: 800; color: #fff; margin-top: 8px; }
 
   /* jeb HUD */
   #hud { position: absolute; left: 90px; right: 90px; top: 180px; padding: 26px 30px 30px; border-radius: 40px; opacity: 0;
-    background: rgba(18,10,34,.78); border: 3px solid rgba(255,212,59,.65); box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+    background: rgba(18,10,34,.8); border: 3px solid rgba(255,212,59,.65); box-shadow: 0 20px 60px rgba(0,0,0,.5); }
   #hud .ttl { text-align: center; font-size: 44px; font-weight: 900; letter-spacing: .08em; margin-bottom: 20px; }
   #hud .slots { display: flex; gap: 22px; justify-content: center; }
   #hud .slot { width: 170px; height: 150px; border-radius: 26px; border: 4px dashed rgba(255,255,255,.45);
@@ -68,7 +93,6 @@
   #hud .slot .k { position: relative; z-index: 2; }
   #hud .slot.empty .fill { background: radial-gradient(circle at 35% 30%, #ffb0b0, #ff4848 55%, #a50f0f); }
 
-  /* poll + follow */
   .poll { position: absolute; top: 1540px; left: 0; right: 0; display: flex; gap: 40px; justify-content: center; }
   .poll .b { padding: 26px 56px; border-radius: 999px; font-size: 62px; font-weight: 900; opacity: 0; box-shadow: 0 14px 40px rgba(0,0,0,.45); }
   #follow { position: absolute; left: 150px; right: 150px; top: 1110px; padding: 30px; border-radius: 44px; opacity: 0;
@@ -76,13 +100,19 @@
   #follow img { width: 120px; height: 120px; border-radius: 50%; border: 6px solid #ff4848; }
   #follow .h { font-size: 46px; font-weight: 900; } #follow .s { font-size: 30px; font-weight: 700; color: #6b5a40; }
   #follow .btn { margin-left: auto; padding: 18px 28px; border-radius: 22px; background: #ff4848; color: #fff; font-size: 34px; font-weight: 900; }
-  .speed { position: absolute; height: 8px; border-radius: 8px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.9)); opacity: 0; }
+  .actions { position: absolute; right: 50px; top: 600px; display: flex; flex-direction: column; gap: 26px; }
+  .actions .a { width: 150px; padding: 18px 0; border-radius: 30px; background: rgba(10,6,20,.75); border: 3px solid rgba(255,255,255,.4);
+    text-align: center; font-size: 30px; font-weight: 900; opacity: 0; }
+  .actions .a .emoji { display: block; font-size: 64px; }
 </style>
 </head>
 <body>
 <div id="stage">
+  <div id="kb" class="rig"><div id="punch" class="rig"><div id="shake" class="rig"><img id="foot"></div></div></div>
+  <div id="tint"></div>
   <div id="vignette"></div>
   <div id="layer"></div>
+  <div id="chapter"></div>
   <div id="leak"></div>
   <div id="flash"></div>
   <div id="grain"></div>
@@ -96,16 +126,41 @@ const $ = (s, r = document) => r.querySelector(s);
 const L = $("#layer");
 const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
 const cues = [], updaters = [];
-let seed = 7; const rnd = () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296);
+let seed = 11; const rnd = () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296);
 const R = (a, b) => a + rnd() * (b - a);
 const sfx = (t, name, gain = 0.5, extra = {}) => cues.push({ t: +Math.max(0, t).toFixed(3), sfx: name, gain, ...extra });
 const clip = (label) => TL.clips.find((c) => c.label === label);
 const at = (label, frac) => { const c = clip(label); return c.start + (c.end - c.start) * frac; };
-const el = (html, cls, style = {}) => { const d = document.createElement("div"); d.className = cls; d.innerHTML = html; Object.assign(d.style, style); L.appendChild(d); return d; };
+const el = (html, cls, style = {}, parent = L) => { const d = document.createElement("div"); d.className = cls; d.innerHTML = html; Object.assign(d.style, style); parent.appendChild(d); return d; };
 const fmt = (n) => Math.round(n).toLocaleString("en-IN");
-const ease = gsap.parseEase("power2.out");
+const E = (e) => `<span class="emoji">${e}</span>`;
 
-/* ---------- caption: words pop in with a spring, keywords get a colour + marker swipe */
+/* ================================================================ camera rig on the footage */
+TL.clips.forEach((c, i) => {                                  // slow Ken Burns drift, alternating in/out
+  const [a, b] = i % 2 ? [1.06, 1.0] : [1.0, 1.06];
+  tl.fromTo("#kb", { scale: a, x: 0 }, { scale: b, x: i % 3 === 0 ? -14 : 14, duration: c.end - c.start, ease: "none", immediateRender: i === 0 }, c.start);
+});
+function punch(t, amt = 0.08, dur = 0.45) {
+  tl.fromTo("#punch", { scale: 1 + amt }, { scale: 1, duration: dur, ease: "expo.out", immediateRender: false }, t);
+}
+function camShake(t, amp = 20, dur = 0.35) {
+  const n = Math.round(dur / 0.033);
+  for (let i = 0; i < n; i++) { const k = 1 - i / n; tl.set("#shake", { x: R(-amp, amp) * k, y: R(-amp, amp) * k, rotation: R(-0.7, 0.7) * k }, t + i * 0.033); }
+  tl.set("#shake", { x: 0, y: 0, rotation: 0 }, t + dur);
+}
+function whip(t, dir = 1) {                                     // whip-pan through a scene change
+  tl.fromTo("#shake", { x: 0, filter: "blur(0px)" }, { x: -110 * dir, filter: "blur(14px)", duration: 0.12, ease: "power2.in", immediateRender: false }, t - 0.12);
+  tl.fromTo("#shake", { x: 110 * dir, filter: "blur(14px)" }, { x: 0, filter: "blur(0px)", duration: 0.2, ease: "power3.out", immediateRender: false }, t);
+}
+function flash(t, peak = 0.3) {
+  tl.fromTo("#flash", { opacity: peak }, { opacity: 0, duration: 0.28, ease: "power2.out", immediateRender: false }, t);
+  tl.fromTo("#leak", { opacity: 0.9, x: -80 }, { opacity: 0, x: 80, duration: 0.6, ease: "power1.out", immediateRender: false }, t - 0.05);
+}
+function redPulse(t, n = 2) {
+  for (let i = 0; i < n; i++) tl.fromTo("#tint", { opacity: 0.9 }, { opacity: 0, duration: 0.45, ease: "power2.out", immediateRender: false }, t + i * 0.5);
+}
+
+/* ================================================================ captions (build word by word with the speech) */
 function parse(text) {
   const out = []; let col = "";
   for (const raw of text.split(" ")) {
@@ -121,37 +176,35 @@ function caption(text, t0, t1, y, opts = {}) {
   const d = el("", "cap ol" + (opts.huge ? " huge" : ""), { top: y + "px" });
   const words = parse(text).map(([w, c]) => {
     const s = document.createElement("span"); s.className = "w" + (c ? " " + c : "");
-    s.innerHTML = w.replace(/(\p{Extended_Pictographic})/gu, '<span class="emoji">$1</span>') + (c ? '<i class="bar"></i>' : "");
+    s.innerHTML = w + (c ? '<i class="bar"></i>' : "");
     d.appendChild(s); d.appendChild(document.createTextNode(" ")); return s;
   });
+  const dur = t1 - t0, step = Math.max(0.05, Math.min(0.3, (dur * 0.62) / words.length));
   words.forEach((w, i) => {
-    const t = t0 + i * (opts.huge ? 0.09 : 0.04);
-    tl.fromTo(w, { opacity: 0, y: 46, scale: 0.55, rotation: R(-7, 7) },
-      { opacity: 1, y: 0, scale: 1, rotation: 0, duration: 0.34, ease: "back.out(2.4)" }, t);
+    const t = t0 + i * (opts.huge ? 0.1 : step);
+    tl.fromTo(w, { opacity: 0, y: 50, scale: 0.5, rotation: R(-8, 8) },
+      { opacity: 1, y: 0, scale: 1, rotation: 0, duration: 0.32, ease: "back.out(2.6)" }, t);
     if (w.classList.contains("y") || w.classList.contains("r")) {
-      tl.to(w, { scale: 1.16, duration: 0.11, yoyo: true, repeat: 1, ease: "power1.inOut" }, t + 0.3);
-      tl.to(w.querySelector(".bar"), { scaleX: 1, duration: 0.28, ease: "power3.out" }, t + 0.26);
+      tl.to(w, { scale: 1.18, duration: 0.11, yoyo: true, repeat: 1, ease: "power1.inOut" }, t + 0.28);
+      tl.to(w.querySelector(".bar"), { scaleX: 1, duration: 0.28 }, t + 0.24);
+      sfx(t, "pop", 0.12);
     }
   });
-  if (opts.huge) tl.to(d, { scale: 1.06, duration: 0.25, yoyo: true, repeat: Math.max(1, Math.floor((t1 - t0) / 0.5)), ease: "sine.inOut" }, t0 + 0.4);
-  tl.to(words, { opacity: 0, y: -24, duration: 0.16, stagger: 0.01, ease: "power2.in" }, t1 - 0.18);
-  sfx(t0, "pop_low", 0.16);
+  if (opts.huge) tl.to(d, { scale: 1.07, duration: 0.25, yoyo: true, repeat: Math.max(1, Math.floor(dur / 0.5)), ease: "sine.inOut" }, t0 + 0.4);
+  tl.to(words, { opacity: 0, y: -26, duration: 0.16, stagger: 0.008, ease: "power2.in" }, t1 - 0.17);
+  sfx(t0, "pop_low", 0.14);
 }
 
-/* ---------- reusable effects */
-function flash(t, peak = 0.32) {
-  tl.fromTo("#flash", { opacity: peak }, { opacity: 0, duration: 0.28, ease: "power2.out", immediateRender: false }, t);
-  tl.fromTo("#leak", { opacity: 0.9, x: -80 }, { opacity: 0, x: 80, duration: 0.6, ease: "power1.out", immediateRender: false }, t - 0.05);
-}
-function shake(node, t, amp = 18, dur = 0.35) {
+/* ================================================================ reusable graphics */
+function shakeEl(node, t, amp = 14, dur = 0.3) {
   const n = Math.round(dur / 0.033);
   for (let i = 0; i < n; i++) { const k = 1 - i / n; tl.set(node, { x: R(-amp, amp) * k, y: R(-amp, amp) * k }, t + i * 0.033); }
   tl.set(node, { x: 0, y: 0 }, t + dur);
 }
 function stamp(html, t0, t1, style, sound = "hit", rot = -8) {
   const d = el(html, "stamp ol", style);
-  tl.fromTo(d, { opacity: 0, scale: 3, rotation: rot - 14 }, { opacity: 1, scale: 1, rotation: rot, duration: 0.22, ease: "power4.in" }, t0);
-  shake(d, t0 + 0.22, 14, 0.3);
+  tl.fromTo(d, { opacity: 0, scale: 3.2, rotation: rot - 16 }, { opacity: 1, scale: 1, rotation: rot, duration: 0.22, ease: "power4.in" }, t0);
+  shakeEl(d, t0 + 0.22); punch(t0 + 0.22, 0.07); camShake(t0 + 0.22, 16, 0.3);
   tl.to(d, { opacity: 0, scale: 0.85, duration: 0.18, ease: "power2.in" }, t1 - 0.18);
   sfx(t0 + 0.2, sound, 0.55);
   return d;
@@ -160,110 +213,197 @@ function pill(html, t0, t1, style, from = { x: -400 }) {
   const d = el(html, "pill", style);
   tl.fromTo(d, { opacity: 0, ...from, scale: 0.8 }, { opacity: 1, x: 0, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, t0);
   tl.to(d, { opacity: 0, scale: 0.9, duration: 0.18 }, t1 - 0.18);
-  sfx(t0, "swish", 0.32);
+  sfx(t0, "swish", 0.3);
   return d;
 }
-function counter(t0, t1, top, label, from, to, prefix, suffix, color, gainTick = 0.18) {
-  const d = el(`<div class="lbl ol">${label}</div><div class="num ol" style="color:${color}"></div>`, "stat", { top: top + "px" });
+function sticker(emoji, t0, t1, x, y, rot = 12) {
+  const d = el(emoji, "sticker", { left: x + "px", top: y + "px" });
+  tl.fromTo(d, { opacity: 0, scale: 0, rotation: -40 }, { opacity: 1, scale: 1, rotation: rot, duration: 0.5, ease: "back.out(3)" }, t0);
+  tl.to(d, { y: -18, rotation: -rot, duration: 0.6, yoyo: true, repeat: Math.max(1, Math.floor((t1 - t0 - 0.6) / 0.6)), ease: "sine.inOut" }, t0 + 0.5);
+  tl.to(d, { opacity: 0, scale: 0.4, duration: 0.2, ease: "power2.in" }, t1 - 0.2);
+  sfx(t0, "pop_high", 0.22);
+}
+function counter(t0, t1, top, label, from, to, prefix, suffix, color, gainTick = 0.16) {
+  const d = el(`<div class="lbl ol" style="color:#fff">${label}</div><div class="num ol" style="color:${color}"></div>`, "stat", { top: top + "px" });
   const num = d.querySelector(".num");
   tl.fromTo(d, { opacity: 0, y: 40, scale: 0.8 }, { opacity: 1, y: 0, scale: 1, duration: 0.35, ease: "back.out(2)" }, t0);
-  const dur = Math.min(1.1, (t1 - t0) * 0.5);
+  const dur = Math.min(1.1, (t1 - t0) * 0.5), ease = gsap.parseEase("power2.out");
   updaters.push((t) => {
-    if (t < t0 || t > t1) return;
+    if (t < t0 - 0.05 || t > t1 + 0.05) return;
     const k = ease(Math.min(1, Math.max(0, (t - t0 - 0.1) / dur)));
     num.textContent = prefix + fmt(from + (to - from) * k) + suffix;
   });
   for (let t = t0 + 0.12; t < t0 + 0.1 + dur; t += 0.07) sfx(t, "counter", gainTick);
-  tl.to(num, { scale: 1.12, duration: 0.12, yoyo: true, repeat: 1 }, t0 + 0.1 + dur);
+  tl.to(num, { scale: 1.14, duration: 0.12, yoyo: true, repeat: 1 }, t0 + 0.1 + dur);
+  punch(t0 + 0.1 + dur, 0.05);
   sfx(t0 + 0.1 + dur, "ding", 0.35);
   tl.to(d, { opacity: 0, y: -30, duration: 0.2, ease: "power2.in" }, t1 - 0.2);
   return d;
 }
+function confetti(t, x, y, n = 36) {
+  const cols = ["#ffd43b", "#ff4848", "#7b3fe4", "#2fd36b", "#22c3ff", "#fff"];
+  for (let i = 0; i < n; i++) {
+    const p = el("", "piece", { left: x + "px", top: y + "px", background: cols[i % cols.length] });
+    const ang = R(0, Math.PI * 2), dist = R(200, 620);
+    tl.fromTo(p, { opacity: 1, x: 0, y: 0, rotation: 0, scale: R(0.7, 1.3) },
+      { x: Math.cos(ang) * dist, y: Math.sin(ang) * dist * 0.8 + 260, rotation: R(-540, 540), duration: R(0.9, 1.4), ease: "power2.out", immediateRender: false }, t);
+    tl.to(p, { opacity: 0, duration: 0.3 }, t + R(0.8, 1.2));
+  }
+  sfx(t, "pop_high", 0.4); sfx(t + 0.06, "pop", 0.35);
+}
+function rain(t0, t1, emoji, n = 12) {
+  for (let i = 0; i < n; i++) {
+    const m = el(emoji, "money", { left: R(20, 960) + "px", top: "-140px" });
+    const t = t0 + R(0, (t1 - t0) * 0.6);
+    tl.fromTo(m, { opacity: 1, y: 0, rotation: R(-30, 30) }, { y: R(1700, 2100), rotation: R(-200, 200), duration: R(1.3, 2.0), ease: "power1.in", immediateRender: false }, t);
+    tl.set(m, { opacity: 0 }, t + 2.0);
+  }
+}
 
-/* ================================================================ TIMELINE */
-/* joins: flash + whoosh on dissolves, swish on cuts */
+/* ================================================================ chapters */
+const chapter = $("#chapter");
+[["promise", "📖 KAHANI"], ["shop", "🏪 SYSTEM"], ["jeb1", "💰 KAMAAI"], ["N4 kharche", "🔥 KHARCHA"], ["aadat", "🧠 TWIST"], ["N5 tips", "💡 TIPS"], ["N6 profit", "🤔 SAWAAL"]]
+  .forEach(([label, txt]) => {
+    const t = clip(label).start + 0.05;
+    tl.to(chapter, { opacity: 0, x: -30, duration: 0.12 }, t - 0.12);
+    tl.set(chapter, { innerHTML: txt.replace(/^(\S+)/, E("$1")) }, t);
+    tl.fromTo(chapter, { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.35, ease: "back.out(2)", immediateRender: false }, t);
+  });
+tl.to(chapter, { opacity: 0, duration: 0.2 }, clip("N7 cta").start);
+
+/* ================================================================ scene changes */
 TL.clips.forEach((c, i) => {
   if (i === 0) return;
-  if (c.join === "dissolve") { flash(c.start + 0.11); sfx(c.start - 0.12, "whoosh", 0.38); }
-  else sfx(c.start - 0.05, "swish", 0.25);
+  if (c.join === "dissolve") { whip(c.start + 0.11, i % 2 ? 1 : -1); flash(c.start + 0.11); sfx(c.start - 0.14, "whoosh", 0.4); }
+  else { punch(c.start, 0.04, 0.35); sfx(c.start - 0.05, "swish", 0.25); }
 });
 
-/* captions from the timeline (the first clip has none). Some clips get hero graphics instead. */
+/* ================================================================ HOOK (first clip): notification -> 10:00 timer -> DELIVERED -> loss meter */
+{
+  const c = clip("hook"), end = c.end;
+  const tDeliver = Math.min(4.9, end * 0.62), tLoss = tDeliver + 0.55;
+  const n = el(`<div class="ic">${E("🛍️")}</div><div style="flex:1"><div class="tt">Zepto <span>abhi</span></div>
+    <div class="bd">Aapka order <b>10 min</b> mein aa raha hai ${E("🛵")}</div></div>`, "", {});
+  n.id = "notif";
+  tl.fromTo(n, { opacity: 0, y: -260 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.6)", immediateRender: false }, 0.15);
+  sfx(0.15, "ding", 0.5);
+  tl.to(n, { y: -300, opacity: 0, duration: 0.35, ease: "power2.in" }, tDeliver + 0.2);
+  // big countdown ring, visible on the very first frame (it is the cover)
+  const ring = el(`<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="rgba(10,6,20,.78)" stroke="rgba(255,255,255,.22)" stroke-width="7"/>
+    <circle class="arc" cx="50" cy="50" r="44" fill="none" stroke="#ffd43b" stroke-width="7" stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="0"/></svg>
+    <div class="t ol">10:00</div><div class="sub ol">DELIVERY ${E("🛵")}</div>`, "ring", {});
+  ring.id = "timer";
+  tl.set(ring, { opacity: 1, scale: 1 }, 0);
+  tl.fromTo(ring, { scale: 0.92 }, { scale: 1, duration: 0.6, ease: "elastic.out(1,0.5)", immediateRender: false }, 0.05);
+  const arc = ring.querySelector(".arc"), txt = ring.querySelector(".t"), sub = ring.querySelector(".sub");
+  const c0 = 0.7, c1 = tDeliver, accel = gsap.parseEase("power2.in");
+  updaters.push((t) => {
+    if (t > end) return;
+    if (t < c0) { txt.textContent = "10:00"; arc.style.strokeDashoffset = 0; return; }
+    if (t >= c1) return;
+    const k = accel(Math.min(1, (t - c0) / (c1 - c0)));
+    const secs = Math.max(0, Math.round(600 * (1 - k)));
+    txt.textContent = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
+    arc.style.strokeDashoffset = (276.5 * k).toFixed(1);
+    arc.style.stroke = k > 0.75 ? "#ff4848" : "#ffd43b";
+  });
+  for (let t = c0, gap = 0.32; t < c1 - 0.05; t += gap, gap = Math.max(0.06, gap * 0.9)) sfx(t, "tick", 0.32);
+  tl.set(txt, { innerHTML: E("✅") }, c1);
+  tl.set(sub, { innerHTML: "DELIVERED!", color: "#2fd36b" }, c1);
+  tl.set(arc, { attr: { stroke: "#2fd36b" }, strokeDashoffset: 0 }, c1);
+  tl.fromTo(ring, { scale: 1.25 }, { scale: 1, duration: 0.5, ease: "elastic.out(1,0.45)", immediateRender: false }, c1);
+  confetti(c1, 540, 730); punch(c1, 0.07); sfx(c1, "ding", 0.55);
+  tl.to(ring, { scale: 0.2, opacity: 0, rotation: 120, duration: 0.3, ease: "power3.in" }, tLoss - 0.15);
+  const lm = el(`<div class="lbl">ZEPTO KA LOSS</div><div class="num ol">−₹0</div><div class="yr">sirf 1 saal mein ${E("💀")}</div>`, "", {});
+  lm.id = "lossmeter";
+  tl.fromTo(lm, { opacity: 0, scale: 2.2, rotation: -6 }, { opacity: 1, scale: 1, rotation: -2, duration: 0.25, ease: "power4.in", immediateRender: false }, tLoss);
+  shakeEl(lm, tLoss + 0.25, 18, 0.4); camShake(tLoss + 0.25, 24, 0.45); punch(tLoss + 0.25, 0.1); redPulse(tLoss + 0.25, 3);
+  sfx(tLoss + 0.22, "boom", 0.6); sfx(tLoss + 0.25, "hit", 0.5);
+  const num = lm.querySelector(".num"), ease = gsap.parseEase("power3.out");
+  updaters.push((t) => {
+    if (t < tLoss || t > end + 0.1) return;
+    const k = ease(Math.min(1, Math.max(0, (t - tLoss - 0.25) / 1.1)));
+    num.textContent = "−₹" + fmt(3367 * k) + " Cr";
+  });
+  for (let t = tLoss + 0.3; t < tLoss + 1.35; t += 0.06) sfx(t, "counter", 0.16);
+  rain(tLoss + 0.2, end, E("💸"), 14);
+  tl.to(lm, { opacity: 0, scale: 0.8, duration: 0.2 }, end - 0.2);
+}
+
+/* ================================================================ captions from the timeline (first clip has none) */
 const HERO_ONLY = new Set(["proof"]);
 TL.clips.forEach((c) => {
   if (HERO_ONLY.has(c.label)) return;
   const span = c.end - c.start;
   c.captions.forEach(([a, b, text, y]) => {
-    const t0 = c.start + a * span + (a === 0 ? 0.12 : 0.02), t1 = c.start + b * span - 0.03;
+    const t0 = c.start + a * span + (a === 0 ? 0.14 : 0.02), t1 = c.start + b * span - 0.03;
     caption(text, t0, t1, y, { huge: text === "*AADAT*" });
-    if (text === "*AADAT*") { for (let t = t0 + 0.3; t < t1 - 0.2; t += 0.5) sfx(t, "heartbeat", 0.45); }
+    if (text === "*AADAT*") { punch(t0, 0.12, 0.6); for (let t = t0 + 0.3; t < t1 - 0.2; t += 0.5) { sfx(t, "heartbeat", 0.45); punch(t, 0.025, 0.4); } }
   });
 });
 
-/* promise: "end mein" eye sticker */
-pill('<span class="emoji">👀</span> END MEIN', at("promise", 0.08), clip("promise").end, { top: "300px", left: "330px", background: "#ffd43b", color: "#111" }, { y: -200 });
+/* ================================================================ per-scene graphics */
+pill(`${E("👀")} END MEIN`, at("promise", 0.08), clip("promise").end, { top: "300px", left: "330px", background: "#ffd43b", color: "#111" }, { y: -200 });
+sticker("🤔", at("promise", 0.25), clip("promise").end, 810, 560);
 
-/* rise: year stamp + age badge */
 stamp("2021", at("rise", 0.05), clip("rise").end, { top: "230px", left: "0", right: "0", fontSize: "230px", color: "#ffd43b" }, "boom", -6);
-pill("19 SAAL <span class='emoji'>🎓</span>", at("rise", 0.35), clip("rise").end, { top: "520px", left: "330px", background: "#7b3fe4", color: "#fff" }, { x: 500 });
+pill(`19 SAAL ${E("🎓")}`, at("rise", 0.35), clip("rise").end, { top: "520px", left: "330px", background: "#7b3fe4", color: "#fff" }, { x: 500 });
+sticker("🚀", at("rise", 0.55), clip("rise").end, 820, 760, -10);
 
-/* KiranaKart fail stamp */
-stamp('FAIL <span class="emoji">❌</span>', at("N1 fail", 0.35), clip("N1 fail").end, { top: "300px", left: "0", right: "0", fontSize: "200px", color: "#ff4848" }, "boom", -12);
+stamp(`FAIL ${E("❌")}`, at("N1 fail", 0.35), clip("N1 fail").end, { top: "300px", left: "0", right: "0", fontSize: "200px", color: "#ff4848" }, "boom", -12);
+sticker("💔", at("N1 fail", 0.55), clip("N1 fail").end, 90, 640);
 
-/* funding counter */
 counter(at("N2 funding", 0.18), at("N2 funding", 0.82), 250, "FUNDING 2021", 0, 60, "$", "M", "#7dff8a");
-pill("≈ ₹450 CRORE <span class='emoji'>💰</span>", at("N2 funding", 0.5), at("N2 funding", 0.82), { top: "560px", left: "260px", background: "#ffd43b", color: "#111" }, { y: 120 });
+pill(`≈ ₹450 CRORE ${E("💰")}`, at("N2 funding", 0.5), at("N2 funding", 0.82), { top: "560px", left: "260px", background: "#ffd43b", color: "#111" }, { y: 120 });
+rain(at("N2 funding", 0.2), at("N2 funding", 0.85), E("💵"), 10);
 
-/* dark store label with glitch */
 {
   const t0 = at("shop", 0.4);
-  const d = pill('<span class="emoji">🏪</span> DARK STORE', t0, clip("shop").end, { top: "260px", left: "260px", background: "#111", color: "#ffd43b", border: "4px solid #ffd43b" }, { y: -120 });
+  const d = pill(`${E("🏪")} DARK STORE`, t0, clip("shop").end, { top: "260px", left: "260px", background: "#111", color: "#ffd43b", border: "4px solid #ffd43b" }, { y: -120 });
   for (let i = 0; i < 8; i++) tl.set(d, { x: R(-16, 16), skewX: R(-10, 10), textShadow: `${R(-10, 10)}px 0 #ff2a6d, ${R(-10, 10)}px 0 #22e0ff` }, t0 + 0.45 + i * 0.04);
   tl.set(d, { x: 0, skewX: 0, textShadow: "none" }, t0 + 0.8);
-  sfx(t0 + 0.45, "glitch", 0.4);
+  sfx(t0 + 0.45, "glitch", 0.4); camShake(t0 + 0.45, 10, 0.3);
+  sticker("🤫", at("shop", 0.15), at("shop", 0.95), 820, 520);
 }
 
-/* map counter */
 counter(at("map", 0.1), clip("map").end, 240, "DARK STORES", 0, 1100, "", "+", "#ffd43b", 0.15);
+sticker("📍", at("map", 0.3), clip("map").end, 120, 640, -14);
 
-/* kirana vs dark store split labels */
-pill('KIRANA <span class="emoji">🐢</span>', at("N3 kirana", 0.08), at("N3 kirana", 0.62), { top: "250px", left: "60px", background: "#ff4848", color: "#fff" }, { x: -500 });
-pill('DARK STORE <span class="emoji">⚡</span>', at("N3 kirana", 0.2), at("N3 kirana", 0.62), { top: "250px", left: "540px", background: "#7b3fe4", color: "#fff" }, { x: 500 });
+pill(`KIRANA ${E("🐢")}`, at("N3 kirana", 0.08), at("N3 kirana", 0.62), { top: "250px", left: "60px", background: "#ff4848", color: "#fff" }, { x: -500 });
+pill(`DARK STORE ${E("⚡")}`, at("N3 kirana", 0.2), at("N3 kirana", 0.62), { top: "250px", left: "540px", background: "#7b3fe4", color: "#fff" }, { x: 500 });
 stamp("VS", at("N3 kirana", 0.3), at("N3 kirana", 0.62), { top: "380px", left: "0", right: "0", fontSize: "120px", color: "#ffd43b" }, "hit", 0);
 
-/* stopwatch ring counting down 10:00 */
 {
   const c = clip("stopwatch"), t0 = c.start + 0.1, t1 = c.end;
-  const d = el(`<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="rgba(10,6,20,.7)" stroke="rgba(255,255,255,.25)" stroke-width="8"/><circle class="arc" cx="50" cy="50" r="44" fill="none" stroke="#ffd43b" stroke-width="8" stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="0"/></svg><div class="t ol">10:00</div>`, "ring");
+  const d = el(`<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="rgba(10,6,20,.7)" stroke="rgba(255,255,255,.25)" stroke-width="8"/><circle class="arc" cx="50" cy="50" r="44" fill="none" stroke="#ffd43b" stroke-width="8" stroke-linecap="round" stroke-dasharray="276.5" stroke-dashoffset="0"/></svg><div class="t ol" style="font-size:70px">10:00</div>`, "ring", { width: "250px", height: "250px", right: "70px", top: "230px" });
   tl.fromTo(d, { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, t0);
   tl.to(d, { opacity: 0, scale: 0.7, duration: 0.2 }, t1 - 0.2);
   const arc = d.querySelector(".arc"), txt = d.querySelector(".t");
   updaters.push((t) => {
     if (t < t0 || t > t1) return;
-    const k = Math.min(1, (t - t0) / (t1 - t0));
-    const secs = Math.max(0, Math.round(600 * (1 - k)));
+    const k = Math.min(1, (t - t0) / (t1 - t0)), secs = Math.max(0, Math.round(600 * (1 - k)));
     txt.textContent = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
     arc.style.strokeDashoffset = (276.5 * k).toFixed(1);
   });
   for (let t = t0 + 0.2; t < t1 - 0.1; t += 0.25) sfx(t, "tick", 0.28);
 }
 
-/* rider: speed lines + ready chip */
 {
   const c = clip("rider");
-  for (let i = 0; i < 14; i++) {
+  for (let i = 0; i < 16; i++) {
     const s = el("", "speed", { top: R(300, 1500) + "px", left: "-400px", width: R(220, 520) + "px" });
     const t = c.start + R(0, 0.6);
     tl.fromTo(s, { opacity: 0, x: 0 }, { opacity: 0.85, x: 1700, duration: 0.45, ease: "power1.in" }, t);
     tl.set(s, { opacity: 0 }, t + 0.46);
   }
-  pill('<span class="emoji">⚡</span> READY', c.start + 0.15, c.end, { top: "300px", left: "380px", background: "#ffd43b", color: "#111" }, { x: 500 });
+  pill(`${E("⚡")} READY`, c.start + 0.15, c.end, { top: "300px", left: "380px", background: "#ffd43b", color: "#111" }, { x: 500 });
+  sticker("🛵", c.start + 0.2, c.end, 90, 560, -8);
   sfx(c.start, "whoosh_long", 0.35);
 }
 
-/* ---------- 4 jebein HUD: fills through jeb1..jeb3+4, drains in N4, "KHAALI?" in race */
+/* 4 jebein HUD */
 {
-  const hud = el(`<div class="ttl ol">ZEPTO KI 4 JEBEIN <span class="emoji">👖</span></div><div class="slots">
+  const hud = el(`<div class="ttl ol">ZEPTO KI 4 JEBEIN ${E("👖")}</div><div class="slots">
     ${[1, 2, 3, 4].map((k) => `<div class="slot"><i class="fill"></i><span class="k">#${k}</span></div>`).join("")}</div>`, "", {});
   hud.id = "hud";
   const t0 = clip("jeb1").start + 0.1, tEnd = clip("race").end;
@@ -275,55 +415,59 @@ stamp("VS", at("N3 kirana", 0.3), at("N3 kirana", 0.62), { top: "380px", left: "
     tl.to(slots[i].querySelector(".fill"), { scale: 1, duration: 0.35, ease: "back.out(2.5)" }, t);
     tl.to(slots[i], { borderStyle: "solid", borderColor: "#ffd43b", duration: 0.01 }, t);
     tl.set(slots[i].querySelector(".k"), { innerHTML: names[i], color: "#3a2400", fontSize: "30px" }, t + 0.05);
-    tl.to(slots[i], { scale: 1.12, duration: 0.12, yoyo: true, repeat: 1 }, t + 0.25);
+    tl.to(slots[i], { scale: 1.14, duration: 0.12, yoyo: true, repeat: 1 }, t + 0.25);
+    punch(t + 0.05, 0.035);
     sfx(t, "ding", 0.4); sfx(t + 0.05, "pop_high", 0.3);
   });
-  // kharche: drain one by one
+  sticker("💰", at("jeb1", 0.5), clip("jeb3+4").end, 830, 1020);
   const k0 = clip("N4 kharche").start + 0.6, kSpan = (clip("N4 kharche").end - k0) * 0.8;
   slots.forEach((s, i) => {
     const t = k0 + (i * kSpan) / 4;
-    tl.call(() => {}, [], t);
     tl.set(s, { className: "slot empty" }, t);
     tl.fromTo(s.querySelector(".fill"), { scale: 1 }, { scale: 0.35, duration: 0.3, ease: "power2.in", immediateRender: false }, t);
     tl.set(s.querySelector(".k"), { innerHTML: "−₹", color: "#fff", fontSize: "38px" }, t);
-    shake(s, t, 10, 0.25);
+    shakeEl(s, t, 10, 0.25);
     sfx(t, "whoosh_down", 0.3);
   });
-  // race: whole HUD shakes, title flips to KHAALI?
+  rain(clip("N4 kharche").start + 0.5, clip("N4 kharche").end, E("💸"), 10);
   const r0 = clip("race").start + 0.4;
-  tl.set(hud.querySelector(".ttl"), { innerHTML: 'PHIR BHI KHAALI? <span class="emoji">🔥</span>', color: "#ff4848" }, r0);
-  shake(hud, r0, 16, 0.45);
+  tl.set(hud.querySelector(".ttl"), { innerHTML: `PHIR BHI KHAALI? ${E("🔥")}`, color: "#ff4848" }, r0);
+  shakeEl(hud, r0, 16, 0.45); camShake(r0, 14, 0.4); redPulse(r0, 2);
   sfx(r0, "glitch", 0.4);
+  sticker("🔥", r0 + 0.2, tEnd, 820, 1000);
   tl.to(hud, { opacity: 0, y: -100, duration: 0.3, ease: "power2.in" }, tEnd - 0.3);
 }
 
-/* ---------- proof: hero numbers (no caption) */
+/* proof: hero numbers (no caption) */
 {
   const c = clip("proof"), span = c.end - c.start;
-  const fy = pill("FY25 KA HISAAB", c.start + 0.1, c.end, { top: "1150px", left: "300px", background: "#111", color: "#ffd43b", border: "4px solid #ffd43b" }, { y: 150 });   // also covers the "Thaila" text on the bag
+  pill("FY25 KA HISAAB", c.start + 0.1, c.end, { top: "1150px", left: "300px", background: "#111", color: "#ffd43b", border: "4px solid #ffd43b" }, { y: 150 });
   counter(c.start + 0.25, c.end, 200, "SALES", 0, 9669, "₹", " Cr", "#ffffff", 0.14);
   counter(c.start + span * 0.36, c.end, 420, "LOSS", 0, 3367, "−₹", " Cr", "#ff4848", 0.14);
-  stamp('▲177% <span class="emoji">📉</span>', c.start + span * 0.68, c.end, { top: "1290px", left: "0", right: "0", fontSize: "150px", color: "#ff4848" }, "boom", -5);
-  sfx(c.start + span * 0.68, "riser_short", 0.3);
+  redPulse(c.start + span * 0.36 + 1.1, 2);
+  stamp(`▲177% ${E("📉")}`, c.start + span * 0.68, c.end, { top: "1290px", left: "0", right: "0", fontSize: "150px", color: "#ff4848" }, "boom", -5);
+  sfx(c.start + span * 0.68 - 0.6, "riser_short", 0.3);
 }
 
-/* tips: progress dots */
+sticker("🧠", at("aadat", 0.5), clip("aadat").end, 800, 560);
+
 {
   const c = clip("N5 tips"), span = c.end - c.start;
-  const d = el(`<span class="emoji">💡</span> TIP <b class="n">1</b>/3`, "pill", { top: "220px", left: "380px", background: "#ffd43b", color: "#111" });
+  const d = el(`${E("💡")} TIP <b class="n">1</b>/3`, "pill", { top: "220px", left: "380px", background: "#ffd43b", color: "#111" });
   tl.fromTo(d, { opacity: 0, y: -120 }, { opacity: 1, y: 0, duration: 0.4, ease: "back.out(2)" }, c.start + 0.1);
   [[0.34, "2"], [0.67, "3"]].forEach(([f, n]) => {
     tl.set(d.querySelector(".n"), { innerHTML: n }, c.start + span * f);
     tl.to(d, { scale: 1.15, duration: 0.12, yoyo: true, repeat: 1 }, c.start + span * f);
+    punch(c.start + span * f, 0.03);
     sfx(c.start + span * f, "pop", 0.3);
   });
+  [["🔍", 0.0], ["⚖️", 0.34], ["📅", 0.67]].forEach(([e, f]) => sticker(e, c.start + span * f + 0.2, c.start + span * (f + 0.33), 820, 560));
   tl.to(d, { opacity: 0, duration: 0.2 }, c.end - 0.2);
 }
 
-/* profit poll */
 {
   const c = clip("N6 profit");
-  const p = el(`<div class="b" style="background:#2fd36b;color:#062">HAAN <span class="emoji">✅</span></div><div class="b" style="background:#ff4848;color:#fff">NAA <span class="emoji">❌</span></div>`, "poll");
+  const p = el(`<div class="b" style="background:#2fd36b;color:#062">HAAN ${E("✅")}</div><div class="b" style="background:#ff4848;color:#fff">NAA ${E("❌")}</div>`, "poll");
   const bs = [...p.querySelectorAll(".b")];
   bs.forEach((b, i) => {
     tl.fromTo(b, { opacity: 0, y: 120, scale: 0.6 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(2.2)" }, c.start + 0.5 + i * 0.15);
@@ -331,29 +475,37 @@ stamp("VS", at("N3 kirana", 0.3), at("N3 kirana", 0.62), { top: "380px", left: "
   });
   for (let t = c.start + 1.2, i = 0; t < c.end - 0.4; t += 0.6, i++) tl.to(bs[i % 2], { scale: 1.12, duration: 0.15, yoyo: true, repeat: 1 }, t);
   tl.to(bs, { opacity: 0, duration: 0.2 }, c.end - 0.2);
+  sticker("🤔", c.start + 0.3, c.end, 820, 560);
 }
 
-/* follow card */
 {
   const c = clip("N7 cta");
-  const f = el(`<img src="../../../assets/mindset-mode-logo-80.png"><div><div class="h">@mindset_mode_co</div><div class="s">more money secrets <span class="emoji">🇮🇳</span></div></div><div class="btn">FOLLOW</div>`, "", {});
+  const f = el(`<img src="../../../assets/mindset-mode-logo-80.png"><div><div class="h">@mindset_mode_co</div><div class="s">more money secrets ${E("🇮🇳")}</div></div><div class="btn">FOLLOW</div>`, "", {});
   f.id = "follow";
   tl.fromTo(f, { opacity: 0, y: 260, scale: 0.8 }, { opacity: 1, y: 0, scale: 1, duration: 0.55, ease: "back.out(1.8)" }, c.start + 0.3);
   const btn = f.querySelector(".btn");
   for (let t = c.start + 1.0; t < TOTAL - 0.3; t += 0.7) tl.to(btn, { scale: 1.14, duration: 0.15, yoyo: true, repeat: 1 }, t);
+  const acts = el(`<div class="a">${E("❤️")}LIKE</div><div class="a">${E("📲")}SHARE</div><div class="a">${E("🔖")}SAVE</div>`, "actions");
+  [...acts.children].forEach((a, i) => {
+    tl.fromTo(a, { opacity: 0, x: 200 }, { opacity: 1, x: 0, duration: 0.4, ease: "back.out(2)" }, c.start + 0.8 + i * 0.18);
+    sfx(c.start + 0.8 + i * 0.18, "pop", 0.3);
+  });
+  for (let t = c.start + 1.8, i = 0; t < TOTAL - 0.3; t += 0.5, i++) tl.to(acts.children[i % 3], { scale: 1.12, duration: 0.12, yoyo: true, repeat: 1 }, t);
+  confetti(c.start + 0.4, 540, 1200, 30);
   sfx(c.start + 0.3, "whoosh", 0.35); sfx(c.start + 0.75, "ding", 0.4);
 }
 
-/* badge pop + progress bar */
-tl.fromTo("#badge", { scale: 0, rotation: -90 }, { scale: 1, rotation: 0, duration: 0.6, ease: "back.out(2)" }, 0.2);
+tl.to("#badge", { scale: 1.18, duration: 0.18, yoyo: true, repeat: 1, ease: "power1.inOut" }, 0.3);   // always visible: it covers the Flow mark
 tl.fromTo("#progress", { scaleX: 0 }, { scaleX: 1, duration: TOTAL, ease: "none" }, 0);
 tl.set({}, {}, TOTAL);
 
 /* ================================================================ API */
-const grain = $("#grain");
+const grain = $("#grain"), foot = $("#foot");
 window.REEL = {
   width: 1080, height: 1920, fps: FPS, duration: TOTAL, cues: cues.sort((a, b) => a.t - b.t),
+  async frame(src) { if (foot.getAttribute("src") !== src) { foot.src = src; await foot.decode().catch(() => {}); } },
   seek(t) {
+    t = Math.max(t, 0.001);                     // sets placed at exactly 0 need a non-zero seek
     tl.seek(t, false); updaters.forEach((fn) => fn(t));
     const f = Math.floor(t * 24); grain.style.transform = `translate(${(f * 73) % 200 - 100}px, ${(f * 131) % 200 - 100}px)`;
   },

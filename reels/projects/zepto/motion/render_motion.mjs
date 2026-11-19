@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
- * Renders the transparent GSAP motion layer (index.html) frame by frame with Playwright and
- * composites it over build/zepto-base.mp4 in one ffmpeg pass, adding the synthesized SFX.
+ * Renders the full composition (index.html: base footage frames inside a camera rig + GSAP motion
+ * graphics) frame by frame with Playwright, then encodes it with the base audio + synthesized SFX.
+ * Needs build/frames/%05d.jpg (ffmpeg -i build/zepto-base.mp4 -q:v 3 build/frames/%05d.jpg).
  *
  *   node render_motion.mjs --preview 8.5,18,40,63,92   # composited stills -> build/motion-preview.jpg
  *   node render_motion.mjs                              # full -> ../../../output/zepto-reel-motion.mp4
@@ -30,8 +31,10 @@ page.on("pageerror", (e) => console.error("[page error]", e.message));
 await page.goto(pathToFileURL(path.join(HERE, "index.html")).href);
 await page.evaluate(() => window.REEL_READY);
 const meta = await page.evaluate(() => ({ fps: REEL.fps, duration: REEL.duration, cues: REEL.cues }));
-const seek = (t) => page.evaluate((t) => REEL.seek(t), t);
-const shot = () => page.screenshot({ type: "png", omitBackground: true, animations: "disabled" });
+const frameSrc = (f) => `../build/frames/${String(f + 1).padStart(5, "0")}.jpg`;
+const seek = (t) => page.evaluate(async ([t, src]) => { await REEL.frame(src); REEL.seek(t); },
+  [t, frameSrc(Math.min(Math.round(t * meta.fps), Math.round(meta.duration * meta.fps) - 1))]);
+const shot = () => page.screenshot({ type: "jpeg", quality: 93, animations: "disabled" });
 console.log(`motion layer: ${meta.duration.toFixed(1)}s @${meta.fps}fps, ${meta.cues.length} sfx cues`);
 
 if (previewIdx !== -1) {
@@ -39,11 +42,10 @@ if (previewIdx !== -1) {
   const tiles = [];
   for (const [i, t] of times.entries()) {
     await seek(t);
-    const ov = path.join(BUILD, `pv_ov_${i}.png`), bg = path.join(BUILD, `pv_bg_${i}.png`), comp = path.join(BUILD, `pv_${i}.png`);
-    fs.writeFileSync(ov, await shot());
-    spawnSync("ffmpeg", ["-v", "error", "-y", "-ss", String(t), "-i", BASE, "-frames:v", "1", bg]);
-    spawnSync("ffmpeg", ["-v", "error", "-y", "-i", bg, "-i", ov, "-filter_complex", "[0][1]overlay,scale=432:768", comp]);
-    tiles.push(comp);
+    const comp = path.join(BUILD, `pv_${i}.jpg`), small = path.join(BUILD, `pv_s${i}.jpg`);
+    fs.writeFileSync(comp, await shot());
+    spawnSync("ffmpeg", ["-v", "error", "-y", "-i", comp, "-vf", "scale=432:768", small]);
+    tiles.push(small);
   }
   const inputs = tiles.flatMap((p) => ["-i", p]);
   spawnSync("ffmpeg", ["-v", "error", "-y", ...inputs, "-filter_complex", `hstack=${tiles.length}`, path.join(BUILD, "motion-preview.jpg")]);
@@ -60,9 +62,9 @@ spawnSync("python3", [path.join(REELS, "tools", "sfx.py"), "mix", cuesPath, sfxW
 // ---- composite: base video + piped transparent frames + sfx
 const total = Math.round(meta.duration * meta.fps);
 const ff = spawn("ffmpeg", ["-v", "error", "-y", "-i", BASE,
-  "-f", "image2pipe", "-framerate", String(meta.fps), "-i", "-", "-i", sfxWav,
+  "-f", "image2pipe", "-vcodec", "mjpeg", "-framerate", String(meta.fps), "-i", "-", "-i", sfxWav,
   "-filter_complex",
-  "[0:v][1:v]overlay=0:0:format=auto,format=yuv420p[v];" +
+  "[1:v]format=yuv420p[v];" +
   "[2:a]aformat=sample_rates=48000:channel_layouts=stereo,volume=0.7[s];" +
   "[0:a][s]amix=inputs=2:duration=first:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=9[a]",
   "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-preset", "slow", "-crf", "17", "-profile:v", "high",
