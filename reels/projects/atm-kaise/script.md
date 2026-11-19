@@ -1,7 +1,7 @@
 # ATM kisi bhi bank ka card kaise chalta hai?  (papercraft mascot reel)
 
-House style: `reels/STYLE.md`. About 65 s, Hinglish. **Status:** rendered as `reels/output/atm-kaise.mp4` (67 s, music + SFX + captions, no voiceover yet).
-`s02` is an AI image from Canva. The other 13 shots are cut-paper scenes built by `scenes.py`, using the mascot cut out of `s02` (`assets/mascot.png`). Rebuild them with `python3 projects/atm-kaise/scenes.py`.
+House style: `reels/STYLE.md`. About 65 s, Hinglish. **Status:** rendered as `reels/output/atm-kaise.mp4` (67 s, music + SFX + captions + motion graphics, no voiceover yet).
+Shots s01, s03, s04 and s06–s14 use mascot animations from `library/card-mascot/`. s02 is an AI still. s03, s05, s08, s11 and s13 also use cut-paper scenes from `scenes.py`. Overlays are the `fx` entries in `shots.json`.
 
 ## Steps
 

@@ -6,3 +6,4 @@ output/*.video.mp4
 sfx/*.wav
 downloads/
 __pycache__/
+output/cache/

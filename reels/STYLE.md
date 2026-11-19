@@ -25,6 +25,18 @@ The reference reel is "Credit card paise kaise kamata hai?" (71 s, Hinglish), an
 - **Zoom-through match cuts** are the signature: push into an object (calendar, coin, vault door, paper) until it fills the frame, then reveal the next scene.
 - Paper textures (crumpled paper ball, folded sheet, kraft paper) work as wipes between sections.
 
+## Motion graphics on top (always add them)
+Paper-sticker overlays from `tools/reel_fx.py`, set per shot as `"fx"` in `shots.json` (types are listed in that file). Keep them above y≈1200 so they never cover the captions.
+- **Step tracker** at the top for "how it works" sections: numbered dots, with the active one in yellow and pulsing and finished ones ticked in green.
+- **Counters** for every number (₹19, ₹23, ₹100/din) that count up and bump, with a small navy label underneath.
+- **Stickers:** cream, yellow, navy or red pills with an outline, drop shadow, pop-in and a slight wobble.
+- **Stamp slam** (APPROVED) with shake and flash; a **scramble** for encrypted or secret text; a **stopwatch** for "kuch seconds".
+- **Ticked checklist** for checks; a **route** (dotted line and travelling packet) for "data goes from A to B"; **pulse** rings; floating **?** marks for confusion.
+- Every pop, count, slam and tick has a sound cue.
+
+## Clip library
+`library/card-mascot/` has the mascot's AI animations from earlier reels; see the README there for what happens when in each clip. Use them first, with `"media"` clip segments (in/out and slow-mo), and fill the gaps with AI stills or `papercraft.py` scenes.
+
 ## Captions (burned in, bottom third)
 - 2–3 lines, centred, bold rounded sans (Inter / Poppins Bold), white with a black outline and shadow.
 - **Keywords highlighted:** yellow for labels and numbers (`Kamaai #1`, `~2% fee`, `₹0`), red for the punch words (`Galat!`, `paise kamane ki machine`, `right?`, `18% GST`).

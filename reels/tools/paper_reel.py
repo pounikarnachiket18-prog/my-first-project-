@@ -16,11 +16,14 @@ Usage (from reels/):
 
 Shot durations: if the project has vo.* the shots share the VO length in proportion to
 caption length; `"dur": 3.5` on a shot overrides that. Without VO it's ~0.36 s per word.
-Shots can use images/<id>.(jpg|png|webp) or clips/<id>.mp4 (image-to-video output).
+Shots can use images/<id>.(jpg|png|webp), clips/<id>.mp4, or a "media" list mixing clip
+segments (with in/out and slow-mo speed, e.g. from library/) and images.
 """
 import json, math, os, re, subprocess, sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from reel_fx import FX, fx_cues
 
 W, H, FPS = 1080, 1920, 30
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -103,37 +106,110 @@ def logo():
 
 
 # ------------------------------------------------------------------ shots
-def load_source(proj, sid):
-    clip = os.path.join(proj, "clips", f"{sid}.mp4")
-    if os.path.exists(clip):
-        return ("clip", clip)
+# A shot plays a sequence of media items, e.g.
+#   "media": [{"clip": "library/card-mascot/atm-cash-out.mp4", "in": 0.8, "out": 3.2, "speed": 0.6},
+#             {"image": "s08"}]
+# Clip items take their natural length ((out-in)/speed); image items share the rest of the shot.
+# Without "media", the shot uses clips/<id>.mp4 or images/<id>.* (placeholder if neither exists).
+ITEM_FADE = 0.2
+
+
+def load_still(proj, sid):
     for ext in ("jpg", "jpeg", "png", "webp"):
         p = os.path.join(proj, "images", f"{sid}.{ext}")
         if os.path.exists(p):
             im = Image.open(p).convert("RGB")
-            # cover-fit to 9:16 with headroom for camera moves
-            scale = max(W * 1.18 / im.width, H * 1.18 / im.height)
-            im = im.resize((math.ceil(im.width * scale), math.ceil(im.height * scale)), Image.LANCZOS)
-            return ("image", im)
-    # placeholder so the reel always renders
+            scale = max(W * 1.18 / im.width, H * 1.18 / im.height)   # headroom for camera moves
+            return im.resize((math.ceil(im.width * scale), math.ceil(im.height * scale)), Image.LANCZOS), True
     im = Image.new("RGB", (int(W * 1.18), int(H * 1.18)), (176, 132, 84))
-    d = ImageDraw.Draw(im)
-    d.text((im.width / 2, im.height / 2), f"{sid}\n(add images/{sid}.jpg)", font=font(64), fill=(60, 35, 15), anchor="mm", align="center")
-    return ("image", im)
+    ImageDraw.Draw(im).text((im.width / 2, im.height / 2), f"{sid}\n(add images/{sid}.jpg)", font=font(64), fill=(60, 35, 15), anchor="mm", align="center")
+    return im, False
 
 
-class ClipReader:
-    """Reads an image-to-video clip as 1080x1920 frames (looped/held to fit)."""
-    def __init__(self, path):
-        out = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-vf",
-                              f"fps={FPS},scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H}",
-                              "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], capture_output=True, check=True).stdout
-        n = len(out) // (W * H * 3)
-        self.frames = np.frombuffer(out, np.uint8)[: n * W * H * 3].reshape(n, H, W, 3)
+def prep_clip(src, t_in=0.0, t_out=None, speed=1.0):
+    """Trim / slow / interpolate / scale a clip to 1080x1920@30 once and cache it."""
+    import hashlib
+    t_out = t_out if t_out is not None else float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", src],
+                                                               capture_output=True, text=True).stdout)
+    key = hashlib.md5(f"{os.path.abspath(src)}|{os.path.getmtime(src)}|{t_in}|{t_out}|{speed}".encode()).hexdigest()[:12]
+    cache = os.path.join(ROOT, "output", "cache")
+    os.makedirs(cache, exist_ok=True)
+    out = os.path.join(cache, f"{os.path.splitext(os.path.basename(src))[0]}-{key}.mp4")
+    if not os.path.exists(out):
+        vf = f"setpts=PTS/{speed},"
+        vf += f"minterpolate=fps={FPS}:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1," if speed < 0.95 else f"fps={FPS},"
+        vf += f"scale={W}:{H}:force_original_aspect_ratio=increase:flags=lanczos,crop={W}:{H}"
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", str(t_in), "-t", str(t_out - t_in), "-i", src, "-vf", vf, "-an",
+                        "-c:v", "libx264", "-crf", "14", "-preset", "fast", "-pix_fmt", "yuv420p", out + ".tmp.mp4"], check=True)
+        os.replace(out + ".tmp.mp4", out)
+    n = int(subprocess.run(["ffprobe", "-v", "error", "-count_frames", "-select_streams", "v:0", "-show_entries", "stream=nb_read_frames",
+                            "-of", "csv=p=0", out], capture_output=True, text=True).stdout.strip() or 0)
+    return out, n
 
-    def frame(self, t):
-        i = min(int(t * FPS), len(self.frames) - 1)
-        return Image.fromarray(self.frames[i])
+
+class ClipStream:
+    """Sequential frame reader for a prepared clip; random access re-seeks; holds the last frame."""
+    def __init__(self, path, n):
+        self.path, self.n, self.proc, self.pos, self.cur, self.last = path, n, None, -1, None, None
+
+    def _open(self, start):
+        if self.proc:
+            self.proc.kill()
+        self.proc = subprocess.Popen(["ffmpeg", "-v", "quiet", "-ss", f"{start / FPS:.4f}", "-i", self.path, "-f", "rawvideo", "-pix_fmt", "rgb24", "-"],
+                                     stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        self.pos = start - 1
+
+    def frame(self, i):
+        i = max(0, min(i, self.n - 1))
+        if i == self.pos and self.cur is not None:
+            return self.cur
+        if self.last is not None and i == self.n - 1:
+            return self.last
+        if self.proc is None or i < self.pos or i > self.pos + 45:
+            self._open(i)
+        while self.pos < i:
+            buf = self.proc.stdout.read(W * H * 3)
+            if len(buf) < W * H * 3:
+                self.n = self.pos + 1
+                return self.cur if self.cur is not None else Image.new("RGB", (W, H))
+            self.pos += 1
+            self.cur = Image.frombytes("RGB", (W, H), buf)
+        if i == self.n - 1:
+            self.last = self.cur
+        return self.cur
+
+
+def build_items(proj, shot, dur):
+    """-> list of dicts {kind, t0, t1, data} in shot-local time."""
+    spec = shot.get("media")
+    if not spec:
+        clip = os.path.join(proj, "clips", f"{shot['id']}.mp4")
+        spec = [{"clip": os.path.relpath(clip, ROOT)}] if os.path.exists(clip) else [{"image": shot["id"]}]
+    items = []
+    for m in spec:
+        if "clip" in m:
+            path, n = prep_clip(os.path.join(ROOT, m["clip"]), m.get("in", 0.0), m.get("out"), m.get("speed", 1.0))
+            items.append({"kind": "clip", "len": n / FPS, "data": ClipStream(path, n), "ok": True})
+        else:
+            im, ok = load_still(proj, m["image"])
+            items.append({"kind": "image", "len": None, "data": im, "ok": ok, "min": m.get("min", 1.2)})
+    clip_len = sum(it["len"] for it in items if it["kind"] == "clip")
+    imgs = [it for it in items if it["kind"] == "image"]
+    if imgs:
+        need = sum(it["min"] for it in imgs)
+        k = min(1.0, max(0.0, dur - need) / clip_len) if clip_len else 1.0
+        for it in items:
+            if it["kind"] == "clip":
+                it["len"] *= k            # trims clip playback if the shot is short
+        rest = (dur - clip_len * k) / len(imgs)
+        for it in imgs:
+            it["len"] = rest
+    t = 0.0
+    for it in items:
+        it["t0"], it["t1"] = t, t + it["len"]
+        t = it["t1"]
+    items[-1]["t1"] = max(items[-1]["t1"], dur)  # last item holds to the end of the shot
+    return items
 
 
 def ease(x):
@@ -141,31 +217,37 @@ def ease(x):
     return x * x * (3 - 2 * x)
 
 
-def camera(src, move, k, local_t, dur, idx):
-    """k = 0..1 progress through the shot."""
-    if src[0] == "clip":
-        frame = src[1].frame(local_t)
-        if move == "zoom" and local_t > dur - ZOOM_T:
-            z = 1 + 1.4 * ease((local_t - (dur - ZOOM_T)) / ZOOM_T) ** 2
-            frame = frame.resize((int(W * z), int(H * z)), Image.BILINEAR)
-            frame = frame.crop(((frame.width - W) // 2, (frame.height - H) // 2, (frame.width - W) // 2 + W, (frame.height - H) // 2 + H))
-        return frame
-    im = src[1]
+def crop_zoom(im, z, cx=0.5, cy=0.5):
     base = max(W / im.width, H / im.height)
-    if move == "pan":
-        z = 1.12
-        dirn = -1 if idx % 2 else 1
-        cx = 0.5 + dirn * (k - 0.5) * 0.12
-        cy = 0.5
-    else:  # push / zoom
-        z = 1.0 + 0.09 * k
-        cx, cy = 0.5, 0.48
-        if move == "zoom" and local_t > dur - ZOOM_T:
-            z += 1.6 * ease((local_t - (dur - ZOOM_T)) / ZOOM_T) ** 2
     cw, ch = W / (base * z), H / (base * z)
     x0 = min(max(cx * im.width - cw / 2, 0), im.width - cw)
     y0 = min(max(cy * im.height - ch / 2, 0), im.height - ch)
     return im.resize((W, H), Image.BILINEAR, box=(x0, y0, x0 + cw, y0 + ch))
+
+
+def item_frame(it, lt, move, idx):
+    """Frame of one media item at shot-local time lt, with its own camera move."""
+    k = (lt - it["t0"]) / max(it["t1"] - it["t0"], 1e-6)
+    if it["kind"] == "clip":
+        f = it["data"].frame(int(round((lt - it["t0"]) * FPS)))
+        return crop_zoom(f, 1.0 + 0.05 * k) if k > 0 else f
+    im = it["data"]
+    if move == "pan":
+        dirn = -1 if idx % 2 else 1
+        return crop_zoom(im, 1.12, 0.5 + dirn * (k - 0.5) * 0.12, 0.5)
+    return crop_zoom(im, 1.0 + 0.09 * k, 0.5, 0.48)
+
+
+def shot_frame(items, lt, dur, move, idx):
+    j = next((n for n, it in enumerate(items) if lt < it["t1"]), len(items) - 1)
+    img = item_frame(items[j], lt, move, idx)
+    if j > 0 and lt - items[j]["t0"] < ITEM_FADE:
+        prev = item_frame(items[j - 1], items[j - 1]["t1"] - 1e-3, move, idx)
+        img = Image.blend(prev, img, ease((lt - items[j]["t0"]) / ITEM_FADE))
+    if move == "zoom" and lt > dur - ZOOM_T:   # zoom-through into the next shot
+        z = 1 + 1.6 * ease((lt - (dur - ZOOM_T)) / ZOOM_T) ** 2
+        img = crop_zoom(img, z, 0.5, 0.48)
+    return img
 
 
 # ------------------------------------------------------------------ main
@@ -194,15 +276,11 @@ def main():
     total = float(starts[-1])
     print(f"[{name}] {len(shots)} shots, {total:.1f}s, VO: {os.path.basename(vo) if vo else 'none (music + SFX only)'}")
 
-    sources = []
-    for s in shots:
-        src = load_source(proj, s["id"])
-        if src[0] == "clip":
-            src = ("clip", ClipReader(src[1]))
-        sources.append(src)
-    have = sum(1 for s in shots if any(os.path.exists(os.path.join(proj, "images", f"{s['id']}.{e}")) for e in ("jpg", "jpeg", "png", "webp"))
-               or os.path.exists(os.path.join(proj, "clips", f"{s['id']}.mp4")))
-    print(f"  media found for {have}/{len(shots)} shots")
+    from concurrent.futures import ThreadPoolExecutor
+    with ThreadPoolExecutor(4) as ex:   # clip prep (slow-mo interpolation) runs in parallel
+        sources = list(ex.map(lambda a: build_items(proj, a[0], a[1]), zip(shots, durs)))
+    have = sum(1 for its in sources if all(it["ok"] for it in its))
+    print(f"  media found for {have}/{len(shots)} shots ({sum(it['kind'] == 'clip' for its in sources for it in its)} clip segments)")
 
     caps = [text_block(parse_spans(s["caption"]), 58, 920) for s in shots]
     t_cfg = cfg.get("title")
@@ -217,6 +295,7 @@ def main():
             title.alpha_composite(i, ((title.width - i.width) // 2, yy))
             yy += i.height - 40
     lg = logo()
+    MG = FX()
     vignette = Image.new("L", (W, H), 0)
     vd = ImageDraw.Draw(vignette)
     for i in range(60):  # darken the bottom third gently so captions read
@@ -230,13 +309,23 @@ def main():
         i = int(np.searchsorted(starts, t, side="right") - 1)
         i = min(max(i, 0), len(shots) - 1)
         lt = t - starts[i]
-        img = camera(sources[i], shots[i].get("move", "push"), lt / durs[i], lt, durs[i], i)
+        img = shot_frame(sources[i], lt, durs[i], shots[i].get("move", "push"), i)
         # cross-dissolve from the previous shot (skip after a zoom-through: that's a hard match cut)
         if i > 0 and lt < XFADE and shots[i - 1].get("move") != "zoom":
-            prev = camera(sources[i - 1], shots[i - 1].get("move", "push"), 1.0, durs[i - 1], durs[i - 1], i - 1)
+            prev = shot_frame(sources[i - 1], durs[i - 1] - 1e-3, durs[i - 1], shots[i - 1].get("move", "push"), i - 1)
             img = Image.blend(prev, img, ease(lt / XFADE))
         frame = img.convert("RGBA")
         frame.alpha_composite(shade)
+        fx = shots[i].get("fx", [])
+        if fx:
+            dx, dy, fl = MG.offset(fx, lt)
+            if dx or dy:
+                big = frame.resize((int(W * 1.05), int(H * 1.05)), Image.BILINEAR)
+                ox, oy = int((big.width - W) / 2 - dx), int((big.height - H) / 2 - dy)
+                frame = big.crop((ox, oy, ox + W, oy + H))
+            MG.draw(frame, fx, lt, durs[i])
+            if fl:
+                frame.alpha_composite(Image.new("RGBA", (W, H), (255, 248, 230, int(255 * fl))))
         # caption: quick pop-in
         cap = caps[i]
         k = ease(lt / 0.14)
@@ -297,6 +386,8 @@ def main():
             cues.append({"t": t0 + durs[i] - ZOOM_T - 0.05, "sfx": "whoosh", "gain": 0.45})
         if "₹" in s["caption"]:
             cues.append({"t": t0 + 0.4, "sfx": "ding", "gain": 0.25})
+    for i, s in enumerate(shots):
+        cues += fx_cues(s.get("fx", []), float(starts[i]))
     cues_p = os.path.join(out_dir, f"{name}.cues.json")
     bed = os.path.join(out_dir, f"{name}.sfx.wav")
     json.dump(sorted(cues, key=lambda c: c["t"]), open(cues_p, "w"))
