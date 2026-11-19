@@ -183,10 +183,77 @@ def timeline():
     return starts, acc
 
 
+# ---------------------------------------------------------------- voiceover sync
+VO_LINES = os.path.join(HERE, "audio", "vo_lines.json")   # line start times in the 1.5x voiceover
+VO_LEAD = 1.73        # seconds trimmed off the start of the voiceover (silence), so speech starts at ~0.3s
+TAIL = 1.3            # seconds of picture after the last word
+F_MIN, F_MAX = 0.75, 1.5   # clip speed limits: 0.75 = 1.33x faster, 1.5 = slow-motion (24 -> 30 fps)
+HOLD_AT = {"N2 funding": 0.45, "N3 kirana": 0.5, "proof": 0.5, "N5 tips": 0.72}   # where a long line pauses
+
+
+def vo_timeline():
+    """Clip start times that follow the voiceover lines (one line per clip)."""
+    with open(VO_LINES) as f:
+        j = json.load(f)
+    vs = j["starts"]
+    starts = [0.0] + [t - VO_LEAD - 0.1 for t in vs[1:]]
+    total = j["end"] - VO_LEAD + TAIL
+    segs = []
+    for i in range(len(CLIPS)):
+        nxt_join = CLIPS[i + 1][2] if i + 1 < len(CLIPS) else 0
+        end = starts[i + 1] + nxt_join if i + 1 < len(CLIPS) else total
+        segs.append((starts[i], end - starts[i]))
+    return segs, total
+
+
+def make_segment(i, length, path):
+    """Fit clip i to `length` seconds: speed change within limits, then trim or a gentle Ken Burns hold."""
+    label, src, _, _ = CLIPS[i]
+    inp = f"{UP}/{src}.mp4"
+    L = probe(inp)
+    f = min(max(length / L, F_MIN), F_MAX)
+    played = L * f
+    hold = max(0.0, length - played)
+    norm = f"scale={W}:{H}:flags=lanczos,fps={FPS},format=yuv420p,setsar=1"
+    tempo = max(0.5, min(2.0, 1 / f))
+    cmd = ["ffmpeg", "-v", "error", "-y", "-i", inp]
+    if hold > 0.05:
+        h = HOLD_AT.get(label, 0.6) * L
+        still = os.path.join(BUILD, f"hold{i:02d}.png")
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{h:.3f}", "-i", inp, "-frames:v", "1", still], check=True)
+        nk = max(2, round(hold * FPS))
+        cmd += ["-loop", "1", "-framerate", str(FPS), "-t", f"{hold:.3f}", "-i", still]
+        g = (f"[0:v]trim=0:{h:.3f},setpts=(PTS-STARTPTS)*{f:.4f},{norm}[A];"
+             f"[0:v]trim={h:.3f},setpts=(PTS-STARTPTS)*{f:.4f},{norm}[B];"
+             f"[1:v]scale={2 * W}:{2 * H}:flags=lanczos,zoompan=z='1+0.05*sin(PI*on/{nk})':"
+             f"x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s={W}x{H}:fps={FPS},format=yuv420p,setsar=1[K];"
+             f"[A][K][B]concat=n=3:v=1:a=0,trim=0:{length:.4f},setpts=PTS-STARTPTS[v];")
+    else:
+        g = f"[0:v]setpts=PTS*{f:.4f},{norm},trim=0:{length:.4f},setpts=PTS-STARTPTS[v];"
+    g += (f"[0:a]aformat=sample_rates=48000:channel_layouts=stereo,atempo={tempo:.4f},"
+          f"apad,atrim=0:{length:.4f},asetpts=PTS-STARTPTS[a]")
+    cmd += ["-filter_complex", g, "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-preset", "fast", "-crf", "14",
+            "-c:a", "pcm_s16le", "-t", f"{length:.4f}", path]
+    subprocess.run(cmd, check=True)
+    note = f"speed x{1 / f:.2f}" + (f", hold {hold:.1f}s" if hold > 0.05 else "") + \
+           (f", trimmed {played - length:.1f}s" if played - length > 0.05 else "")
+    print(f"  seg {i + 1:2d} {label:<11} {length:5.2f}s  ({note})")
+
+
 def build(out, vo=None, preview=False):
     os.makedirs(BUILD, exist_ok=True)
     os.makedirs(OUT, exist_ok=True)
-    starts, total = timeline()
+    if vo:
+        starts, total = vo_timeline()
+        srcs = []
+        for i, (_, length) in enumerate(starts):
+            p = os.path.join(BUILD, f"seg{i:02d}_{length:.3f}.mkv")
+            if not os.path.exists(p):
+                make_segment(i, length, p)
+            srcs.append(p)
+    else:
+        starts, total = timeline()
+        srcs = [f"{UP}/{src}.mp4" for _, src, _, _ in CLIPS]
 
     # ---- overlay images
     overlays = []                                                    # (png, t0, t1)
@@ -205,13 +272,13 @@ def build(out, vo=None, preview=False):
 
     # ---- ffmpeg graph
     cmd = ["ffmpeg", "-v", "error", "-y"]
-    for _, src, _, _ in CLIPS:
-        cmd += ["-i", f"{UP}/{src}.mp4"]
+    for s in srcs:
+        cmd += ["-i", s]
     n = len(CLIPS)
     for png, _, _ in overlays:
         cmd += ["-i", png]
     if vo:
-        cmd += ["-i", vo]
+        cmd += ["-ss", f"{VO_LEAD:.3f}", "-i", vo]
     g = []
     for i in range(n):
         vd = starts[i][1]
@@ -230,12 +297,12 @@ def build(out, vo=None, preview=False):
     g.append(f"[{vprev}]format=yuv420p[vout]")
     if vo:
         vi = n + len(overlays)
-        g.append(f"[{vi}:a]aformat=sample_rates=48000:channel_layouts=stereo,loudnorm=I=-16:TP=-1.5:LRA=7,asplit=2[vo][sc]")
-        g.append(f"[{aprev}]volume=0.5[bed]")
+        g.append(f"[{vi}:a]aformat=sample_rates=48000:channel_layouts=stereo,loudnorm=I=-16:TP=-1.5:LRA=7,apad,asplit=2[vo][sc]")
+        g.append(f"[{aprev}]apad,atrim=0:{total:.3f},volume=0.4[bed]")
         g.append("[bed][sc]sidechaincompress=threshold=0.03:ratio=6:attack=20:release=350[duck]")
-        g.append("[duck][vo]amix=inputs=2:duration=first:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=9[aout]")
+        g.append(f"[duck][vo]amix=inputs=2:duration=first:normalize=0,loudnorm=I=-14:TP=-1.5:LRA=9,apad,atrim=0:{total:.3f}[aout]")
     else:
-        g.append(f"[{aprev}]loudnorm=I=-14:TP=-1.5:LRA=9[aout]")
+        g.append(f"[{aprev}]loudnorm=I=-14:TP=-1.5:LRA=9,apad,atrim=0:{total:.3f}[aout]")
 
     graph = os.path.join(BUILD, "graph.txt")
     with open(graph, "w") as f:
