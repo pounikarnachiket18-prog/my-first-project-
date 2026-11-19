@@ -1,5 +1,9 @@
 # Reels Studio
 
+> **Default style for new reels is the papercraft mascot explainer: see [`STYLE.md`](STYLE.md).**
+> Build it with `python3 tools/paper_reel.py projects/<name>` (example: `projects/atm-kaise`).
+> The HTML + GSAP motion-graphics pipeline below is the alternative look.
+
 Motion-graphics Instagram Reels (1080×1920, 30 fps) written as HTML + GSAP, rendered frame by frame with Playwright, with original synthesized sound effects mixed in.
 
 ## Setup (once)
