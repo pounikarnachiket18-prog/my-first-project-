@@ -42,6 +42,10 @@ The reference reel is "Credit card paise kaise kamata hai?" (71 s, Hinglish), an
 ## Pipeline
 1. **Script:** Hinglish VO lines. Each line becomes one caption and gets a shot description.
 2. **Images:** Generate one 9:16 image per shot with the prompt template below, using Canva `generate-image` or any image AI.
+   - Make one AI master shot of the mascot first, and pass it as the reference for every other shot.
+   - If image AI isn't available (e.g. no credits), cut the mascot out of the master shot with OpenCV GrabCut.
+     Then build the scenes in code with `tools/papercraft.py` (cut-paper shapes with grain, bevels and drop shadows).
+     See `projects/atm-kaise/scenes.py` for a full example.
 3. **Motion:** Animate each image into a 2–4 s clip.
    - Best: Kling, Veo or Runway image-to-video, with a motion prompt per shot.
    - Fallback: `tools/paper_reel.py`, which does push-in / pan / zoom-through on stills.

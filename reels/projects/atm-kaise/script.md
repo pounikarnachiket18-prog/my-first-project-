@@ -1,13 +1,15 @@
 # ATM kisi bhi bank ka card kaise chalta hai?  (papercraft mascot reel)
 
-House style: `reels/STYLE.md`. About 65 s, Hinglish. **Status:** shot `s02` is done; the other 13 images still need to be generated.
+House style: `reels/STYLE.md`. About 65 s, Hinglish. **Status:** rendered as `reels/output/atm-kaise.mp4` (67 s, music + SFX + captions, no voiceover yet).
+`s02` is an AI image from Canva. The other 13 shots are cut-paper scenes built by `scenes.py`, using the mascot cut out of `s02` (`assets/mascot.png`). Rebuild them with `python3 projects/atm-kaise/scenes.py`.
 
 ## Steps
 
-1. **Make the 13 missing images.** Paste each prompt below into your image AI (Canva AI, Gemini, ChatGPT, Firefly…).
+1. **(Optional) Upgrade shots to AI images.** Drop an AI image over any `images/sNN.png` to replace the built scene.
+   Paste each prompt below into your image AI (Canva AI, Gemini, ChatGPT, Firefly…). Paste each prompt below into your image AI (Canva AI, Gemini, ChatGPT, Firefly…).
    - Upload `images/s02.png` as the reference so the mascot looks the same in every shot.
    - Save the results as `images/s01.png`, `images/s03.png`, … at 9:16.
-   - `s01` already exists in your Canva account ("AaH1tALY…jpg"). Download it and save it as `images/s01.jpg`.
+   - An AI version of `s01` is also in your Canva account ("AaH1tALY…jpg"). Save it as `images/s01.png` to use it.
 2. **Motion (optional, looks closest to the reference).** Animate each image in Kling / Veo / Runway with its motion prompt.
    - Save the clips as `clips/<id>.mp4`. Clips are used instead of the stills.
 3. **Voiceover.** Record or AI-generate the VO below and save it as `vo.mp3`. Shot lengths fit the VO automatically.
