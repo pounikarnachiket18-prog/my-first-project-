@@ -36,10 +36,7 @@ CUT, DIS = 1 / FPS, 0.22                                 # join types (seconds o
 # (label, source file, join INTO this clip from the previous one, captions)
 # caption = (start fraction, end fraction, text, y-centre); *word* = yellow, ~word~ = red
 CLIPS = [
-    ("cold open",  "dd55ec4f-332744694_1795116959065049", None, [
-        (0.00, 1.00, "Aapki Maggi *10 minute* mein aati hai…", 1585)]),
-    ("hook",       "b734d0ac-771940358_1795116909552955", DIS, [
-        (0.00, 1.00, "…aur Zepto ke *₹3,367 crore* ~gaye?~", 1360)]),
+    ("hook",       "b734d0ac-771940358_1795116909552955", None, []),      # first clip: no text at all
     ("promise",    "0db13558-9470849_1795116908144005", DIS, [
         (0.00, 1.00, "Kaise? *End mein* bataunga… Zepto *asal mein* kya bechta hai", 1360)]),
     ("rise",       "cfb5f02f-387929739_1795116906777838", DIS, [
@@ -186,7 +183,7 @@ def timeline():
 
 # ---------------------------------------------------------------- voiceover sync
 VO_LINES = os.path.join(HERE, "audio", "vo_lines.json")   # line start times in the 1.5x voiceover
-VO_LEAD = 1.73        # seconds trimmed off the start of the voiceover (silence), so speech starts at ~0.3s
+VO_LEAD = 0.0         # keep the voiceover from its very first sample (only sped up 1.5x)
 TAIL = 1.3            # seconds of picture after the last word
 F_MIN, F_MAX = 0.75, 1.5   # clip speed limits: 0.75 = 1.33x faster, 1.5 = slow-motion (24 -> 30 fps)
 HOLD_AT = {"N2 funding": 0.45, "N3 kirana": 0.5, "proof": 0.5, "N5 tips": 0.72}   # where a long line pauses
@@ -258,7 +255,7 @@ def build(out, vo=None, preview=False):
 
     # ---- overlay images
     overlays = []                                                    # (png, t0, t1)
-    title = os.path.join(BUILD, "title.png"); title_png(title); overlays.append((title, 0.0, 2.6))
+    # no title or caption on the first clip
     for i, (label, _, _, caps) in enumerate(CLIPS):
         s, dur = starts[i]
         nxt = starts[i + 1][0] if i + 1 < len(CLIPS) else total
