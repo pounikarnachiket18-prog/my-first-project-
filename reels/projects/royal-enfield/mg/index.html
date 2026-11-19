@@ -1,0 +1,515 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<!--
+  Royal Enfield reel: motion-graphics layer.
+  A transparent 1080x1920 overlay, drawn deterministically by window.MG.render(t).
+  render_mg.js screenshots it frame by frame; compose.py lays it over the base reel.
+-->
+<style>
+@font-face{font-family:Bungee;src:url(fonts/bungee-latin-400-normal.woff2)}
+@font-face{font-family:Anton;src:url(fonts/anton-latin-400-normal.woff2)}
+@font-face{font-family:Elite;src:url(fonts/special-elite-latin-400-normal.woff2)}
+@font-face{font-family:Marker;src:url(fonts/permanent-marker-latin-400-normal.woff2)}
+html,body{margin:0;width:1080px;height:1920px;background:transparent;overflow:hidden}
+body{font-family:Inter,'Noto Color Emoji',sans-serif;-webkit-font-smoothing:antialiased}
+.abs{position:absolute;left:0;top:0}
+.full{position:absolute;left:0;top:0;width:1080px;height:1920px}
+.hide{display:none}
+
+/* caption strip */
+#stripWrap{position:absolute;left:30px;top:1272px;width:1020px;height:252px;transform-origin:50% 50%}
+#stripBack{position:absolute;inset:0;background:#8a6a3e}
+#strip{position:absolute;inset:0;background-color:#EAD7AE}
+.tape{position:absolute;width:150px;height:46px;background:rgba(246,238,214,.78);box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.cap{position:absolute;left:40px;right:40px;top:0;bottom:0;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;
+     font-weight:900;color:#20160d;line-height:1.18;letter-spacing:-.5px;text-align:center}
+.w{position:relative;display:inline-block;margin:0 .14em;transform-origin:50% 80%;white-space:nowrap}
+.w .mk{position:absolute;left:-.16em;right:-.16em;top:.1em;bottom:.02em;border-radius:.12em;transform-origin:0 50%;transform:skewX(-6deg) scaleX(0)}
+.w .tx{position:relative}
+.w.y .mk{background:#FFD21F}
+.w.r .mk{background:#E0262F}
+.w.r .tx{color:#fff}
+.br{flex-basis:100%;height:0}
+#disc{position:absolute;left:230px;top:1506px;width:620px;height:74px;background:#FBF6EA;transform:rotate(1.4deg);
+      display:flex;align-items:center;justify-content:center;font:700 25px Inter,'Noto Color Emoji';color:#4a3a28}
+
+/* progress road */
+#road{position:absolute;left:70px;top:54px;width:940px;height:8px;border-radius:4px;background:rgba(255,255,255,.35);box-shadow:0 1px 4px rgba(0,0,0,.35)}
+#roadFill{position:absolute;left:0;top:0;height:8px;border-radius:4px;background:linear-gradient(90deg,#FF9933,#FFD21F)}
+.pdot{position:absolute;top:-5px;width:18px;height:18px;margin-left:-9px;border-radius:50%;background:#fff;border:3px solid #6b4a22;box-sizing:border-box}
+#bike{position:absolute;top:-34px;font-size:46px;margin-left:-26px;transform-origin:50% 100%}
+#flag{position:absolute;left:944px;top:-30px;font-size:38px}
+
+/* era stamp */
+#stamp{position:absolute;left:66px;top:138px;padding:10px 22px 12px;border:5px solid #C8231E;outline:2px solid #C8231E;outline-offset:5px;
+       background:rgba(250,240,220,.88);color:#C8231E;text-align:center;transform-origin:50% 50%}
+#stamp .big{font:400 70px/1 Elite;letter-spacing:2px}
+#stamp .sub{font:800 21px/1 Inter;letter-spacing:5px;margin-top:6px}
+
+/* transitions */
+.sheet{position:absolute;left:-110px;top:-100px;width:1300px;height:2120px}
+.sheet .b{position:absolute;inset:0;background:#b89b6a}
+.sheet .f{position:absolute;inset:0;background-color:#F1E3C4}
+#flash{background:#fff}
+#burn{background:radial-gradient(circle at 50% 45%,rgba(255,214,140,.95),rgba(255,140,40,.75) 45%,rgba(120,40,0,.0) 80%)}
+#black{background:#000}
+#vig{background:radial-gradient(ellipse at 50% 50%,rgba(0,0,0,0) 55%,rgba(20,10,0,.55) 100%)}
+
+/* hook */
+.spark line{stroke-linecap:round}
+#burstWrap{position:absolute;left:0;top:0;width:1080px;height:1920px}
+#burstText{position:absolute;left:140px;width:800px;top:610px;height:460px;text-align:center}
+#ruko{font:400 150px/1 Bungee;color:#FFD21F;-webkit-text-stroke:10px #111;paint-order:stroke fill;text-shadow:0 10px 0 #111}
+#asli{font:900 58px/1.1 Inter;color:#fff;-webkit-text-stroke:8px #111;paint-order:stroke fill;margin-top:18px}
+.brit{font:400 104px/1 Bungee;-webkit-text-stroke:9px #111;paint-order:stroke fill;margin-top:14px;position:relative}
+.brit span{position:absolute;left:0;right:0;top:0}
+.qm{position:absolute;font:400 150px/1 Bungee;color:#FFD21F;-webkit-text-stroke:8px #111;paint-order:stroke fill}
+
+/* specials */
+.card{position:absolute;border-radius:18px;box-shadow:0 10px 24px rgba(0,0,0,.35)}
+.hud{background:rgba(18,14,10,.82);border:3px solid #FFD21F;color:#fff}
+.lbl{font:400 34px/1 Bungee;color:#FFD21F}
+.dug{position:absolute;font:400 110px/1 Bungee;color:#FFD21F;-webkit-text-stroke:9px #111;paint-order:stroke fill;text-shadow:7px 8px 0 #E0262F;white-space:nowrap}
+.conf{position:absolute;width:20px;height:11px;border-radius:2px}
+.chip{position:absolute;padding:14px 26px;border-radius:40px;background:#F4E6C6;border:4px solid #3b2a17;font:900 34px/1 Inter,'Noto Color Emoji';color:#22170c;white-space:nowrap;box-shadow:0 6px 0 #3b2a17}
+.bigNum{font:400 104px/1 Bungee;color:#FFD21F;-webkit-text-stroke:9px #111;paint-order:stroke fill;text-shadow:0 8px 0 #111}
+.subNum{font:900 42px/1.1 Inter,'Noto Color Emoji';color:#fff;-webkit-text-stroke:7px #111;paint-order:stroke fill}
+</style>
+</head>
+<body>
+<div id="root" class="full"></div>
+<script>
+// ------------------------------------------------------------------ helpers
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const lin=(t,a,b)=>clamp((t-a)/(b-a));
+const eOut=x=>1-Math.pow(1-x,3);
+const eIn=x=>x*x*x;
+const eIO=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const back=x=>{const c1=2.2,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2)};
+const lerp=(a,b,x)=>a+(b-a)*x;
+function rng(seed){let a=seed>>>0;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const root=document.getElementById('root');
+function el(tag,cls,parent,style,html){const e=document.createElement(tag);if(cls)e.className=cls;if(style)e.style.cssText=style;if(html!=null)e.innerHTML=html;(parent||root).appendChild(e);return e}
+const SVGNS='http://www.w3.org/2000/svg';
+function svg(tag,attrs,parent){const e=document.createElementNS(SVGNS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e}
+function show(e,on){e.style.display=on?'':'none'}
+function tf(e,s){e.style.transform=s}
+
+// torn-edge polygon (px) for a w x h box; edges: 't','b','l','r'
+function torn(w,h,amp,step,edges,seed){
+  const r=rng(seed);const j=()=>(r()*2-1)*amp;const p=[];
+  const T=edges.includes('t'),B=edges.includes('b'),L=edges.includes('l'),R=edges.includes('r');
+  for(let x=0;x<=w;x+=step)p.push([x,T?amp+j():0]);
+  for(let y=0;y<=h;y+=step)p.push([w-(R?amp+j():0),y]);
+  for(let x=w;x>=0;x-=step)p.push([x,h-(B?amp+j():0)]);
+  for(let y=h;y>=0;y-=step)p.push([L?amp+j():0,y]);
+  return 'polygon('+p.map(q=>q[0].toFixed(1)+'px '+q[1].toFixed(1)+'px').join(',')+')';
+}
+// paper texture (fibres + specks) as a data URL
+function paperTex(seed,dark){
+  const c=document.createElement('canvas');c.width=c.height=400;const g=c.getContext('2d');const r=rng(seed);
+  for(let i=0;i<2600;i++){g.fillStyle=`rgba(${dark?'60,40,15':'255,255,255'},${r()*.10})`;g.fillRect(r()*400,r()*400,1+r()*2,1+r()*2)}
+  for(let i=0;i<220;i++){g.strokeStyle=`rgba(90,60,25,${.04+r()*.08})`;g.lineWidth=.6+r();g.beginPath();const x=r()*400,y=r()*400,a=r()*6.28,l=6+r()*22;g.moveTo(x,y);g.quadraticCurveTo(x+Math.cos(a+.6)*l/2,y+Math.sin(a+.6)*l/2,x+Math.cos(a)*l,y+Math.sin(a)*l);g.stroke()}
+  return `url(${c.toDataURL()})`;
+}
+function grunge(seed){ // alpha mask for ink stamps
+  const c=document.createElement('canvas');c.width=c.height=300;const g=c.getContext('2d');const r=rng(seed);
+  g.fillStyle='#000';g.fillRect(0,0,300,300);g.globalCompositeOperation='destination-out';
+  for(let i=0;i<900;i++){g.fillStyle=`rgba(0,0,0,${.25+r()*.6})`;g.beginPath();g.arc(r()*300,r()*300,.5+r()*2.6,0,6.28);g.fill()}
+  return `url(${c.toDataURL()})`;
+}
+
+// ------------------------------------------------------------------ timeline (matches audio_re.py)
+const H1=5.4333333,CL=3.4666667,N=15;
+const S=[0];for(let k=1;k<N;k++)S.push(H1+CL*(k-1));
+const END=S[N-1]+CL,DUR=END+1.8;S.push(DUR);
+const FREEZE0=2.40,FREEZE1=3.85;
+
+const CAPS=[
+ "Gali ka asli <y>DON</y> 😎🔥",
+ "Ek zamaane mein iske rider <y>aise</y> hote the 🎩",
+ "<y>1970:</y> England mein production <r>band</r> 💔",
+ "…par <y>India</y> mein ye kahani <y>zinda</y> rahi 🇮🇳",
+ "Har gali, har mohalla… <y>dug-dug-dug</y> 🏍️",
+ "Bullet sirf bike nahi… ek <y>rutba</y> thi 😎",
+ "Shuru se: 1950s mein ye bike <y>England se ship</y> pe aayi 🚢",
+ "<y>Indian Army</y> ne order diya… <y>1955</y> mein Madras mein <y>Enfield India</y> bani",
+ "Phir aayi <r>halki, zyada mileage</r> wali bikes… Bullet peeche reh gayi",
+ "<y>1990s:</y> showroom <r>khaali</r>, company <r>ghaate</r> mein 📉",
+ "<y>1994:</y> Eicher ne company sambhali… aur bike ko <y>theek</y> karna shuru kiya 🔧",
+ "Naye young boss <y>Siddhartha Lal</y> ka faisla: focus <y>sirf Bullet</y> pe ✂️",
+ "Bike <y>nayi</y> bani… aur <y>Ladakh trips</y> ne ise sapna bana diya 🏔️",
+ "Aaj: ek saal mein <y>12 lakh+</y> bikes, <y>80+ desh</y> 🌍",
+ "Aapki <y>dream</y> Royal Enfield kaunsi hai?<br><y>Comment karo</y> 👇"
+];
+const SEGS=[{t0:0,t1:FREEZE0,html:CAPS[0]},{t0:FREEZE1,t1:S[1],html:"Toh phir ye <y>Indian</y> kaise bani? 🤔"}];
+for(let k=1;k<N;k++)SEGS.push({t0:S[k],t1:S[k+1],html:CAPS[k],k});
+
+const STAMPS={1:['ENGLAND','REDDITCH · UK'],2:['1970','ENGLAND'],3:['INDIA','ZINDA HAI'],6:['1950s','SHIP SE'],7:['1955','MADRAS'],
+  8:['1980s','NAYI BIKES'],9:['1990s','GHAATA'],10:['1994','EICHER'],11:['2000s','SIRF BULLET'],12:['2010s','LADAKH']};
+
+// transitions at each cut S[k]
+const TRANS={1:'flash',2:'burn',10:'black'};
+const TEAR_DIR={3:'r',4:'d',5:'l',6:'r',7:'u',8:'l',9:'d',11:'r',12:'l',13:'d',14:'r'};
+
+// ------------------------------------------------------------------ build: global layers (bottom to top)
+const L={};
+L.film=el('div','full',root);           // memory film effect
+L.spec=el('div','full',root);           // per-clip specials
+L.hook=el('div','full',root);           // hook speed lines + sparks
+L.cap=el('div','full',root);            // caption strip
+L.stampL=el('div','full',root);
+L.burst=el('div','full',root);
+L.end=el('div','full',root);
+L.trans=el('div','full',root);
+L.road=el('div','full',root);
+
+// ---- caption strip
+const stripWrap=el('div','',L.cap);stripWrap.id='stripWrap';
+const sb=el('div','',stripWrap);sb.id='stripBack';sb.style.clipPath=torn(1020,252,9,14,'tb',3);
+const st=el('div','',stripWrap);st.id='strip';st.style.backgroundImage=paperTex(5,true);st.style.clipPath=torn(1020,252,9,12,'tb',9);
+st.style.inset='4px 0 4px 0';
+const tape1=el('div','tape',stripWrap,'left:-30px;top:-14px;transform:rotate(-24deg)');
+const tape2=el('div','tape',stripWrap,'right:-30px;bottom:-14px;transform:rotate(-24deg)');
+function parseCap(html){const out=[];const re=/<(y|r)>(.*?)<\/\1>|<br>|([^<]+)/g;let m;
+  while((m=re.exec(html))){if(m[0]==='<br>')out.push({br:1});else if(m[1])m[2].split(/\s+/).filter(Boolean).forEach(w=>out.push({w,c:m[1]}));else m[3].split(/\s+/).filter(Boolean).forEach(w=>out.push({w,c:''}))}
+  return out}
+for(const s of SEGS){
+  s.el=el('div','cap',stripWrap);s.words=[];
+  for(const tk of parseCap(s.html)){
+    if(tk.br){el('div','br',s.el);continue}
+    const w=el('span','w '+tk.c,s.el);const mk=el('span','mk',w);el('span','tx',w,'',tk.w);s.words.push({w,mk,hl:!!tk.c});
+  }
+}
+const disc=el('div','',L.cap,'','(Modified silencer illegal hai bhai 😅)');disc.id='disc';disc.style.clipPath=torn(620,74,5,10,'tblr',21);
+
+// ---- era stamp
+const stamp=el('div','',L.stampL);stamp.id='stamp';
+const stampBig=el('div','big',stamp),stampSub=el('div','sub',stamp);
+stamp.style.webkitMaskImage=grunge(7);stamp.style.webkitMaskSize='300px 300px';
+
+// ---- progress road
+const road=el('div','',L.road);road.id='road';const roadFill=el('div','',road);roadFill.id='roadFill';
+const pdots=[];for(const k of Object.keys(STAMPS)){const d=el('div','pdot',road);d.style.left=(S[k]/DUR*940)+'px';pdots.push({d,t:S[k]})}
+const flag=el('div','',road,'','🏁');flag.id='flag';
+const bike=el('div','',road,'','🏍️');bike.id='bike';
+
+// ---- transitions
+function mkSheet(seed,vertical){
+  const s=el('div','sheet',L.trans);const w=1300,h=2120;
+  const edges=vertical?'tb':'lr';
+  const b=el('div','b',s);b.style.clipPath=torn(w,h,26,22,edges,seed);
+  const f=el('div','f',s);f.style.backgroundImage=paperTex(seed+1,true);f.style.clipPath=torn(w,h,26,18,edges,seed+50);f.style.inset=vertical?'14px 0':'0 14px';
+  return s}
+const sheetH=mkSheet(31,false),sheetV=mkSheet(77,true);
+const flash=el('div','full',L.trans);flash.id='flash';
+const burn=el('div','full',L.trans);burn.id='burn';
+const black=el('div','full',L.trans);black.id='black';
+
+// ---- hook: speed lines + pataka sparks
+const speed=svg('svg',{width:1080,height:1920,class:'abs'},L.hook);
+const sparkT=[0.25,0.62,0.95,1.3,1.62,2.05,2.25];
+const sparks=sparkT.map((t,i)=>{const r=rng(100+i);const g=svg('g',{class:'spark'},speed);
+  const cx=i%2?160+r()*260:660+r()*260, cy=200+r()*520;const lines=[];
+  for(let a=0;a<14;a++){const l=svg('line',{stroke:a%2?'#FFD21F':'#FF7A00','stroke-width':a%2?7:5},g);lines.push({l,a:a/14*6.283+r()*.2,len:.6+r()*.4})}
+  const dot=svg('circle',{r:16,fill:'#FFF3B0'},g);return{t,cx,cy,g,lines,dot,size:90+r()*60}});
+const speedG=svg('g',{},speed);
+
+// ---- freeze burst
+const bw=el('div','',L.burst);bw.id='burstWrap';
+const raysSvg=svg('svg',{width:1080,height:1920,class:'abs'},bw);
+const raysG=svg('g',{},raysSvg);
+for(let i=0;i<20;i++){const a0=i/20*6.283,a1=a0+6.283/40;svg('path',{d:`M0 0 L${Math.cos(a0)*2000} ${Math.sin(a0)*2000} L${Math.cos(a1)*2000} ${Math.sin(a1)*2000}Z`,fill:i%2?'#FFD21F':'#E0262F',opacity:.32},raysG)}
+const burstSvg=svg('svg',{width:1080,height:1920,class:'abs'},bw);
+const defs=svg('defs',{},burstSvg);
+const rg=svg('radialGradient',{id:'bg',cx:'50%',cy:'45%',r:'60%'},defs);svg('stop',{offset:'0','stop-color':'#FF4436'},rg);svg('stop',{offset:'1','stop-color':'#A5101A'},rg);
+const pat=svg('pattern',{id:'dots',width:22,height:22,patternUnits:'userSpaceOnUse',patternTransform:'rotate(20)'},defs);svg('circle',{cx:11,cy:11,r:4.2,fill:'rgba(0,0,0,.22)'},pat);
+const burstG=svg('g',{},burstSvg);
+{const r=rng(42);let d='';for(let i=0;i<28;i++){const a=i/28*6.283-1.5708,rad=i%2?405+r()*20:500+r()*55;d+=(i?'L':'M')+(Math.cos(a)*rad).toFixed(1)+' '+(Math.sin(a)*rad*0.92).toFixed(1)}d+='Z';
+ svg('path',{d,fill:'#111',transform:'translate(10,16)'},burstG);svg('path',{d,fill:'url(#bg)',stroke:'#111','stroke-width':10,'stroke-linejoin':'round'},burstG);svg('path',{d,fill:'url(#dots)'},burstG)}
+const bt=el('div','',bw);bt.id='burstText';
+const ruko=el('div','',bt,'','RUKO!');ruko.id='ruko';
+const asli=el('div','',bt,'','ye bike asli mein');asli.id='asli';
+const brit=el('div','brit',bt);el('span','',brit,'color:#00E5FF;opacity:.85','BRITISH thi?!');el('span','',brit,'color:#FF2D55;opacity:.85','BRITISH thi?!');
+const britMain=el('div','',brit,'position:relative;color:#fff','BRITISH thi?!');
+const britC=brit.children[0],britR=brit.children[1];
+// Union Jack paper flag
+const uj=el('div','',bw,'position:absolute;left:760px;top:420px;width:230px;height:180px;transform-origin:0 100%');
+uj.innerHTML=`<svg width="230" height="180" viewBox="0 0 230 180"><rect x="6" y="0" width="10" height="180" rx="4" fill="#6b4a22"/>
+<g transform="translate(16,6)"><clipPath id="ujc"><rect width="200" height="110"/></clipPath><g clip-path="url(#ujc)">
+<rect width="200" height="110" fill="#012169"/><path d="M0 0L200 110M200 0L0 110" stroke="#fff" stroke-width="24"/><path d="M0 0L200 110M200 0L0 110" stroke="#C8102E" stroke-width="9"/>
+<path d="M100 0V110M0 55H200" stroke="#fff" stroke-width="34"/><path d="M100 0V110M0 55H200" stroke="#C8102E" stroke-width="20"/></g>
+<rect width="200" height="110" fill="none" stroke="#111" stroke-width="5"/></g></svg>`;
+const qm1=el('div','qm',L.hook,'left:70px;top:330px','?'),qm2=el('div','qm',L.hook,'left:900px;top:250px','?');
+
+// ---- memory film effect (clips 1-2)
+const filmSvg=svg('svg',{width:1080,height:1920,class:'abs'},L.film);
+const scratches=[...Array(4)].map(()=>svg('line',{y1:0,y2:1920,stroke:'rgba(255,250,235,.55)','stroke-width':2},filmSvg));
+const specks=[...Array(14)].map(()=>svg('circle',{r:3,fill:'rgba(30,20,10,.7)'},filmSvg));
+const sprL=el('div','',L.film,'position:absolute;left:0;top:0;width:58px;height:1920px;background:#120c06;overflow:hidden');
+const sprR=el('div','',L.film,'position:absolute;right:0;top:0;width:58px;height:1920px;background:#120c06;overflow:hidden');
+for(const s of [sprL,sprR]){const inner=el('div','',s,'position:absolute;left:0;top:0;width:58px;height:2200px');s.inner=inner;
+  for(let i=0;i<24;i++)el('div','',inner,`position:absolute;left:14px;top:${i*92+20}px;width:30px;height:48px;border-radius:7px;background:#e9dcc0`)}
+const flick=el('div','full',L.film,'background:#1a0f05');
+const vig=el('div','full',L.film);vig.id='vig';
+
+// ------------------------------------------------------------------ specials per clip
+const SP=[];
+function special(k,build,draw){const box=el('div','full',L.spec);const ctx=build(box)||{};SP.push({k,box,ctx,draw})}
+
+// 2: CLOSED stamp slam (synced to gate clang at +1.5s)
+special(2,box=>{const s=el('div','',box,`position:absolute;left:190px;top:390px;width:700px;height:250px;border:14px solid #D0221C;outline:4px solid #D0221C;outline-offset:8px;
+   display:flex;flex-direction:column;align-items:center;justify-content:center;color:#D0221C;background:rgba(255,240,225,.25);transform-origin:50% 50%`,
+  `<div style="font:400 150px/1 Anton;letter-spacing:14px">CLOSED</div><div style="font:800 30px/1 Inter;letter-spacing:9px;margin-top:6px">REDDITCH · 1970</div>`);
+  s.style.webkitMaskImage=grunge(13);s.style.webkitMaskSize='300px 300px';return{s}},
+ (u,c)=>{const p=lin(u,1.42,1.56);show(c.s,u>1.42);c.s.style.opacity=clamp(p*3);
+  const sc=lerp(3.2,1,eIn(p))+(u>1.56?Math.sin((u-1.56)*40)*Math.exp(-(u-1.56)*9)*.04:0);tf(c.s,`rotate(-13deg) scale(${sc})`)});
+
+// 3: tricolour paper confetti
+special(3,box=>{const r=rng(9);const P=[];const cols=['#FF9933','#FFFFFF','#138808','#FF9933','#138808'];
+  for(let i=0;i<80;i++){const left=i%2===0;const e=el('div','conf',box,`background:${cols[i%5]};box-shadow:0 1px 2px rgba(0,0,0,.3)`);
+   P.push({e,x0:left?-20:1100,y0:1250+r()*300,vx:(left?1:-1)*(300+r()*650),vy:-(1500+r()*900),rot:r()*360,vr:(r()*2-1)*900,flip:4+r()*10,delay:r()*.25})}return{P}},
+ (u,c)=>{const g=2600;for(const p of c.P){const v=u-0.25-p.delay;if(v<0){show(p.e,0);continue}show(p.e,1);
+  const va=-p.vy/g;const tx=Math.min(v,va);const x=p.x0+p.vx*tx*(1-tx/(2*va)*.6)+(v>va?Math.sin(v*4+p.rot)*30:0);
+  const y=v<va?p.y0+p.vy*v+.5*g*v*v:p.y0-p.vy*p.vy/(2*g)+260*(v-va);
+  tf(p.e,`translate(${x}px,${y}px) rotate(${p.rot+p.vr*v}deg) scaleY(${Math.cos(v*p.flip)})`)}});
+
+// 4: DUG! DUG! comic words on the heartbeat thump (72 bpm from S[3]+0.8)
+special(4,box=>{const W=[];const pos=[[120,250,-12],[640,420,10],[180,620,8],[600,200,-8],[140,420,-6],[620,620,12],[330,220,6],[560,520,-10]];
+  let i=0;for(let tb=S[3]+0.8;tb<S[5];tb+=60/72){if(tb<S[4]-0.1)continue;const p=pos[i%pos.length];
+   W.push({t:tb-S[4],e:el('div','dug',box,`left:${p[0]}px;top:${p[1]}px`,i%3===2?'DUG-DUG!':'DUG!'),rot:p[2]});i++}return{W}},
+ (u,c)=>{for(const w of c.W){const v=u-w.t;const on=v>=0&&v<0.62;show(w.e,on);if(!on)continue;
+  const sc=v<.14?lerp(.3,1.18,eOut(v/.14)):lerp(1.18,1,lin(v,.14,.24));w.e.style.opacity=1-lin(v,.42,.62);tf(w.e,`translateY(${-v*60}px) rotate(${w.rot}deg) scale(${sc})`)}});
+
+// 5: RUTBA level HUD
+special(5,box=>{const card=el('div','card hud',box,'left:560px;top:150px;width:450px;height:150px;padding:20px 24px;box-sizing:border-box;transform-origin:100% 0');
+  el('div','lbl',card,'','RUTBA LEVEL');const bar=el('div','',card,'display:flex;gap:6px;margin-top:18px');const segs=[...Array(10)].map(()=>el('div','',bar,'flex:1;height:36px;border-radius:5px;background:rgba(255,255,255,.15)'));
+  const max=el('div','',box,'position:absolute;left:640px;top:318px;font:400 64px/1 Bungee;color:#fff;-webkit-text-stroke:7px #111;paint-order:stroke fill;text-shadow:0 0 24px #FFD21F','MAX 😎');
+  const plus=el('div','',box,'position:absolute;left:300px;top:640px;font:400 60px/1 Bungee;color:#7CFF6B;-webkit-text-stroke:7px #111;paint-order:stroke fill','+100 RESPECT');return{card,segs,max,plus}},
+ (u,c)=>{const p=lin(u,.2,.5);c.card.style.opacity=p;tf(c.card,`scale(${lerp(.6,1,back(p))})`);
+  c.segs.forEach((s,i)=>{const on=u>.6+i*.1;s.style.background=on?(i<7?'#FFD21F':'#FF7A00'):'rgba(255,255,255,.15)';s.style.boxShadow=on?'0 0 12px rgba(255,210,31,.8)':'none'});
+  const m=lin(u,1.65,1.85);show(c.max,u>1.65);tf(c.max,`scale(${lerp(.3,1,back(m))}) rotate(${Math.sin(u*9)*3}deg)`);
+  const q=lin(u,1.9,3.1);show(c.plus,q>0&&q<1);c.plus.style.opacity=1-lin(q,.6,1);tf(c.plus,`translateY(${-q*230}px) scale(${lerp(.6,1,eOut(lin(q,0,.2)))})`)});
+
+// 6: old-map route England -> India with a ship
+special(6,box=>{const card=el('div','card',box,'left:350px;top:150px;width:660px;height:360px;overflow:hidden;background-color:#E9D6A8;border:5px solid #6b4a22;transform-origin:50% 0');
+  card.style.backgroundImage=paperTex(61,true);
+  card.innerHTML+=`<svg width="660" height="360" style="position:absolute;left:0;top:0">
+   <g stroke="rgba(107,74,34,.18)" stroke-width="2">${[...Array(9)].map((_,i)=>`<line x1="${i*80}" y1="0" x2="${i*80}" y2="360"/>`).join('')}${[...Array(5)].map((_,i)=>`<line x1="0" y1="${i*80}" x2="660" y2="${i*80}"/>`).join('')}</g>
+   <path d="M60 300 Q120 230 90 160 T180 70 L260 60 Q300 110 250 170 Q320 210 380 190 L470 230 Q560 220 600 300 L520 330 Q470 360 470 360" fill="rgba(140,110,60,.16)" stroke="rgba(107,74,34,.35)" stroke-width="3"/>
+   <defs><mask id="routeMask"><path id="routeM" d="M150 105 C 260 140, 230 300, 380 270 S 520 230, 545 285" fill="none" stroke="#fff" stroke-width="18"/></mask></defs>
+   <path d="M150 105 C 260 140, 230 300, 380 270 S 520 230, 545 285" fill="none" stroke="#B3261E" stroke-width="7" stroke-dasharray="16 12" mask="url(#routeMask)"/>
+   <circle cx="150" cy="105" r="13" fill="#012169" stroke="#fff" stroke-width="4"/><circle cx="545" cy="285" r="13" fill="#FF9933" stroke="#fff" stroke-width="4"/></svg>
+   <div style="position:absolute;left:24px;top:18px;font:400 34px/1 Elite;color:#4a3214">ENGLAND ➜ INDIA · 1950s</div>
+   <div style="position:absolute;left:92px;top:122px;font:900 26px Inter;color:#012169">UK</div>
+   <div style="position:absolute;left:500px;top:306px;font:900 26px Inter;color:#B35A00">INDIA</div>`;
+  const ship=el('div','',card,'position:absolute;left:0;top:0;font-size:52px;margin:-34px 0 0 -26px','🚢');
+  const m=card.querySelector('#routeM');const len=m.getTotalLength();m.style.strokeDasharray=len;return{card,ship,m,len}},
+ (u,c)=>{const p=lin(u,.25,.6);c.card.style.opacity=clamp(p*2);tf(c.card,`translateY(${(1-back(p))*-60}px) rotate(${(1-eOut(p))*-6}deg)`);
+  const q=eIO(lin(u,.7,2.7));c.m.style.strokeDashoffset=c.len*(1-q);const pt=c.m.getPointAtLength(c.len*q);
+  tf(c.ship,`translate(${pt.x}px,${pt.y+Math.sin(u*8)*3}px) rotate(${Math.sin(u*6)*5}deg)`);show(c.ship,u>.7)});
+
+// 7: Indian Army stencil crate label
+special(7,box=>{const c=el('div','card',box,'left:520px;top:160px;width:490px;height:170px;background:#4B5320;border:5px dashed #E8E2C8;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#EFE8CC');
+  c.innerHTML=`<div style="font:400 58px/1 Anton;letter-spacing:6px">INDIAN ARMY</div><div style="font:400 30px/1.2 Elite;margin-top:8px">ORDER: BULLET 350 ✔</div>`;
+  c.style.webkitMaskImage=grunge(29);c.style.webkitMaskSize='300px 300px';return{c}},
+ (u,c)=>{const p=lin(u,.45,.8);c.c.style.opacity=clamp(p*3);tf(c.c,`translateX(${(1-eOut(p))*560}px) rotate(${3-eOut(p)*1}deg)`)});
+
+// 8: mileage bars - rivals vs Bullet
+special(8,box=>{const card=el('div','card hud',box,'left:480px;top:150px;width:530px;height:230px;padding:22px 26px;box-sizing:border-box');
+  el('div','lbl',card,'','MILEAGE ⛽');
+  const row=(name,y)=>{const r=el('div','',card,`position:absolute;left:26px;top:${y}px;width:478px`);el('div','',r,'font:800 26px Inter;color:#fff;margin-bottom:6px',name);
+    const tr=el('div','',r,'height:26px;border-radius:13px;background:rgba(255,255,255,.14);overflow:hidden');return el('div','',tr,'height:26px;width:0;border-radius:13px')};
+  const a=row('Nayi halki bikes',76),b=row('Bullet',148);a.style.background='#38D46A';b.style.background='#FF3B30';return{card,a,b}},
+ (u,c)=>{const p=lin(u,.2,.5);c.card.style.opacity=p;tf(c.card,`scale(${lerp(.7,1,back(p))})`);
+  c.a.style.width=(eOut(lin(u,.6,1.5))*100)+'%';const bw=eOut(lin(u,.8,1.6))*34;const sp=u>1.7?Math.max(0,Math.sin(u*31))*6*Math.exp(-(u-1.7)*1.5):0;c.b.style.width=(bw-sp)+'%'});
+
+// 9: crashing loss chart
+special(9,box=>{const s=svg('svg',{width:1080,height:700,class:'abs'},box);
+  const pts=[[360,210],[440,250],[500,232],[580,330],[640,300],[720,420],[780,395],[860,520],[930,600]];
+  const d='M'+pts.map(p=>p.join(' ')).join(' L');
+  svg('path',{d,fill:'none',stroke:'#111','stroke-width':22,'stroke-linejoin':'round','stroke-linecap':'round',id:'lossB'},s);
+  const path=svg('path',{d,fill:'none',stroke:'#FF3B30','stroke-width':12,'stroke-linejoin':'round','stroke-linecap':'round'},s);
+  const head=svg('path',{d:'M-30 -22 L18 0 L-30 22 Z',fill:'#FF3B30',stroke:'#111','stroke-width':6},s);
+  const len=path.getTotalLength();path.style.strokeDasharray=len;s.querySelector('#lossB').style.strokeDasharray=len;
+  const lbl=el('div','',box,'position:absolute;left:520px;top:600px;font:400 70px/1 Bungee;color:#FF3B30;-webkit-text-stroke:8px #fff;paint-order:stroke fill;text-shadow:0 6px 0 rgba(0,0,0,.5)','GHAATA 📉');
+  return{path,b:s.querySelector('#lossB'),head,len,lbl}},
+ (u,c)=>{const q=eIn(lin(u,.4,1.5))*.6+lin(u,.4,1.5)*.4;const off=c.len*(1-q);c.path.style.strokeDashoffset=off;c.b.style.strokeDashoffset=off;
+  const L2=Math.max(1,c.len*q);const p=c.path.getPointAtLength(L2),p0=c.path.getPointAtLength(Math.max(0,L2-10));
+  c.head.setAttribute('transform',`translate(${p.x},${p.y}) rotate(${Math.atan2(p.y-p0.y,p.x-p0.x)*57.3})`);c.head.style.display=u>.4?'':'none';
+  const l=lin(u,1.55,1.75);show(c.lbl,u>1.55);tf(c.lbl,`scale(${lerp(.3,1,back(l))}) rotate(${-6+Math.sin(u*12)*2}deg)`)});
+
+// 10: repair mode progress
+special(10,box=>{const card=el('div','card hud',box,'left:500px;top:150px;width:510px;height:170px;padding:20px 24px;box-sizing:border-box');
+  const t=el('div','lbl',card,'display:flex;align-items:center;gap:14px');const wr=el('span','',t,'display:inline-block;font-size:40px','🔧');el('span','',t,'','REPAIR MODE');
+  const tr=el('div','',card,'margin-top:18px;height:40px;border-radius:10px;background:rgba(255,255,255,.14);overflow:hidden;position:relative');
+  const f=el('div','',tr,'height:40px;width:0;background:repeating-linear-gradient(-45deg,#FFD21F 0 18px,#FFB300 18px 36px)');
+  const pc=el('div','',tr,'position:absolute;right:12px;top:4px;font:900 28px Inter;color:#fff;-webkit-text-stroke:5px #111;paint-order:stroke fill','0%');
+  const ok=el('div','',box,'position:absolute;left:600px;top:338px;font:400 58px/1 Bungee;color:#7CFF6B;-webkit-text-stroke:7px #111;paint-order:stroke fill','✔ READY!');
+  const stars=[[560,140],[985,150],[990,320],[540,330]].map(p=>el('div','',box,`position:absolute;left:${p[0]}px;top:${p[1]}px;font-size:44px;margin:-22px`,'✨'));
+  return{card,wr,f,pc,ok,stars}},
+ (u,c)=>{const p=lin(u,.9,1.15);c.card.style.opacity=p;tf(c.card,`scale(${lerp(.7,1,back(p))})`);
+  tf(c.wr,`rotate(${Math.sin(u*14)*35}deg)`);const q=eIO(lin(u,1.2,2.5));c.f.style.width=(q*100)+'%';c.pc.textContent=Math.round(q*100)+'%';
+  const o=lin(u,2.55,2.75);show(c.ok,u>2.55);tf(c.ok,`scale(${lerp(.3,1,back(o))})`);
+  c.stars.forEach((s,i)=>{const v=u-2.55-i*.07;show(s,v>0);tf(s,`scale(${Math.max(0,Math.sin(clamp(v*3.5)*3.14))*1.3}) rotate(${v*200}deg)`)})});
+
+// 11: bullseye - FOCUS: sirf Bullet (arrow hits on the scissors cut at +1.6s)
+special(11,box=>{const s=svg('svg',{width:1080,height:800,class:'abs'},box);const g=svg('g',{transform:'translate(800,350)'},s);
+  const rings=[160,128,96,64,34].map((r,i)=>svg('circle',{r,fill:i%2?'#fff':'#E0262F',stroke:'#111','stroke-width':6},g));
+  const txt=el('div','',box,'position:absolute;left:640px;top:328px;width:320px;text-align:center;font:400 44px/1 Anton;color:#111;letter-spacing:2px','BULLET');
+  const arrow=svg('g',{},s);svg('line',{x1:-230,y1:0,x2:0,y2:0,stroke:'#3b2a17','stroke-width':10},arrow);svg('path',{d:'M0 0 L-34 -16 L-34 16Z',fill:'#111'},arrow);
+  svg('path',{d:'M-230 0 L-260 -22 L-210 0 L-260 22Z',fill:'#FFD21F',stroke:'#111','stroke-width':3},arrow);
+  const lbl=el('div','',box,'position:absolute;left:640px;top:540px;width:320px;text-align:center;font:400 54px/1 Bungee;color:#FFD21F;-webkit-text-stroke:7px #111;paint-order:stroke fill','FOCUS!');
+  return{rings,txt,arrow,lbl,g}},
+ (u,c)=>{c.rings.forEach((r,i)=>{const p=lin(u,.25+i*.07,.5+i*.07);r.setAttribute('transform',`scale(${back(p)})`);r.style.opacity=p>0?1:0});
+  const tp=lin(u,.7,.9);c.txt.style.opacity=tp;tf(c.txt,`scale(${lerp(.4,1,back(tp))})`);
+  const a=lin(u,1.32,1.6);const wob=u>1.6?Math.sin((u-1.6)*45)*Math.exp(-(u-1.6)*6)*6:0;
+  c.arrow.setAttribute('transform',`translate(${lerp(-200,790,eIn(a))},${lerp(120,350,eIn(a))}) rotate(${(u<1.6?-14:-14+wob)})`);c.arrow.style.display=u>1.32?'':'none';
+  const kick=u>1.6?Math.exp(-(u-1.6)*10)*.08:0;c.g.setAttribute('transform',`translate(800,350) scale(${1+kick})`);
+  const l=lin(u,1.7,1.9);show(c.lbl,u>1.7);tf(c.lbl,`scale(${lerp(.3,1,back(l))})`)});
+
+// 12: Ladakh route up a paper mountain
+special(12,box=>{const s=svg('svg',{width:1080,height:700,class:'abs'},box);
+  svg('path',{d:'M600 560 L790 250 L860 330 L930 230 L1060 560Z',fill:'#8D7B6A',stroke:'#3b2a17','stroke-width':5},s);
+  svg('path',{d:'M745 323 L790 250 L835 323 L812 310 L790 330 L770 312Z',fill:'#fff',stroke:'#3b2a17','stroke-width':4},s);
+  svg('path',{d:'M900 280 L930 230 L962 282 L940 274 L928 290Z',fill:'#fff',stroke:'#3b2a17','stroke-width':4},s);
+  const dp='M630 545 L740 500 L680 450 L790 410 L720 360 L790 262';
+  const mk=svg('defs',{},s);const mm=svg('mask',{id:'ladM'},mk);const mpath=svg('path',{d:dp,fill:'none',stroke:'#fff','stroke-width':16},mm);
+  svg('path',{d:dp,fill:'none',stroke:'#FFD21F','stroke-width':8,'stroke-dasharray':'14 10','stroke-linecap':'round',mask:'url(#ladM)'},s);
+  const len=mpath.getTotalLength();mpath.style.strokeDasharray=len;
+  const bk=el('div','',box,'position:absolute;left:0;top:0;font-size:46px;margin:-40px 0 0 -24px','🏍️');
+  const pin=el('div','',box,'position:absolute;left:760px;top:150px;text-align:center;transform-origin:50% 100%',
+   `<div style="font:400 34px/1 Bungee;color:#fff;-webkit-text-stroke:6px #111;paint-order:stroke fill">LADAKH</div><div style="font-size:54px">📍</div>`);
+  const badge=el('div','',box,'position:absolute;left:470px;top:590px;padding:14px 24px;background:#FFD21F;border:5px solid #111;border-radius:14px;font:400 36px/1 Bungee;color:#111;box-shadow:0 7px 0 #111','🔓 DREAM UNLOCKED');
+  return{s,mpath,len,bk,pin,badge}},
+ (u,c)=>{const p=lin(u,.2,.5);c.s.style.opacity=p;tf(c.s,`translateY(${(1-eOut(p))*80}px)`);
+  const q=eIO(lin(u,.5,2.0));c.mpath.style.strokeDashoffset=c.len*(1-q);const pt=c.mpath.getPointAtLength(c.len*q);show(c.bk,u>.5);tf(c.bk,`translate(${pt.x}px,${pt.y}px)`);
+  const pp=lin(u,1.95,2.15);show(c.pin,u>1.95);tf(c.pin,`scale(${back(pp)})`);
+  const b=lin(u,2.25,2.45);show(c.badge,u>2.25);tf(c.badge,`scale(${lerp(.3,1,back(b))}) rotate(${-3+Math.sin(u*8)*1.5}deg)`)});
+
+// 13: counters - 12 lakh+ bikes, 80+ desh
+special(13,box=>{const a=el('div','',box,'position:absolute;left:0;right:0;top:170px;text-align:center');const n1=el('div','bigNum',a,'','0');el('div','subNum',a,'margin-top:6px','bikes har saal 🏍️');
+  const b=el('div','',box,'position:absolute;left:0;right:0;top:400px;text-align:center');const n2=el('div','subNum',b,'font-size:64px','0+ desh 🌍');return{a,b,n1,n2}},
+ (u,c)=>{const fmt=n=>{const s=String(n);if(s.length<=3)return s;const last=s.slice(-3);let rest=s.slice(0,-3);const parts=[];while(rest.length>2){parts.unshift(rest.slice(-2));rest=rest.slice(0,-2)}if(rest)parts.unshift(rest);return parts.join(',')+','+last};
+  const p=lin(u,.15,.35);c.a.style.opacity=p;tf(c.a,`scale(${lerp(.5,1,back(p))})`);
+  const q=eOut(lin(u,.3,1.5));const v=Math.round(q*1200000/1000)*1000;c.n1.textContent=fmt(v)+(q>=1?'+':'');
+  const pulse=u>1.5?1+Math.exp(-(u-1.5)*8)*.12:1;tf(c.n1,`scale(${pulse})`);
+  const r=lin(u,1.5,1.7);c.b.style.opacity=r;tf(c.b,`translateY(${(1-eOut(r))*40}px)`);c.n2.textContent=Math.round(eOut(lin(u,1.55,2.3))*80)+'+ desh 🌍'});
+
+// 14: model chips + end card (covers the old follow banner from S[14]+1.8)
+special(14,box=>{const names=[['Classic 350',90,250],['Bullet 350',560,250],['Himalayan',170,360],['Hunter 350',570,360],['Interceptor 650',260,470]];
+  const chips=names.map(([n,x,y],i)=>({e:el('div','chip',box,`left:${x}px;top:${y}px`,'🏍️ '+n+' ?'),i}));
+  const card=el('div','',box,'position:absolute;left:130px;top:830px;width:820px;height:300px;transform-origin:50% 50%');
+  const cb=el('div','',card,'position:absolute;inset:0;background:#7a5a30');cb.style.clipPath=torn(820,300,10,14,'tblr',91);
+  const cf=el('div','',card,'position:absolute;inset:5px;background-color:#F3E4C2');cf.style.backgroundImage=paperTex(93,true);cf.style.clipPath=torn(810,290,9,12,'tblr',95);
+  const btn=el('div','',card,'position:absolute;left:230px;top:40px;width:360px;height:92px;border-radius:46px;background:#E0262F;border:5px solid #111;box-shadow:0 8px 0 #111;display:flex;align-items:center;justify-content:center;font:400 52px/1 Bungee;color:#fff','FOLLOW');
+  el('div','',card,'position:absolute;left:0;right:0;top:160px;text-align:center;font:900 52px/1 Inter;color:#20160d','@mindset_mode_in');
+  el('div','',card,'position:absolute;left:0;right:0;top:228px;text-align:center;font:400 30px/1 Marker;color:#7a4a1a','aur aisi business stories ke liye 🔥');
+  const hand=el('div','',card,'position:absolute;left:520px;top:70px;font-size:96px','👆');
+  return{chips,card,btn,hand}},
+ (u,c)=>{c.chips.forEach(ch=>{const p=lin(u,.35+ch.i*.16,.6+ch.i*.16);show(ch.e,p>0);tf(ch.e,`scale(${lerp(.2,1,back(p))}) translateY(${Math.sin(u*3+ch.i)*5}px) rotate(${(ch.i%2?2:-2)}deg)`)});
+  const ct=u-1.72;show(c.card,ct>=0);if(ct<0)return;tf(c.card,`scale(${lerp(1.22,1,back(lin(ct,0,.25)))}) rotate(${(1-eOut(lin(ct,0,.3)))*-4}deg)`);
+  const tap=(ct%0.9);const press=tap>.35&&tap<.5;tf(c.hand,`translate(${press?-8:0}px,${press?-14:Math.sin(tap*7)*6}px) scale(${press?.92:1})`);
+  tf(c.btn,`scale(${press?.94:1+Math.sin(ct*6)*.02})`);c.btn.style.boxShadow=press?'0 3px 0 #111':'0 8px 0 #111'});
+
+// ------------------------------------------------------------------ render
+function clipAt(t){let k=0;for(let i=0;i<N;i++)if(t>=S[i])k=i;return k}
+function render(t,frame){
+  const k=clipAt(t);
+
+  // progress road
+  const pr=clamp(t/END);roadFill.style.width=(pr*940)+'px';bike.style.left=(pr*940)+'px';
+  tf(bike,`translateY(${Math.abs(Math.sin(t*9))*-5}px) scaleX(-1)`);
+  for(const d of pdots){const on=t>=d.t;d.d.style.background=on?'#FFD21F':'#fff';d.d.style.transform=on?`scale(${1+Math.exp(-(t-d.t)*7)*.8})`:'scale(1)'}
+
+  // caption strip
+  const capOn=t<FREEZE0-0.004||t>=FREEZE1;show(L.cap,capOn);
+  if(capOn){
+    let seg=SEGS[0];for(const s of SEGS)if(t>=s.t0&&t<s.t1)seg=s;
+    for(const s of SEGS)show(s.el,s===seg);
+    const u=t-seg.t0;const idx=SEGS.indexOf(seg);
+    // a quick "slap" squash when a new caption lands
+    const sl=lin(u,0,.16);const rot=(idx%2?-1.1:0.9);
+    tf(stripWrap,`rotate(${rot+(1-eOut(sl))*(idx%2?1.6:-1.6)}deg) scale(${lerp(0.985,1,eOut(sl))},${lerp(0.93,1,back(sl))})`);
+    const n=seg.words.length;const stag=Math.min(.065,.85/n);
+    seg.words.forEach((w,i)=>{const ta=.08+i*stag;const p=lin(u,ta,ta+.2);w.w.style.opacity=clamp(p*4);
+      const big=w.hl?0.6:0;tf(w.w,`translateY(${(1-eOut(p))*26}px) scale(${p<=0?.4:lerp(.4,1,back(p))+big*Math.exp(-Math.max(0,u-ta-.2)*7)*.12})`);
+      tf(w.mk,`skewX(-6deg) scaleX(${eOut(lin(u,ta+.12,ta+.34))})`)});
+    show(disc,t<FREEZE0);
+  }
+
+  // era stamp
+  const sd=STAMPS[k];show(stamp,!!sd);
+  if(sd){const u=t-S[k];stampBig.textContent=sd[0];stampSub.textContent=sd[1];const p=lin(u,.32,.46);
+    stamp.style.opacity=p<=0?0:clamp(p*2)*.94;const wob=u>.46?Math.sin((u-.46)*30)*Math.exp(-(u-.46)*8)*3:0;
+    tf(stamp,`rotate(${-9+wob}deg) scale(${lerp(2.6,1,eIn(p))})`)}
+
+  // hook layer: speed lines, sparks, question marks
+  show(L.hook,t<S[1]);
+  if(t<S[1]){
+    const sOn=t<FREEZE0;show(speed,sOn);
+    if(sOn){const r=rng(1000+(frame>>1));let d='';const op=1-lin(t,2.2,2.38);
+      for(let i=0;i<46;i++){const a=r()*6.283,w=.006+r()*.012,r0=430+r()*200,r1=1500;
+        const ex=Math.cos(a)*.8,ey=Math.sin(a)*1.5;d+=`M${540+Math.cos(a-w)*r1} ${900+Math.sin(a-w)*r1*1.6}L${540+ex*r0} ${900+ey*r0}L${540+Math.cos(a+w)*r1} ${900+Math.sin(a+w)*r1*1.6}Z`}
+      speedG.innerHTML=`<path d="${d}" fill="rgba(255,255,255,${.62*op})"/>`;
+      for(const s of sparks){const v=t-s.t;const on=v>=0&&v<.42;s.g.style.display=on?'':'none';if(!on)continue;
+        const e=eOut(clamp(v/.3));const fade=1-lin(v,.2,.42);
+        for(const L2 of s.lines){const r1=s.size*e*L2.len,r0=r1*lerp(.2,.75,e);L2.l.setAttribute('x1',s.cx+Math.cos(L2.a)*r0);L2.l.setAttribute('y1',s.cy+Math.sin(L2.a)*r0);
+          L2.l.setAttribute('x2',s.cx+Math.cos(L2.a)*r1);L2.l.setAttribute('y2',s.cy+Math.sin(L2.a)*r1);L2.l.style.opacity=fade}
+        s.dot.setAttribute('cx',s.cx);s.dot.setAttribute('cy',s.cy);s.dot.setAttribute('r',22*(1-e)+2);s.dot.style.opacity=fade}
+    }
+    const qOn=t>=FREEZE1+.35;show(qm1,qOn);show(qm2,qOn);
+    if(qOn){const v=t-FREEZE1-.35;tf(qm1,`scale(${back(clamp(v/.25))}) rotate(${-14+Math.sin(t*5)*8}deg) translateY(${Math.sin(t*4)*10}px)`);
+      tf(qm2,`scale(${back(clamp((v-.12)/.25))}) rotate(${12+Math.sin(t*5+1)*8}deg) translateY(${Math.sin(t*4+2)*10}px)`)}
+  }
+
+  // freeze burst
+  const bOn=t>=FREEZE0-0.004&&t<FREEZE1+.3;show(L.burst,bOn);
+  if(bOn){const u=t-FREEZE0;const ex=lin(t,FREEZE1+.0,FREEZE1+.28);
+    const s=(u<.14?lerp(1.25,1,eOut(u/.14)):1+(u-.14)*.025)*(1-eIn(ex));
+    tf(bw,`translate(540px,840px) rotate(${lerp(-5,0,eOut(clamp(u/.2)))+ex*25}deg) scale(${s}) translate(-540px,-840px)`);
+    burstG.setAttribute('transform','translate(540,840)');raysG.setAttribute('transform',`translate(540,840) rotate(${u*18})`);
+    const rp=lin(u,0,.12);tf(ruko,`scale(${lerp(1.7,1,eOut(rp))}) rotate(${Math.sin(u*30)*Math.exp(-u*6)*4}deg)`);
+    const ap=lin(u,.22,.38);asli.style.opacity=ap;tf(asli,`translateY(${(1-eOut(ap))*40}px)`);
+    const bp=lin(u,.45,.58);brit.style.opacity=bp>0?1:0;tf(brit,`scale(${lerp(2,1,eIn(bp))})`);
+    const r=rng(5000+frame);const gl=(u>.45&&u<.85)||(r()<.12&&u>.85);
+    tf(britC,`translate(${gl?-10-r()*8:-3}px,${gl?(r()-.5)*8:0}px)`);tf(britR,`translate(${gl?10+r()*8:3}px,${gl?(r()-.5)*8:0}px)`);
+    britC.style.opacity=britR.style.opacity=gl?.9:.0;
+    const fp=lin(u,.65,.85);uj.style.opacity=fp;tf(uj,`scale(${back(fp)}) skewY(${Math.sin(u*9)*4}deg) rotate(${8+Math.sin(u*5)*3}deg)`)}
+
+  // memory film look over clips 1-2
+  const fOn=k===1||k===2;show(L.film,fOn);
+  if(fOn){const r=rng(9000+frame);const fi=lin(t,S[1],S[1]+.3)*(1-lin(t,S[3]-.25,S[3]));L.film.style.opacity=fi;
+    scratches.forEach(s=>{const on=r()<.55;s.style.display=on?'':'none';const x=60+r()*960;s.setAttribute('x1',x);s.setAttribute('x2',x+(r()-.5)*20);s.setAttribute('stroke-width',1+r()*2.5)});
+    specks.forEach(s=>{const on=r()<.5;s.style.display=on?'':'none';s.setAttribute('cx',60+r()*960);s.setAttribute('cy',r()*1920);s.setAttribute('r',1.5+r()*4)});
+    flick.style.opacity=.03+r()*.07;const off=((t*240)%92);sprL.inner.style.transform=sprR.inner.style.transform=`translateY(${off-92}px)`}
+
+  // specials
+  for(const sp of SP){const on=k===sp.k;show(sp.box,on);if(on)sp.draw(t-S[sp.k],sp.ctx)}
+
+  // transitions
+  let hOn=false,vOn=false,fl=0,bu=0,bl=0;
+  for(let c=1;c<N;c++){const tc=S[c],dt=t-tc;if(Math.abs(dt)>.6)continue;const type=TRANS[c];
+    if(type==='flash'){fl=Math.max(fl,dt<0?lin(dt,-.1,0)*.9:.9*(1-eOut(lin(dt,0,.4))))}
+    else if(type==='burn'){bu=Math.max(bu,dt<0?lin(dt,-.25,0):(1-eOut(lin(dt,0,.6))))}
+    else if(type==='black'){bl=Math.max(bl,dt<0?lin(dt,-.22,0):1-lin(dt,.12,.5))}
+    else if(TEAR_DIR[c]&&Math.abs(dt)<.24){const x=eIO(lin(dt,-.24,.24));const dir=TEAR_DIR[c];
+      if(dir==='r'||dir==='l'){hOn=true;const sx=dir==='r'?lerp(-1300,1300,x):lerp(1300,-1300,x);tf(sheetH,`translateX(${sx}px) rotate(${dir==='r'?2:-2}deg)`)}
+      else{vOn=true;const sy=dir==='d'?lerp(-2150,2150,x):lerp(2150,-2150,x);tf(sheetV,`translateY(${sy}px) rotate(${dir==='d'?-1.5:1.5}deg)`)}}}
+  show(sheetH,hOn);show(sheetV,vOn);flash.style.opacity=fl;burn.style.opacity=bu;black.style.opacity=bl;
+  show(flash,fl>0);show(burn,bu>0);show(black,bl>0);
+}
+
+window.MG={fps:30,duration:DUR,starts:S,end:END,freeze:[FREEZE0,FREEZE1],render};
+window.MG_READY=(async()=>{await document.fonts.ready;
+  // fit each caption to at most two lines
+  for(const s of SEGS){let fs=62;s.el.style.fontSize=fs+'px';s.el.style.display='flex';
+    const lines=()=>new Set(s.words.map(w=>w.w.offsetTop)).size;
+    while(lines()>2&&fs>38){fs-=2;s.el.style.fontSize=fs+'px'}
+    s.el.style.display='none'}
+  render(0,0);return true})();
+</script>
+</body>
+</html>

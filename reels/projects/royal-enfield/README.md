@@ -13,3 +13,15 @@ Rebuild: put the trimmed segments in `seg/` (see `list.txt`), then run `node ren
 ## Banner text and voiceover
 - Clip 05's blank banner gets "Oh! Wow… DREAM BIKE!" (`banner_text.js` → `ov/bannertext.png`). It fades in 2.35s into the clip, once the banner has fully unrolled.
 - `reels/output/royal-enfield-reel-voiceover.mp4` adds Devika's voiceover, sped up 1.13x from 59.9s to 53.0s (`voiceover_53s.mp3`). It starts at 2.4s on the freeze frame, and the music and SFX duck under it.
+
+## Motion-graphics version
+`reels/output/royal-enfield-reel-mg.mp4`: the voiceover reel with a full motion-graphics layer in `mg/`.
+- Paper-strip kinetic captions (word-by-word pops, marker highlights) that cover the old captions.
+- Comic "RUKO!" burst with a Union Jack on the black-and-white freeze frame; speed lines and pataka sparks on the hook.
+- Era stamps (1970, 1955, 1994…), a progress road with a bike, paper-tear / flash / dip-to-black transitions.
+- Per-clip graphics: CLOSED stamp, tricolour confetti, DUG! words, RUTBA level bar, England→India ship map,
+  Army crate label, mileage bars, crashing GHAATA chart, repair-mode bar, bullseye, Ladakh route, 12,00,000+ counter,
+  model chips and a FOLLOW end card that covers the old banner.
+- Camera punch-zooms and shake, sepia flashback, grain and vignette, plus synced SFX on top of the voiceover mix.
+
+Rebuild: `node mg/render_mg.cjs` (needs Playwright), then `python3 mg/compose.py` (needs ffmpeg, numpy, scipy).
