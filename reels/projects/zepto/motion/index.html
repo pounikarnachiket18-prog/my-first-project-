@@ -315,7 +315,7 @@ TL.clips.forEach((c, i) => {
   const apps = [["📷","Camera","#3a3a46"],["🎵","Music","#ff2d55"],["💬","Chats","#25c25a"],["🗺️","Maps","#3b8cff"],
                 ["📧","Mail","#2f80ed"],["🎮","Games","#7b5cff"],["🖼️","Photos","#ffffff"],["🗒️","Notes","#ffcc00"],
                 ["💳","Pay","#111827"],["ZEPTO","Zepto",""],["🌦️","Weather","#38bdf8"],["⏰","Clock","#1f2937"],
-                ["🎬","Videos","#ef4444"],["📚","Books","#f97316"],["🏏","Cricket","#16a34a"],["⚙️","Settings","#6b7280"]];
+                ["🎬","Videos","#ef4444"],["PH","PH","#000000"],["🏏","Cricket","#16a34a"],["⚙️","Settings","#6b7280"]];
   const col = (i) => 60 + (i % 4) * 240 + 25, row = (i) => 560 + Math.floor(i / 4) * 290;
   let zx = 0, zy = 0, zepto;
   const others = [];
@@ -325,7 +325,9 @@ TL.clips.forEach((c, i) => {
       a.innerHTML = `<i class="glow"></i><div class="ic" style="background:linear-gradient(135deg,#9b5cff,#4a1a8c);position:relative">🛍️<span class="badge1">1</span></div><div class="lb">${lb}</div>`;
       zepto = a; zx = col(i) + 95; zy = row(i) + 95;
     } else {
-      a.innerHTML = `<div class="ic" style="background:${bg}">${e}</div><div class="lb">${lb}</div>`;
+      a.innerHTML = e === "PH"
+        ? `<div class="ic" style="background:#000;font-family:var(--display);font-size:92px;font-weight:900;color:#ffb000;letter-spacing:-.03em">PH</div><div class="lb">${lb}</div>`
+        : `<div class="ic" style="background:${bg}">${e}</div><div class="lb">${lb}</div>`;
       others.push(a);
     }
   });
