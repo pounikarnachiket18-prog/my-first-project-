@@ -13,7 +13,7 @@ def dur(p): return float(subprocess.check_output(["ffprobe", "-v", "error", "-sh
 
 # clip 1: hook (slow-mo setup -> yawn -> freeze -> turn)
 h = src("5d3da5a5")
-run(["-t", "0.62", "-i", h, "-vf", f"{DELOGO},minterpolate=fps=60:mi_mode=mci,setpts=2.5*PTS,{SC}", *enc("seg/h1a.mp4")])
+run(["-t", "0.62", "-i", h, "-vf", f"{DELOGO},minterpolate=fps=120:mi_mode=mci,setpts=4.1*PTS,{SC}", *enc("seg/h1a.mp4")])
 run(["-ss", "0.62", "-t", "0.28", "-i", h, "-vf", f"{DELOGO},{SC}", *enc("seg/h1b.mp4")])
 run(["-ss", "0.90", "-i", h, "-frames:v", "1", "-vf", f"{DELOGO},scale=1080:1920:flags=lanczos", "seg/freeze.png"])
 FREEZE = 1.35
@@ -25,7 +25,11 @@ run(["-f", "concat", "-safe", "0", "-i", "seg/h1.txt", "-c", "copy", "seg/01.mp4
 hk = {p: dur(f"seg/{p}.mp4") for p in parts}
 
 # clip 2: family at the door (full)
-run(["-i", src("a075d47b"), "-vf", f"{DELOGO},{SC}", *enc("seg/02.mp4")])
+VO = json.load(open("saira_map.json")); LD = [VO["starts"][i + 1] - VO["starts"][i] if i + 1 < len(VO["starts"]) else VO["ends"][i] - VO["starts"][i] for i in range(len(VO["starts"]))]
+def vspeed(i, avail):                       # clip speed so the clip lasts about as long as its voice line
+    return max(0.75, min(1.5, avail / (LD[i] + 0.12)))
+door_sp = vspeed(0, 4.032)
+run(["-i", src("a075d47b"), "-vf", f"{DELOGO},setpts=PTS/{door_sp:.4f},{SC}", *enc("seg/02.mp4")])
 
 # clips 3..20: (id, speed, extra hold at end)
 CL = [("stage", "80f21f8b", 1.0, 0), ("train", "bcc4d367", 1.15, 0), ("teacher", "9ac90f99", 1.15, 0), ("hero", "24297194", 1.1, 0),
@@ -33,9 +37,13 @@ CL = [("stage", "80f21f8b", 1.0, 0), ("train", "bcc4d367", 1.15, 0), ("teacher",
       ("copy", "3c8a9a9d", 1.15, 0), ("office", "97562e28", 1.15, 0), ("dinner", "dfcd49d9", 1.15, 0), ("night", "aaa22ef6", 1.2, 0),
       ("mummy", "ad7e6e5c", 1.15, 0), ("zoom", "ef7d5143", 1.2, 0), ("dog", "d1a5df19", 1.15, 0), ("squish", "ac391af5", 1.1, 0),
       ("callback", "d8d072de", 1.15, 0), ("pass", "978b14c9", 1.0, 3.0)]
-speed = {"hook": 1.0, "door": 1.0}
+speed = {"hook": 1.0, "door": door_sp}
 for k, (name, cid, sp, hold) in enumerate(CL, start=3):
-    vf = f"{DELOGO},setpts=(PTS-STARTPTS)/{sp},{SC}" + (f",tpad=stop_mode=clone:stop_duration={hold}" if hold else "")
+    li = k - 2
+    if name == "pass": sp, hold = 1.0, max(0.0, LD[li] + 2.8 - 3.732)
+    else:
+        sp = vspeed(li, 3.732); need = LD[li] + 0.12; hold = round(max(0.0, need - 3.732 / sp), 3); hold = hold if hold >= 0.04 else 0
+    vf = f"{DELOGO},setpts=(PTS-STARTPTS)/{sp},{SC}" + (f",tpad=stop_mode=clone:stop_duration={hold:.3f}" if hold else "")
     run(["-ss", "0.3", "-i", src(cid), "-vf", vf, *enc(f"seg/{k:02d}.mp4")])
     speed[name] = sp
 
@@ -46,7 +54,7 @@ st = [0.0]
 for x in d[:-1]: st.append(st[-1] + x)
 S = dict(zip(names, st)); Dn = dict(zip(names, d))
 def at(name, src_t):             # map a time in the source clip to the reel timeline
-    if name == "door": return S[name] + src_t
+    if name == "door": return S[name] + src_t / speed["door"]
     return S[name] + (src_t - 0.3) / speed[name]
 def frac(name, f): return S[name] + Dn[name] * f
 
@@ -60,8 +68,8 @@ beats = {
     "cook": frac("office", 0.25), "burst": frac("office", 0.72), "stranger": frac("dinner", 0.66),
     "night_yawn": frac("night", 0.55), "oye": at("mummy", 0.5), "mummy_yawn": at("mummy", 1.7), "switch": at("mummy", 3.6),
     "dog_yawn": at("dog", 1.4), "chimps": at("dog", 2.6), "impact": at("squish", 2.3), "couple_yawn": at("callback", 3.0),
-    "split": at("pass", 2.6), "follow": S["pass"] + (4.032 - 0.3) + 0.25,
+    "split": at("pass", 2.6), "follow": S["pass"] + LD[-1] + 0.35,
 }
-tl = {"names": names, "starts": st, "durs": d, "dur": st[-1] + d[-1], "S": S, "beats": beats}
+tl = {"vo_lines": LD, "speeds": speed, "names": names, "starts": st, "durs": d, "dur": st[-1] + d[-1], "S": S, "beats": beats}
 json.dump(tl, open("timeline.json", "w"), indent=1)
 print({k: round(v, 2) for k, v in S.items()}, "total", round(tl["dur"], 2))

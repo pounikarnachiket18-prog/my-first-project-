@@ -26,12 +26,12 @@ cuts = "+".join(f"between(t,{s[k]-0.05:.3f},{s[k]+0.06:.3f})" for k in range(1, 
 fx = (f"[0:v]scale=1350:2400:flags=lanczos,{zp},avgblur=sizeX=24:sizeY=1:enable='{cuts}',"
       f"eq=contrast=1.04:saturation=1.07,vignette=angle=PI/6,unsharp=5:5:0.3,noise=alls=4:allf=t,format=yuv420p[base]")
 fc = ";".join([fx, "[1:v]format=rgba[mg]", "[base][mg]overlay=0:0:format=auto[v1]", "[v1][2:v]overlay=860:1700[v2]", "[v2]format=yuv420p[v]",
-               "[3:a]aresample=48000[a]"])
+               "[4:a]aformat=channel_layouts=stereo,asplit=2[vo][sc]", "[3:a]volume=0.8[bed]", "[bed][sc]sidechaincompress=threshold=0.02:ratio=4:attack=15:release=300[duck]", "[duck][vo]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.95,aresample=48000[a]"])
 open("fc.txt", "w").write(fc)
 mg = subprocess.Popen(["node", "render_mg.js"], stdout=subprocess.PIPE)
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i", "concat.txt",
-                "-f", "image2pipe", "-framerate", "30", "-c:v", "png", "-i", "-", "-i", "logo_m.png", "-i", "soundtrack.wav",
+                "-f", "image2pipe", "-framerate", "30", "-c:v", "png", "-i", "-", "-i", "logo_m.png", "-i", "soundtrack.wav", "-i", "vo_track.wav",
                 "-filter_complex_script", "fc.txt", "-map", "[v]", "-map", "[a]",
                 "-c:v", "libx264", "-preset", "medium", "-b:v", "9M", "-maxrate", "13M", "-bufsize", "18M", "-profile:v", "high", "-r", "30",
-                "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-movflags", "+faststart", "-t", f"{DUR:.3f}", "yawn_reel_full.mp4"], stdin=mg.stdout, check=True)
+                "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-movflags", "+faststart", "-t", f"{DUR:.3f}", "yawn_reel_vo_pre.mp4"], stdin=mg.stdout, check=True)
 mg.wait(); print("done")

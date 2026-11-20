@@ -18,3 +18,9 @@ Added for the full cut: "THE CONTAGIOUS VILLAIN" title with a BRAAAM hit, widesc
 ## Audio fix (v2)
 - The earlier exports had 96 kHz AAC audio (loudnorm upsamples internally), which many phones play as silence, and a quiet first ~2s. All reels are now 48 kHz. `compose.py` outputs `-ar 48000`; the final loudness uses two-pass linear loudnorm (-14 LUFS).
 - New realistic yawns come from `yawnvox.py`: a source-filter synth with an inhale, then a high voiced "aaah" gliding down, then "ohh", then a closed-mouth "mmm" with vocal fry. There are voices for man, woman, Dadi, kid, mascot, dog and chimp, with one or more yawns in every scene and the music ducking under them.
+
+## Voiceover cut: `reels/output/yawn-reel-voiceover.mp4` (71.4s, 48 kHz, -14 LUFS)
+- Voices: Vikrant (dulha, "Jaan… ek baat kahun…?", with the pause trimmed) and Saira (Ubaasi, 19 lines, sped up 1.1x). Line starts and ends are in `saira_map.json`; the "School mein…" break was found from an energy dip at 9.1–9.95s.
+- The hook setup is now 2.5s of slow motion (minterpolate 120 fps, 4.1x) so the dulha finishes his line before the yawn.
+- Every clip is retimed to its line (0.85x–1.5x). Each line is placed at its clip start + 0.12s. Captions match the spoken wording. Music, effects and yawns duck under the voice (sidechain), and the final loudness uses two-pass linear loudnorm.
+- `voiceover_track.mp3` is the placed voice track on its own.
