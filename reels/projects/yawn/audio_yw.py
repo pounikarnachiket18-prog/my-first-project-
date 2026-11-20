@@ -127,86 +127,131 @@ def dingdong():
 def gulp():
     t = T(0.35); x = np.sin(2 * np.pi * (300 * np.exp(-t * 6) + 60) * t) * np.exp(-t * 7); return nrm(x)
 
-# ---------------- timeline
-F, FL = tl["freeze_at"], tl["freeze"]
-Y1 = tl["yawn1"]
-ev = {"yawns": [], "mouths": []}
 
-# hook 1: shehnai setup, dulha yawn, freeze with scratch + trombone
-sh = shehnai([67, 69, 71, 72, 71, 69, 71, 72], 0.21); put(M, sh, 0.05, 0.45)
-put(L, yawn(1.1, 150, 95, 0.4), Y1 - 0.05, 0.9); ev["yawns"].append(Y1)
-put(L, yawn(0.7, 300, 230, 0.4), Y1 + 0.25, 0.4)
-put(L, scratch(), F, 0.8); put(L, lib("hit"), F + 0.02, 0.35)
-put(L, trombone(), F + 0.2, 0.6)
-# hook 2: sneaky tiptoe, Dadi yawn, family chorus
+# ---------------- extra sounds
+def braam(d=2.2):
+    t = T(d); x = np.zeros_like(t)
+    for f in (41.2, 55, 82.4, 110):
+        x += signal.sawtooth(2 * np.pi * f * t * (1 + 0.004 * np.sin(2 * np.pi * 3 * t)))
+    x = lp(x, 900) * np.minimum(1, t / 0.04) * np.exp(-t * 1.3)
+    sub = np.sin(2 * np.pi * 36 * t) * np.exp(-t * 1.8)
+    return nrm(np.tanh(x * 1.5 + sub * 1.2))
+def door_bang(): t = T(0.6); return nrm(np.sin(2 * np.pi * (70 + 90 * np.exp(-t * 30)) * t) * np.exp(-t * 8) + lp(rng.normal(size=len(t)), 2500) * np.exp(-t * 25))
+def meow():
+    t = T(0.7); f0 = 650 + 350 * np.sin(np.pi * t / 0.7); ph = 2 * np.pi * np.cumsum(f0) / SR
+    s_ = sum(np.sin(h * ph) / h for h in range(1, 8)); v = bp(s_, 700, 2600) * np.sin(np.pi * t / 0.7) ** 1.5; return nrm(v)
+def woof():
+    out = []
+    for _ in range(2):
+        t = T(0.18); f0 = 260 * np.exp(-t * 3); ph = 2 * np.pi * np.cumsum(f0) / SR
+        s_ = sum(np.sin(h * ph) / h for h in range(1, 10)) + 0.5 * rng.normal(size=len(t))
+        out.append(bp(s_, 300, 2200) * np.exp(-t * 14)); out.append(np.zeros(int(SR * 0.08)))
+    return nrm(np.concatenate(out))
+def knock():
+    t = T(0.08); k = lp(rng.normal(size=len(t)), 1800) * np.exp(-t * 70) + np.sin(2 * np.pi * 180 * t) * np.exp(-t * 50)
+    return nrm(np.concatenate([k, np.zeros(int(SR * 0.12)), k]))
+def crack():
+    t = T(0.5); x = hp(rng.normal(size=len(t)), 2500) * np.exp(-t * 9)
+    for i in range(12):
+        j = int(rng.random() * len(t) * 0.6); x[j:j + 300] += hp(rng.normal(size=300), 4000)[: len(x) - j] * 1.5
+    return nrm(x)
+def shimmer(d=1.6):
+    out = np.zeros(int(SR * d))
+    for i in range(24):
+        m = [84, 86, 88, 91, 93, 96][i % 6]; p = pizz(hz(m), 0.6, 0.3); j = int(i * d / 24 * SR * 0.8); out[j:j + len(p)] += p[: len(out) - j]
+    return nrm(out)
+
+# ---------------- timeline
+B, SS = tl["beats"], tl["S"]
+F, FL, Y1 = B["freeze_at"], B["freeze"], B["yawn1"]
+def DD(name): return D[tl["names"].index(name)]
+ev = {"mouths": []}
+# hook
+put(M, shehnai([67, 69, 71, 72, 71, 69, 71, 72], 0.21), 0.05, 0.45)
+put(L, yawn(1.1, 150, 95, 0.4), Y1 - 0.05, 0.9); put(L, yawn(0.7, 300, 230, 0.4), Y1 + 0.25, 0.4)
+put(L, scratch(), F, 0.8); put(L, lib("hit"), F + 0.02, 0.35); put(L, trombone(), F + 0.2, 0.6)
+# door: tiptoe + Dadi + chorus
 for k in range(14):
-    tt = st[1] + 0.1 + k * 0.27
-    if tt < st[2] - 0.5: put(M, pizz(hz([62, 65, 62, 69, 67, 65, 62, 60][k % 8]), 0.2, 0.6), tt, 0.35)
-put(L, yawn(1.2, 260, 190, 0.6), st[1] + 1.9, 0.85); ev["yawns"].append(st[1] + 1.9)
-for i, (a, b) in enumerate([(140, 95), (230, 170), (180, 130), (300, 220)]):
-    put(L, yawn(0.9, a, b, 0.5), st[1] + 2.2 + i * 0.12, 0.35)
-# stage: drumroll + cymbal + ta-da
-put(L, drumroll(1.1), st[2] + 0.05, 0.45); put(L, cymbal(), st[2] + 1.2, 0.35); put(M, tada(), st[2] + 1.2, 0.55)
-put(L, click(), st[2] + D[2] - 0.35, 0.5)
+    tt = SS["door"] + 0.1 + k * 0.27
+    if tt < SS["stage"] - 0.5: put(M, pizz(hz([62, 65, 62, 69, 67, 65, 62, 60][k % 8]), 0.2, 0.6), tt, 0.35)
+put(L, yawn(1.2, 260, 190, 0.6), B["dadi"], 0.85)
+for i, (a, b) in enumerate([(140, 95), (230, 170), (180, 130), (300, 220)]): put(L, yawn(0.9, a, b, 0.5), B["dadi"] + 0.3 + i * 0.12, 0.35)
+# stage: drumroll -> BRAAAM title + ta-da
+put(L, drumroll(1.1), SS["stage"] + 0.05, 0.45); put(L, braam(), B["title"] - 0.05, 0.75); put(L, cymbal(), B["title"], 0.3); put(M, tada(), B["title"], 0.4)
+put(L, click(), SS["train"] - 0.35, 0.5)
 # train
-for tt in np.arange(st[3], st[4] - 0.1, 0.42): put(L, clack(), tt, 0.28)
-put(L, horn(), st[3] + 0.15, 0.25)
-for i in range(5): put(L, yawn(0.8, 200 + 40 * (i % 3), 150, 0.5), st[3] + 0.5 + i * 0.45, 0.35)
+for tt in np.arange(SS["train"], SS["teacher"] - 0.1, 0.42): put(L, clack(), tt, 0.28)
+put(L, horn(), SS["train"] + 0.15, 0.25)
+for i in range(5): put(L, yawn(0.8, 200 + 40 * (i % 3), 150, 0.5), SS["train"] + 0.5 + i * 0.42, 0.35)
 # teacher
-put(L, lib("hit"), st[4] + 0.55, 0.7); put(L, yawn(1.1, 280, 200, 0.5), st[4] + 1.1, 0.75); ev["yawns"].append(st[4] + 1.1)
-put(L, boing(), st[4] + 1.9, 0.45)
+put(L, lib("hit"), B["ruler"], 0.7); put(L, yawn(1.1, 280, 200, 0.5), B["teacher_yawn"], 0.75); put(L, boing(), B["teacher_yawn"] + 0.8, 0.45)
+# hero: slow whoosh + BRAAAM, yawn, goons
+put(L, lib("whoosh_long"), SS["hero"] + 0.05, 0.4); put(L, braam(1.6), B["glasses"] - 0.1, 0.6)
+put(L, yawn(1.2, 130, 90, 0.5), B["hero_yawn"], 0.85)
+for i in range(4): put(L, yawn(0.8, 120 + i * 25, 90, 0.5), B["hero_yawn"] + 0.35 + i * 0.15, 0.3)
 # stadium
-put(L, crowd(D[5]), st[5], 0.35)
-for i in range(10): put(L, yawn(1.0, 120 + rng.random() * 200, 100, 0.6), st[5] + 0.6 + i * 0.12, 0.16)
+put(L, crowd(DD("stadium")), SS["stadium"], 0.35)
+for i in range(10): put(L, yawn(1.0, 120 + rng.random() * 200, 100, 0.6), SS["stadium"] + 0.6 + i * 0.12, 0.16)
+# umpire
+put(L, crowd(DD("umpire")) * np.linspace(1.3, 0.4, int(SR * DD("umpire"))), SS["umpire"], 0.3)
+put(L, yawn(0.8, 190, 140, 0.5), B["appeal"], 0.4); put(L, lib("riser_short"), B["finger"] - 0.6, 0.35)
+put(L, yawn(1.2, 140, 95, 0.5), B["umpire_yawn"], 0.8); put(L, trombone()[: int(SR * 0.7)], B["umpire_yawn"] + 0.3, 0.35)
 # lab
-for k in range(40): put(L, bubble(), st[6] + rng.random() * D[6], 0.18)
-put(L, yawn(1.1, 140, 100, 0.5), st[6] + 0.15, 0.7)
-STAMP = st[6] + D[6] * 0.66; put(L, stamp(), STAMP, 0.85); ev["stamp"] = STAMP
-# AC brain
-put(L, sizzle(1.3), st[7] + 0.05, 0.25)
-ICE = st[7] + D[7] * 0.5; put(L, lib("whoosh_long"), ICE - 0.2, 0.45); put(L, chime(), ICE, 0.4); ev["ice"] = ICE
-# copy button
-for k in range(4): put(L, beep(), st[8] + 0.3 + k * 0.3, 0.25)
-BTN = st[8] + D[8] * 0.42; put(L, click(), BTN, 0.8); put(L, lib("hit"), BTN, 0.3); put(L, boing(), BTN + 0.1, 0.4); ev["button"] = BTN
+for k in range(40): put(L, bubble(), SS["lab"] + rng.random() * DD("lab"), 0.18)
+put(L, yawn(1.1, 140, 100, 0.5), SS["lab"] + 0.15, 0.7); put(L, stamp(), B["stamp"], 0.85)
+# AC
+put(L, sizzle(1.3), SS["ac"] + 0.05, 0.25); put(L, lib("whoosh_long"), B["ice"] - 0.2, 0.45); put(L, chime(), B["ice"], 0.4)
+# copy
+for k in range(4): put(L, beep(), SS["copy"] + 0.3 + k * 0.3, 0.25)
+put(L, click(), B["button"], 0.8); put(L, lib("hit"), B["button"], 0.3); put(L, boing(), B["button"] + 0.1, 0.4)
 # office
-COOK = st[9] + D[9] * 0.25; put(L, whistle(1.5), COOK, 0.3)
-BURST = st[9] + D[9] * 0.72; put(L, lib("pop"), BURST, 0.7); put(L, yawn(1.1, 150, 100, 0.5), BURST, 0.8); ev["burst"] = BURST
-put(L, lib("whoosh_long"), BURST + 0.2, 0.3)
+put(L, whistle(1.5), B["cook"], 0.3); put(L, lib("pop"), B["burst"], 0.7); put(L, yawn(1.1, 150, 100, 0.5), B["burst"], 0.8); put(L, lib("whoosh_long"), B["burst"] + 0.2, 0.3)
 # dinner
-for k in range(6): put(L, pizz(hz(96 + (k % 2) * 3), 0.3, 0.2), st[10] + 0.15 + k * 0.17, 0.12)
-for i, (a, b) in enumerate([(260, 190), (150, 100), (240, 180), (330, 260)]): put(L, yawn(0.7, a, b, 0.4), st[10] + 0.4 + i * 0.38, 0.45)
-put(L, boing(), st[10] + D[10] * 0.68, 0.45)
+for k in range(6): put(L, pizz(hz(96 + (k % 2) * 3), 0.3, 0.2), SS["dinner"] + 0.15 + k * 0.17, 0.12)
+for i, (a, b) in enumerate([(260, 190), (150, 100), (240, 180), (330, 260)]): put(L, yawn(0.7, a, b, 0.4), SS["dinner"] + 0.4 + i * 0.36, 0.45)
+put(L, boing(), B["stranger"], 0.45)
 # night
-put(L, crickets(D[11]), st[11], 0.12); put(L, lib("ding"), st[11] + 1.4, 0.25)
-put(L, yawn(1.2, 150, 100, 0.6), st[11] + D[11] * 0.55, 0.7); ev["yawns"].append(st[11] + D[11] * 0.55)
+put(L, crickets(DD("night")), SS["night"], 0.12); put(L, lib("ding"), SS["night"] + 1.2, 0.25); put(L, yawn(1.2, 150, 100, 0.6), B["night_yawn"], 0.7)
+# mummy
+put(L, door_bang(), SS["mummy"] + 0.05, 0.7); put(L, lib("hit"), B["oye"], 0.4)
+put(L, yawn(1.1, 260, 190, 0.5), B["mummy_yawn"], 0.8); put(L, yawn(0.8, 160, 110, 0.5), B["mummy_yawn"] + 0.45, 0.4); put(L, meow(), B["mummy_yawn"] + 0.9, 0.45)
+put(L, click(), B["switch"], 0.7)
 # zoom
-put(L, dingdong(), st[12] + 0.15, 0.4)
-for i in range(8): put(L, yawn(0.6, 150 + (i * 37) % 180, 110, 0.4), st[12] + 0.9 + i * 0.22, 0.22)
-# mouth dives + transitions
-mouth_cuts = [1, 2, 3, 4, 5, 6, 12, 13]           # clips that end inside a mouth / on black
+put(L, dingdong(), SS["zoom"] + 0.15, 0.4)
+for i in range(8): put(L, yawn(0.6, 150 + (i * 37) % 180, 110, 0.4), SS["zoom"] + 0.8 + i * 0.2, 0.22)
+# dog & chimps
+put(L, yawn(0.9, 150, 100, 0.5), SS["dog"] + 0.1, 0.5); put(L, woof(), B["dog_yawn"] - 0.25, 0.45); put(L, yawn(0.9, 330, 230, 0.6), B["dog_yawn"], 0.5)
+put(L, yawn(0.8, 280, 200, 0.5), B["chimps"], 0.35); put(L, yawn(0.8, 300, 220, 0.5), B["chimps"] + 0.3, 0.35)
+# squish: whoosh in, glass thud + crack, knock knock
+put(L, lib("whoosh_long"), B["impact"] - 0.8, 0.5); put(L, stamp(), B["impact"], 0.6); put(L, crack(), B["impact"], 0.55); put(L, knock(), B["impact"] + 0.7, 0.6)
+# callback: shehnai reprise + duo yawn
+put(M, shehnai([72, 71, 69, 71, 72], 0.24), SS["callback"] + 0.1, 0.35); put(L, yawn(1.1, 150, 95, 0.4), B["couple_yawn"], 0.7); put(L, yawn(1.0, 290, 220, 0.4), B["couple_yawn"] + 0.08, 0.5)
+# pass it on: split shimmer + BRAAAM finale, follow tap
+put(L, shimmer(1.8), B["split"] - 0.1, 0.5); put(L, lib("whoosh_long"), B["split"], 0.4); put(L, braam(2.4), B["split"] + 0.9, 0.55)
+put(L, cymbal(), B["split"] + 0.9, 0.25)
+put(L, click(), B["follow"] + 0.55, 0.8); put(L, lib("ding"), B["follow"] + 0.6, 0.45)
+# whooshes + gulps on cuts
+mouth_end = {"door", "stage", "train", "teacher", "hero", "stadium", "umpire", "zoom", "dog", "callback"}   # clip ends inside a mouth / black
 for k in range(1, len(st)):
     put(L, lib("whoosh"), st[k] - 0.14, 0.32)
-    if k in mouth_cuts: put(L, gulp(), st[k] - 0.05, 0.5); ev["mouths"].append(st[k])
-# end card
-E = st[13]
-put(M, tada(), E + 0.2, 0.5); put(L, cymbal(), E + 0.2, 0.25)
-FOLLOW = E + 1.6; put(L, click(), FOLLOW + 0.55, 0.8); put(L, lib("ding"), FOLLOW + 0.6, 0.45); put(L, lib("boom"), FOLLOW + 0.6, 0.25)
-ev["follow"] = FOLLOW; ev["end"] = E
+    if tl["names"][k - 1] in mouth_end or k == 1: put(L, gulp(), st[k] - 0.05, 0.5); ev["mouths"].append(st[k])
 
-# ---------------- music bed (playful pizzicato + bassoon), from the stage to the end card
+# ---------------- music bed: playful pizzicato + bassoon from the title to the finale
 bpm = 112; beat = 60 / bpm
 prog = [(60, [64, 67, 72]), (55, [62, 67, 71]), (57, [64, 69, 72]), (53, [65, 69, 72])]
-t = st[2] + 1.2; b = 0
-while t < E - 0.1:
+t = B["title"]; b = 0
+while t < B["split"] + 0.8:
     root, ch = prog[(b // 4) % 4]
-    put(M, bassoon(hz(root - 12 if b % 2 == 0 else root - 5), beat * 0.9), t, 0.2)
-    if b % 2 == 1: put(M, pizz(hz(ch[(b // 2) % 3] + 12), 0.25, 0.8), t, 0.16)
-    put(M, pizz(hz(ch[b % 3] + 12), 0.2, 0.6), t + beat / 2, 0.1)
+    g = 0.55 if SS["callback"] <= t < SS["pass"] else 1.0
+    put(M, bassoon(hz(root - 12 if b % 2 == 0 else root - 5), beat * 0.9), t, 0.2 * g)
+    if b % 2 == 1: put(M, pizz(hz(ch[(b // 2) % 3] + 12), 0.25, 0.8), t, 0.16 * g)
+    put(M, pizz(hz(ch[b % 3] + 12), 0.2, 0.6), t + beat / 2, 0.1 * g)
     t += beat; b += 1
+put(M, tada(), B["split"] + 0.9, 0.5)
 
 mix = np.tanh((L * 0.95 + M * 0.85) * 1.1)
 mix = mix / np.max(np.abs(mix)) * 0.89
-fo = int(SR * 0.5); mix[-fo:] *= np.linspace(1, 0, fo)
+fo = int(SR * 0.6); mix[-fo:] *= np.linspace(1, 0, fo)
 wavfile.write("soundtrack.wav", SR, (np.stack([mix, mix], 1) * 32767).astype(np.int16))
 json.dump(ev, open("events.json", "w"), indent=1)
-print("soundtrack", round(DUR, 2), ev)
+print("soundtrack", round(DUR, 2), "mouth cuts", len(ev["mouths"]))

@@ -8,3 +8,9 @@ Clips used (plan number → upload id): 1 couple 5d3da5a5 · 2 family at the doo
 - `audio_yw.py`: everything is synthesized. Shehnai setup, synthesized yawns for each character, record scratch and wah-wah trombone on the freeze, tiptoe pizzicato, drumroll and ta-da, train, crowd, lab bubbles and stamp, ice chime, button and boing, pressure-cooker whistle, crickets, a Zoom ding, mouth-dive gulps, and a playful pizzicato/bassoon bed.
 - `mg_yw.html`: speech bubble, hearts that break, freeze doodle and reaction, spy-kit callouts, UBAASI marquee, CONTAGIOUS tape, INFECTED counter, comic pops, MYTH stamp, brain thermometer with snow, Ctrl+C keycaps, pressure gauge, Family > Dost > Strangers podium, Zzz, mouth-dive streaks, tags, kinetic captions, progress bar, and an end card with a Follow tap.
 - `compose.py`: push-in on every shot, zoom punches and shake on the gags, whip blur on cuts, grade and grain, the graphics layer, and the logo at 860,1700.
+
+
+## Full cut (20 clips): `reels/output/yawn-reel-full.mp4` (69.1s)
+Order: hook (couple) → door (family) → stage title → train → teacher → hero (24297194) → stadium → umpire (a42120d8) → lab → AC brain → copy → office → dinner → night → mummy (ad7e6e5c) → Zoom → dog/chimps (d1a5df19) → screen squish (ac391af5) → newlyweds callback (d8d072de) → pass it on (978b14c9, held 3s for the CTA).
+
+Added for the full cut: "THE CONTAGIOUS VILLAIN" title with a BRAAAM hit, widescreen bars, lens flare and SLO-MO FAIL for the hero, HOWZAT/NOT OUT for the umpire, OYE!! for mummy with a cat meow, Copied 🐶 and chimp callouts with a woof, a glass crack and smudge with knock-knock on the screen squish, a shehnai reprise on the callback, and a finale with a magic shimmer, the counter rolling to 10 lakh, "Kitni aayi?", a share button and the Follow tap. Every story beat is timed from the source footage (`beats` in `timeline.json`).

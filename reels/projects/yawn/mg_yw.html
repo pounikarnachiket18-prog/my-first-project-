@@ -117,9 +117,9 @@ function hazard(t, t0, t1) {
 function keyval(t, keys) { let li = 0; for (let i = 0; i < keys.length; i++) if (t >= keys[i][0]) li = i; if (li === 0 && t < keys[0][0]) return keys[0][1];
   if (li === 0) return keys[0][1]; const k = easeIO((t - keys[li][0]) / .8); return lerp(keys[li - 1][1], keys[li][1], k); }
 function counter(t) {
-  const s = D.starts; if (t < D.yawn1 || t > D.events.end - .1) return;
+  const s = D.starts; if (t < D.beats.yawn1 || t > D.beats.follow - .3) return;
   const v = Math.round(keyval(t, D.infected)); const last = D.infected.filter(k => t >= k[0]).pop(); const pulse = last ? Math.exp(-(t - last[0]) * 5) : 0;
-  const a = clamp((t - D.yawn1) / .3, 0, 1);
+  const a = clamp((t - D.beats.yawn1) / .3, 0, 1);
   X.save(); X.globalAlpha = a; X.translate(880, 180); X.scale(1 + pulse * .15, 1 + pulse * .15);
   rrect(-170, -58, 340, 116, 24); X.fillStyle = 'rgba(30,18,46,.82)'; X.fill(); X.lineWidth = 3; X.strokeStyle = pulse > .2 ? '#FF4D5E' : 'rgba(201,167,255,.7)'; X.stroke();
   X.fillStyle = '#C9A7FF'; X.font = `800 20px ${F}`; X.textAlign = 'center'; X.textBaseline = 'middle'; X.fillText('🦠 INFECTED', 0, -30);
@@ -199,74 +199,91 @@ function followCard(t, t0) {
   const cd = t - tapT; if (cd > 0) for (let i = 0; i < 90; i++) { const an = rnd(i) * Math.PI * 2, sp = 500 + rnd(i * 2) * 900, px = 540 + Math.cos(an) * sp * cd, py = 1150 + Math.sin(an) * sp * cd + 1100 * cd * cd;
     X.save(); X.globalAlpha = clamp(1.6 - cd, 0, 1); X.translate(px, py); X.rotate(cd * 8 + i); X.fillStyle = ['#FFD21F', '#E0262F', '#C9A7FF', '#0095F6', '#fff'][i % 5]; X.fillRect(-9, -5, 18, 10); X.restore(); }
 }
-function endCard(t, t0) {
-  if (t < t0) return; const d = t - t0;
-  // soft rays
-  X.save(); X.globalAlpha = .25; X.translate(540, 700); X.rotate(d * .3); for (let i = 0; i < 12; i++) { X.rotate(Math.PI / 6); X.fillStyle = i % 2 ? '#C9A7FF' : '#7b55a8'; X.beginPath(); X.moveTo(0, 0); X.lineTo(-120, -1400); X.lineTo(120, -1400); X.closePath(); X.fill(); } X.restore();
-  const k = elastic(d / .6); X.save(); X.translate(540, 640); X.scale(k, k); X.rotate(Math.sin(d * 4) * .04); strokeText('Aayi na? 😂', 0, 0, 130, '#FFD21F', { sw: 16 }); X.restore();
-  caption(t, 'Kitni <y>ubaasi</y> aayi? <y>Comment</y> karo 👇', t0 + .4, D.dur, 830, 52, .8);
-  zzz(t, t0, D.dur, 760, 560);
-  followCard(t, D.events.follow);
+function letterbox(t, t0, t1) {
+  if (t < t0 - .3 || t > t1 + .3) return; const k = t < t0 ? 1 - (t0 - t) / .3 : t > t1 ? 1 - (t - t1) / .3 : 1; const h = 170 * ease(k);
+  X.fillStyle = '#000'; X.fillRect(0, 0, W, h); X.fillRect(0, H - h, W, h);
+}
+function flare(t, t0, x, y) {
+  const d = t - t0; if (d < 0 || d > .9) return; const a = Math.sin(clamp(d / .9, 0, 1) * Math.PI);
+  X.save(); X.globalCompositeOperation = 'lighter';
+  const g = X.createRadialGradient(x, y, 0, x, y, 260); g.addColorStop(0, `rgba(255,240,200,${.9 * a})`); g.addColorStop(.3, `rgba(255,170,90,${.35 * a})`); g.addColorStop(1, 'rgba(255,150,80,0)');
+  X.fillStyle = g; X.fillRect(0, 0, W, H);
+  X.fillStyle = `rgba(255,220,170,${.5 * a})`; X.fillRect(0, y - 3, W, 6);
+  for (const [o, r] of [[.4, 40], [.7, 24], [1.1, 60]]) { X.beginPath(); X.arc(lerp(x, W - x, o), lerp(y, H - y, o), r, 0, 7); X.fillStyle = `rgba(180,200,255,${.18 * a})`; X.fill(); }
+  X.restore();
+}
+function glassCrack(t, t0) {
+  const d = t - t0; if (d < 0) return; const cx = 540, cy = 980, k = clamp(d / .18, 0, 1);
+  X.save(); X.globalAlpha = .85; X.strokeStyle = 'rgba(255,255,255,.95)'; X.lineWidth = 3; X.shadowColor = 'rgba(0,0,0,.6)'; X.shadowBlur = 4;
+  for (let i = 0; i < 14; i++) { const an = i / 14 * Math.PI * 2 + rnd(i) * .3, len = (240 + rnd(i * 3) * 520) * k; X.beginPath(); X.moveTo(cx, cy);
+    let px = cx, py = cy; for (let j = 1; j <= 5; j++) { px = cx + Math.cos(an + (rnd(i * 7 + j) - .5) * .25) * len * j / 5; py = cy + Math.sin(an + (rnd(i * 5 + j) - .5) * .25) * len * j / 5; X.lineTo(px, py); } X.stroke(); }
+  for (let r = 1; r <= 3; r++) { X.beginPath(); for (let i = 0; i <= 14; i++) { const an = i / 14 * Math.PI * 2, rr = r * 90 * k * (1 + (rnd(i * r) - .5) * .3); i ? X.lineTo(cx + Math.cos(an) * rr, cy + Math.sin(an) * rr) : X.moveTo(cx + Math.cos(an) * rr, cy + Math.sin(an) * rr); } X.stroke(); }
+  X.restore();
+  if (d > .6) { X.save(); X.globalAlpha = clamp((d - .6) / .3, 0, .35); X.fillStyle = '#fff'; for (let i = 0; i < 6; i++) { X.beginPath(); X.ellipse(380, 1320, 60 - i * 9, 80 - i * 12, .3, 0, 7); X.lineWidth = 3; X.strokeStyle = 'rgba(255,255,255,.6)'; X.stroke(); } X.restore(); }
+}
+function shareBtn(t, t0) {
+  const d = t - t0; if (d < 0) return; const k = back(d / .4), press = Math.exp(-Math.pow((d - .9) / .07, 2));
+  X.save(); X.translate(540, 1560); X.scale(k * (1 - press * .1), k * (1 - press * .1)); rrect(-260, -55, 520, 110, 55); X.fillStyle = '#C9A7FF'; X.fill(); X.lineWidth = 6; X.strokeStyle = '#1a1026'; X.stroke();
+  strokeText('📤 Dost ko bhejo', 0, 3, 46, '#1a1026', { stroke: false }); X.restore();
+  if (d > .9) for (let i = 0; i < 10; i++) { const p = clamp((d - .9 - i * .05) / .8, 0, 1); if (p <= 0 || p >= 1) continue; const an = -Math.PI / 2 + (rnd(i) - .5) * 2.4;
+    X.save(); X.globalAlpha = 1 - p; X.font = `54px ${F}`; X.textAlign = 'center'; X.fillText('😴', 540 + Math.cos(an) * p * 600, 1560 + Math.sin(an) * p * 900); X.restore(); }
 }
 
 window.render = function (t) {
-  X.clearRect(0, 0, W, H); const s = D.starts, E = D.events, fz = D.freeze_at, fe = fz + D.freeze;
-  // ---- clip 1: setup bubble, hearts, freeze gag
-  if (t < s[1]) {
-    hearts(t, .1, D.yawn1 + .1);
-    bubble(t, 'Jaan… main tumse ek baat kehna chahta hoon… 🥺', .15, D.yawn1 + .25, 60, 250, 640, 300, 520);
+  X.clearRect(0, 0, W, H); const S = D.S, B = D.beats, E = D.events, fz = B.freeze_at, fe = fz + B.freeze, nx = n => D.starts[D.names.indexOf(n) + 1] || D.dur;
+  const inClip = n => t >= S[n] && t < nx(n);
+  // ---- hook
+  if (inClip('hook')) {
+    hearts(t, .1, B.yawn1 + .1);
+    bubble(t, 'Jaan… main tumse ek baat kehna chahta hoon… 🥺', .12, B.yawn1 + .25, 60, 250, 640, 300, 520);
     caption(t, 'Shaadi ki <y>pehli raat</y> 💍', .05, fz - .1, 1560, 46, .5);
     flash(t, fz, .16, .95);
     if (t >= fz && t < fe + .1) {
-      const d = t - fz, out = clamp((t - fe) / .1, 0, 1);
-      X.save(); X.globalAlpha = 1 - out;
+      const d = t - fz, out = clamp((t - fe) / .1, 0, 1); X.save(); X.globalAlpha = 1 - out;
       const g = X.createRadialGradient(540, 900, 300, 540, 900, 1250); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(20,0,30,.55)'); X.fillStyle = g; X.fillRect(0, 0, W, H);
       const dk = clamp((d - .1) / .35, 0, 1); X.strokeStyle = '#FF4D5E'; X.lineWidth = 10; X.lineCap = 'round'; X.beginPath();
       for (let i = 0; i <= 70 * dk; i++) { const a = -1 + i / 70 * Math.PI * 2.15, wob = 1 + Math.sin(i * .9) * .03; const px = 255 + Math.cos(a) * 95 * wob, py = 800 + Math.sin(a) * 80 * wob; i ? X.lineTo(px, py) : X.moveTo(px, py); } X.stroke();
-      comic(t, fz + .35, '😳', 800, 640, .1, '#FF9FC8', 70, D.freeze);
-      X.restore();
+      comic(t, fz + .35, '😳', 800, 640, .1, '#FF9FC8', 70, B.freeze); X.restore();
       caption(t, '…aur <y>UBAASI</y> aa gayi 😂', fz + .15, fe - .05, 1180, 76, .5);
     }
   }
-  // ---- clip 2: family at the door
-  if (win(t, s[1], s[2])) {
-    caption(t, 'Aur bahar… <r>poora khandaan</r> 💀', s[1] + .1, s[2] - .1, 1560, 50, .7);
-    label(t, s[1] + .3, s[1] + 1.7, 'Dadi ka spy-kit 🥛', 330, 980, 280, 1200);
-    label(t, s[1] + .55, s[1] + 1.7, 'Chacha 👀', 820, 620, 700, 800);
-  }
-  // ---- clip 3: stage
-  if (win(t, s[2], s[3])) {
-    marquee(t, s[2] + 1.2, s[3] - .1);
-    bubble(t, 'Hi… main ek ubaasi hoon 😈', s[2] + 1.5, s[3] - .3, 540, 690, 470, 720, 860);
-    zzz(t, s[2] + .5, s[3] - .3, 760, 900);
-  }
-  // ---- clip 4: train
-  if (win(t, s[3], s[4])) { hazard(t, s[3] + .15, s[3] + 1.9); caption(t, 'Ek ne dekha… aur <y>poora dabba</y> mera! 🚆', s[3] + .3, s[4] - .1); }
-  // ---- clip 5: teacher
-  if (win(t, s[4], s[5])) { comic(t, s[4] + .55, 'SILENCE!', 760, 640, .12, '#FF4D5E', 64, .7); comic(t, s[4] + 1.9, 'HAHAHA 😂', 320, 760, -.12, '#FFD21F', 60, 1.0);
-    caption(t, 'School mein mera <y>raaj</y>… teacher bhi <r>nahi bachi</r>!', s[4] + .3, s[5] - .1); }
-  // ---- clip 6: stadium
-  if (win(t, s[5], s[6])) { comic(t, s[5] + .6, '🌊 YAWN WAVE!', 540, 600, -.06, '#3FA9F5', 64, 1.4); caption(t, 'Stadium mein? <y>Hazaaron</y> log… ek saath! 🏟️', s[5] + .3, s[6] - .1); }
-  // ---- clip 7: lab
-  if (win(t, s[6], s[7])) { stampMyth(t, E.stamp); caption(t, 'Oxygen ki kami se aati hai? <r>GALAT!</r> ❌', s[6] + .3, s[7] - .1); }
-  // ---- clip 8: AC brain
-  if (win(t, s[7], s[8])) { thermo(t, s[7] + .1, s[8] - .05, E.ice); caption(t, 'Sabse popular theory: ubaasi <y>dimaag ka AC</y> hai 🧠❄️', s[7] + .3, s[8] - .1); }
-  // ---- clip 9: copy button
-  if (win(t, s[8], s[9])) { keycaps(t, E.button); caption(t, 'Dekhte hi dimaag ka <y>motor area</y> use <y>COPY</y> kar leta hai', s[8] + .3, s[9] - .1); }
-  // ---- clip 10: office
-  if (win(t, s[9], s[10])) { pressure(t, s[9] + .2, E.burst, s[10] - .05); comic(t, E.burst, 'BOOM! 💨', 540, 760, -.08, '#FF9F1C', 70, .8); caption(t, '<y>Rokoge?</y> Toh aur <r>zor</r> se aaungi 😤', s[9] + .3, s[10] - .1); }
-  // ---- clip 11: dinner
-  if (win(t, s[10], s[11])) { podium(t, s[10] + .2, s[11] - .05, s[10] + D.durs[10] * .66); caption(t, '<y>Apno</y> mein sabse tez failti hoon 👨‍👩‍👧', s[10] + .3, s[11] - .1); }
-  // ---- clip 12: night
-  if (win(t, s[11], s[12])) { zzz(t, s[11] + .8, s[12] - .2, 640, 900); caption(t, 'Sirf <y>padhne</y> se bhi aa jaati hoon 📱', s[11] + .3, s[12] - .1); }
-  // ---- clip 13: zoom
-  if (win(t, s[12], s[13])) caption(t, '<y>Video call</y> pe bhi copy ho jaati hoon 💻', s[12] + .3, s[13] - .1);
-  // ---- tags, counter, transitions, end
-  for (const [k, txt] of D.tags) tag(t, txt, s[k] + .25, (k + 1 < s.length ? s[k + 1] : D.dur) - .1);
+  if (inClip('door')) { caption(t, 'Aur bahar… <r>poora khandaan</r> 💀', S.door + .1, nx('door') - .1, 1560, 50, .7);
+    label(t, S.door + .3, S.door + 1.7, 'Dadi ka spy-kit 🥛', 330, 980, 280, 1200); label(t, S.door + .55, S.door + 1.7, 'Chacha 👀', 820, 620, 700, 800); }
+  if (inClip('stage')) { marquee(t, B.title, nx('stage') - .1); flash(t, B.title, .12, .6);
+    if (t > B.title + .3) { X.save(); X.globalAlpha = clamp((t - B.title - .3) / .3, 0, 1) * (1 - clamp((t - nx('stage') + .3) / .2, 0, 1)); X.letterSpacing = '6px'; strokeText('THE CONTAGIOUS VILLAIN', 540, 700, 40, '#FFD21F', { sw: 8 }); X.letterSpacing = '0px'; X.restore(); }
+    bubble(t, 'Hi… main ek ubaasi hoon 😈', B.title + .4, nx('stage') - .3, 540, 760, 470, 720, 900); zzz(t, S.stage + .5, nx('stage') - .3, 760, 900); }
+  if (inClip('train')) { hazard(t, S.train + .15, S.train + 1.9); caption(t, 'Ek ne dekha… aur <y>poora dabba</y> mera! 🚆', S.train + .3, nx('train') - .1); }
+  if (inClip('teacher')) { comic(t, B.ruler, 'SILENCE!', 760, 640, .12, '#FF4D5E', 64, .7); comic(t, B.teacher_yawn + .7, 'HAHAHA 😂', 320, 760, -.12, '#FFD21F', 60, 1.0);
+    caption(t, 'School mein mera <y>raaj</y>… teacher bhi <r>nahi bachi</r>!', S.teacher + .3, nx('teacher') - .1); }
+  if (inClip('hero')) { letterbox(t, S.hero + .05, nx('hero') - .15); flare(t, B.glasses - .1, 600, 620);
+    comic(t, B.hero_yawn + .1, 'SLO-MO FAIL 😂', 540, 420, -.06, '#FF9F1C', 50, 1.1);
+    caption(t, 'Hero ki <y>entry</y> ho… ya villain ki… <r>koi nahi bachta</r>! 😎', S.hero + .3, nx('hero') - .15, 1380); }
+  if (inClip('stadium')) { comic(t, S.stadium + .6, '🌊 YAWN WAVE!', 540, 600, -.06, '#3FA9F5', 64, 1.4); caption(t, 'Stadium mein? <y>Hazaaron</y> log… ek saath! 🏟️', S.stadium + .3, nx('stadium') - .1); }
+  if (inClip('umpire')) { comic(t, B.appeal, 'HOWZAT?!', 330, 560, -.12, '#FF4D5E', 58, .8); 
+    comic(t, B.umpire_yawn, 'NOT OUT? 😴', 600, 520, .1, '#FFD21F', 60, 1.0);
+    caption(t, 'Umpire <y>OUT</y> dene wala tha… <r>ubaasi</r> de di 🏏😂', S.umpire + .3, nx('umpire') - .1); }
+  if (inClip('lab')) { stampMyth(t, B.stamp); caption(t, 'Oxygen ki kami se aati hai? <r>GALAT!</r> ❌', S.lab + .3, nx('lab') - .1); }
+  if (inClip('ac')) { thermo(t, S.ac + .1, nx('ac') - .05, B.ice); caption(t, 'Sabse popular theory: ubaasi <y>dimaag ka AC</y> hai 🧠❄️', S.ac + .3, nx('ac') - .1); }
+  if (inClip('copy')) { keycaps(t, B.button); caption(t, 'Dekhte hi dimaag ka <y>motor area</y> use <y>COPY</y> kar leta hai', S.copy + .3, nx('copy') - .1); }
+  if (inClip('office')) { pressure(t, S.office + .2, B.burst, nx('office') - .05); comic(t, B.burst, 'BOOM! 💨', 540, 760, -.08, '#FF9F1C', 70, .8); caption(t, '<y>Rokoge?</y> Toh aur <r>zor</r> se aaungi 😤', S.office + .3, nx('office') - .1); }
+  if (inClip('dinner')) { podium(t, S.dinner + .2, nx('dinner') - .05, B.stranger); caption(t, '<y>Apno</y> mein sabse tez failti hoon 👨‍👩‍👧', S.dinner + .3, nx('dinner') - .1); }
+  if (inClip('night')) { zzz(t, S.night + .8, nx('night') - .2, 640, 900); caption(t, 'Sirf <y>padhne</y> se bhi aa jaati hoon 📱', S.night + .3, nx('night') - .1); }
+  if (inClip('mummy')) { comic(t, B.oye, 'OYE!! 😡', 300, 560, -.1, '#FF4D5E', 62, .8); zzz(t, B.mummy_yawn + .8, nx('mummy') - .3, 700, 1250);
+    caption(t, 'Mummy ki <y>daant</y> bhi… <r>adhoori</r> reh gayi 😂', S.mummy + .3, nx('mummy') - .1); }
+  if (inClip('zoom')) caption(t, '<y>Video call</y> pe bhi copy ho jaati hoon 💻', S.zoom + .3, nx('zoom') - .1);
+  if (inClip('dog')) { label(t, B.dog_yawn - .1, B.dog_yawn + 1.2, 'Copied! 🐶', 760, 900, 760, 1180); comic(t, B.chimps + .1, '🐒 + 🐒', 760, 520, .1, '#C9A7FF', 50, .9);
+    caption(t, '<y>Dogs</y> insaan se… <y>chimps</y> ek-doosre se catch karte hain!', S.dog + .3, nx('dog') - .1); }
+  if (inClip('squish')) { glassCrack(t, B.impact); flash(t, B.impact, .1, .5); caption(t, 'Aur ab… main <y>aapki screen</y> pe hoon 👀', B.impact + .1, nx('squish') - .1, 1460, 56); }
+  if (inClip('callback')) caption(t, '<y>Aayi na?</y> 😂 Bas… shaadi ki pehli raat <r>mat aane dena</r>!', S.callback + .3, nx('callback') - .1);
+  if (inClip('pass')) { caption(t, 'Ab mujhe <y>aage bhejo</y>… us dost ko jo sabse jaldi ubaasi leta hai!', S.pass + .3, B.split + 1.2, 1400);
+    if (t > B.split + .9) { const k = elastic((t - B.split - .9) / .6); X.save(); X.translate(540, 560); X.scale(k, k); strokeText('Kitni aayi? 😂', 0, 0, 100, '#FFD21F', { sw: 14 }); X.restore();
+      caption(t, '<y>Comment</y> karo 👇', B.split + 1.1, D.dur, 680, 50, .4); }
+    shareBtn(t, B.split + 1.3); followCard(t, B.follow); }
+  // ---- global
+  for (const [n, txt] of D.tags) tag(t, txt, S[n] + .25, nx(n) - .1);
   counter(t);
   for (const m of E.mouths) mouthDive(t, m);
-  for (let k = 1; k < s.length; k++) if (!E.mouths.some(m => Math.abs(m - s[k]) < .05)) leak(t, s[k]);
-  endCard(t, E.end);
+  for (let k = 1; k < D.starts.length; k++) if (!E.mouths.some(m => Math.abs(m - D.starts[k]) < .05)) leak(t, D.starts[k]);
   X.fillStyle = 'rgba(255,255,255,.25)'; X.fillRect(0, 0, W, 8); X.fillStyle = '#C9A7FF'; X.shadowColor = '#C9A7FF'; X.shadowBlur = 12; X.fillRect(0, 0, W * t / D.dur, 8); X.shadowBlur = 0;
 };
 </script></body></html>

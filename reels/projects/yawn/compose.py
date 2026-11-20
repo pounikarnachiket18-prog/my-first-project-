@@ -1,24 +1,21 @@
-"""Yawn reel composite: camera moves + whip blur + grade + motion-graphics layer + logo + soundtrack."""
+"""Yawn reel composite (20 clips): camera moves + whip blur + grade + graphics + logo + soundtrack."""
 import json, subprocess, os
 tl = json.load(open("timeline.json")); ev = json.load(open("events.json"))
-s, d, DUR = tl["starts"], tl["durs"], tl["dur"]; N = len(s)
+s, d, DUR, S, B = tl["starts"], tl["durs"], tl["dur"], tl["S"], tl["beats"]; N = len(s)
 open("concat.txt", "w").write("".join(f"file '{os.path.abspath(f'seg/{i:02d}.mp4')}'\n" for i in range(1, N + 1)))
 T = "ld(0)"
 def imp(ti, amp, k): return f"{amp}*exp(-({T}-{ti:.3f})*{k})*gte({T},{ti:.3f})"
 punch, shake = [], []
-FZ = tl["freeze_at"]
-punch.append(imp(tl["yawn1"], 0.03, 6)); punch.append(imp(FZ, 0.10, 3.5)); shake.append((FZ, 18))
-punch.append(imp(s[1] + 1.9, 0.04, 6))
-punch.append(imp(s[2] + 1.2, 0.04, 6))
-punch.append(imp(s[4] + 0.55, 0.035, 8)); shake.append((s[4] + 0.55, 12))
-punch.append(imp(ev["stamp"], 0.05, 7)); shake.append((ev["stamp"], 16))
-punch.append(imp(ev["ice"], 0.03, 6))
-punch.append(imp(ev["button"], 0.04, 8)); shake.append((ev["button"], 10))
-punch.append(imp(ev["burst"], 0.06, 6)); shake.append((ev["burst"], 18))
-punch.append(imp(ev["follow"] + 0.55, 0.03, 8))
-push = []
-for k in range(N - 1):
-    push.append(f"0.06*({T}-{s[k]:.3f})/{d[k]:.3f}*between({T},{s[k]:.3f},{s[k] + d[k]:.3f})")
+def hit(t, p, sh=0, k=7): punch.append(imp(t, p, k)); (shake.append((t, sh)) if sh else None)
+hit(B["yawn1"], .03, 0, 6); hit(B["freeze_at"], .10, 18, 3.5); hit(B["dadi"], .04)
+hit(B["title"], .06, 14, 5); hit(B["ruler"], .035, 12, 8); hit(B["teacher_yawn"], .03)
+hit(B["glasses"], .03, 0, 4); hit(B["hero_yawn"], .05, 10, 6)
+hit(B["appeal"], .03, 8); hit(B["umpire_yawn"], .05, 12, 6)
+hit(B["stamp"], .05, 16); hit(B["ice"], .03, 0, 6); hit(B["button"], .04, 10, 8); hit(B["burst"], .06, 18, 6)
+hit(B["oye"], .04, 12, 8); hit(B["mummy_yawn"], .03)
+hit(B["dog_yawn"], .03); hit(B["impact"], .09, 26, 5); hit(B["couple_yawn"], .04)
+hit(B["split"] + .9, .06, 14, 4); hit(B["follow"] + .55, .03, 0, 8)
+push = [f"0.06*({T}-{s[k]:.3f})/{d[k]:.3f}*between({T},{s[k]:.3f},{s[k] + d[k]:.3f})" for k in range(N)]
 Z = "1.04+" + "+".join(push + punch)
 SX = "+".join(f"{a}*exp(-({T}-{ti:.3f})*10)*sin(({T}-{ti:.3f})*71)*gte({T},{ti:.3f})" for ti, a in shake)
 SY = "+".join(f"{a}*exp(-({T}-{ti:.3f})*10)*cos(({T}-{ti:.3f})*59)*gte({T},{ti:.3f})" for ti, a in shake)
@@ -36,5 +33,5 @@ subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "concat", "-safe", "0", "-i
                 "-f", "image2pipe", "-framerate", "30", "-c:v", "png", "-i", "-", "-i", "logo_m.png", "-i", "soundtrack.wav",
                 "-filter_complex_script", "fc.txt", "-map", "[v]", "-map", "[a]",
                 "-c:v", "libx264", "-preset", "medium", "-b:v", "9M", "-maxrate", "13M", "-bufsize", "18M", "-profile:v", "high", "-r", "30",
-                "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "-t", f"{DUR:.3f}", "yawn_reel.mp4"], stdin=mg.stdout, check=True)
+                "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "-t", f"{DUR:.3f}", "yawn_reel_full.mp4"], stdin=mg.stdout, check=True)
 mg.wait(); print("done")
