@@ -19,7 +19,7 @@ const PROJ = path.dirname(HERE);
 const REELS = path.dirname(path.dirname(PROJ));
 const BUILD = path.join(PROJ, "build");
 const BASE = path.join(BUILD, "zepto-base.mp4");
-const OUT = path.join(REELS, "output", "zepto-reel-motion.mp4");
+const OUT = process.env.OUT || path.join(REELS, "output", "zepto-reel-motion.mp4");
 const args = process.argv.slice(2);
 const previewIdx = args.indexOf("--preview");
 
