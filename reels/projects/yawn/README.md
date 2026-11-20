@@ -24,3 +24,6 @@ Added for the full cut: "THE CONTAGIOUS VILLAIN" title with a BRAAAM hit, widesc
 - The hook setup is now 2.5s of slow motion (minterpolate 120 fps, 4.1x) so the dulha finishes his line before the yawn.
 - Every clip is retimed to its line (0.85x–1.5x). Each line is placed at its clip start + 0.12s. Captions match the spoken wording. Music, effects and yawns duck under the voice (sidechain), and the final loudness uses two-pass linear loudnorm.
 - `voiceover_track.mp3` is the placed voice track on its own.
+
+## Mix v2 (quieter background)
+The music bed is at 0.16 (was 0.85). The background chain is `acompressor=threshold=-24dB:ratio=4` then `volume=0.5`, with a sidechain duck (ratio 6) under the voice. Measured: the voice is about 26 dB over the background while speaking, and the yawns in the gaps peak about 8 dB under the voice level.

@@ -274,7 +274,7 @@ duck = 1 - 0.55 * np.clip(env * 3, 0, 1)
 M *= duck; L *= (1 - 0.3 * np.clip(env * 3, 0, 1))
 L += Yb * 1.15
 
-mix = np.tanh((L * 0.95 + M * 0.85) * 1.1)
+mix = np.tanh((L * 0.95 + M * 0.16) * 1.1)
 mix = mix / np.max(np.abs(mix)) * 0.89
 fo = int(SR * 0.6); mix[-fo:] *= np.linspace(1, 0, fo)
 wavfile.write("soundtrack.wav", SR, (np.stack([mix, mix], 1) * 32767).astype(np.int16))
