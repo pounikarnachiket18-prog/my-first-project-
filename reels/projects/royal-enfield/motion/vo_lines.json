@@ -1,0 +1,82 @@
+{
+ "lines": [
+  "Ruko! Ye bike asli mein British thi!",
+  "Ek zamaane mein iske rider... aise hote the.",
+  "Par unnees sau sattar mein, England mein iska production band ho gaya.",
+  "Lekin India mein... ye kahani zinda rahi.",
+  "Har gali, har mohalla... dug-dug-dug!",
+  "Bullet sirf bike nahi thi... ek rutba thi.",
+  "Pachaas ke dashak mein, ye England se ship pe aayi.",
+  "Indian Army ne order diya... aur Madras mein Enfield India bani.",
+  "Phir aayi halki, zyada mileage wali bikes...",
+  "Showroom khaali... company ghaate mein.",
+  "Phir Eicher ne company sambhali... aur bike ko theek kiya.",
+  "Naye boss Siddhartha Lal ka faisla: focus sirf Bullet pe!",
+  "Bike nayi bani... aur Ladakh trips ne ise sapna bana diya.",
+  "Aaj baarah lakh se zyada bikes... assi se zyada desh!",
+  "Aapki dream Royal Enfield kaunsi hai? Comment karo... aur follow karo!"
+ ],
+ "seg": [
+  [
+   0.0,
+   3.446
+  ],
+  [
+   3.648,
+   6.109
+  ],
+  [
+   6.358,
+   10.146
+  ],
+  [
+   10.349,
+   12.78
+  ],
+  [
+   13.0,
+   16.127
+  ],
+  [
+   16.324,
+   18.857
+  ],
+  [
+   19.081,
+   21.581
+  ],
+  [
+   21.897,
+   25.822
+  ],
+  [
+   26.114,
+   28.844
+  ],
+  [
+   29.134,
+   31.378
+  ],
+  [
+   31.697,
+   34.688
+  ],
+  [
+   34.888,
+   38.949
+  ],
+  [
+   39.177,
+   43.413
+  ],
+  [
+   43.636,
+   47.853
+  ],
+  [
+   48.081,
+   53.008
+  ]
+ ],
+ "vo_total": 53.0085
+}

@@ -1,0 +1,326 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:transparent;overflow:hidden}canvas{display:block}</style>
+</head><body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<script>
+// Motion-graphics layer for the Royal Enfield reel. window.render(t) draws one frame (transparent background).
+const C = document.getElementById('c'), X = C.getContext('2d');
+const W = 1080, H = 1920;
+let D = null;                      // timeline + beats + text, injected by render_mg.js
+window.setData = d => { D = d; };
+
+// ---------- helpers
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, k) => a + (b - a) * k;
+const ease = k => 1 - Math.pow(1 - clamp(k, 0, 1), 3);
+const easeIO = k => { k = clamp(k, 0, 1); return k < .5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2; };
+const back = k => { k = clamp(k, 0, 1); const c1 = 1.9, c3 = c1 + 1; return 1 + c3 * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2); };
+const elastic = k => { k = clamp(k, 0, 1); if (k === 0 || k === 1) return k; return Math.pow(2, -10 * k) * Math.sin((k * 10 - .75) * (2 * Math.PI / 3)) + 1; };
+function rnd(seed) { let s = Math.sin(seed * 12.9898 + 78.233) * 43758.5453; return s - Math.floor(s); }
+const win = (t, a, b) => t >= a && t < b;
+const F = '"Inter", "Noto Color Emoji", sans-serif';
+
+function strokeText(txt, x, y, size, fill, opt = {}) {
+  X.font = `${opt.weight || 900} ${size}px ${F}`;
+  X.textAlign = opt.align || 'center'; X.textBaseline = 'middle';
+  X.lineJoin = 'round'; X.miterLimit = 2;
+  if (opt.stroke !== false) { X.lineWidth = opt.sw || size * 0.16; X.strokeStyle = opt.sc || '#111'; X.strokeText(txt, x, y); }
+  X.fillStyle = fill; X.fillText(txt, x, y);
+}
+function rrect(x, y, w, h, r) { X.beginPath(); X.moveTo(x + r, y); X.arcTo(x + w, y, x + w, y + h, r); X.arcTo(x + w, y + h, x, y + h, r); X.arcTo(x, y + h, x, y, r); X.arcTo(x, y, x + w, y, r); X.closePath(); }
+
+// ---------- caption parsing: <y>yellow</y> <r>red</r>
+function parse(s) {
+  const out = []; let col = '#fff'; const re = /<(\/?)(y|r)>|([^<\s]+)|(\s+)/g; let m;
+  while ((m = re.exec(s))) {
+    if (m[2]) col = m[1] ? '#fff' : (m[2] === 'y' ? '#FFD21F' : '#FF4D3D');
+    else if (m[3]) out.push({ w: m[3], c: col });
+  }
+  return out;
+}
+
+// kinetic caption: words pop in one by one over the spoken part of the line
+function caption(t, txt, t0, t1, y = 1405, size = 46, speakDur = null) {
+  if (t < t0 - 0.05 || t > t1 + 0.3) return;
+  const words = parse(txt); X.font = `900 ${size}px ${F}`;
+  const space = size * 0.3, maxW = 880, lines = [[]]; let lw = 0;
+  for (const w of words) { const ww = X.measureText(w.w).width; if (lw + ww > maxW && lines[lines.length - 1].length) { lines.push([]); lw = 0; } w.width = ww; lines[lines.length - 1].push(w); lw += ww + space; }
+  const speak = speakDur || Math.max(0.6, (t1 - t0) * 0.62), per = speak / words.length;
+  const out = clamp((t - t1) / 0.3, 0, 1);
+  let idx = 0;
+  lines.forEach((ln, li) => {
+    const total = ln.reduce((a, w) => a + w.width, 0) + space * (ln.length - 1);
+    let x = W / 2 - total / 2; const yy = y + li * size * 1.22;
+    for (const w of ln) {
+      const tw = t0 + idx * per; const k = (t - tw) / 0.2;
+      if (k > 0) {
+        const s = lerp(0.4, 1, back(k)) * (1 - out * 0.15);
+        const hi = w.c !== '#fff';
+        const wob = hi ? Math.sin((t - tw) * 9) * Math.exp(-(t - tw) * 3) * 0.06 : 0;
+        X.save(); X.globalAlpha = clamp(k * 2, 0, 1) * (1 - out);
+        X.translate(x + w.width / 2, yy + (1 - ease(k)) * 22 - out * 18); X.scale(s + wob, s + wob); X.rotate(wob * 0.5);
+        if (hi && k > 0.6) { X.shadowColor = w.c; X.shadowBlur = 18 * Math.exp(-(t - tw) * 2); }
+        strokeText(w.w, 0, 0, size, w.c, { sw: 7 });
+        X.restore();
+      }
+      x += w.width + space; idx++;
+    }
+  });
+}
+
+// ---------- location / date tag (top-left pill with typewriter text)
+function tag(t, txt, t0, t1) {
+  if (t < t0 || t > t1) return;
+  const kin = ease((t - t0) / 0.3), kout = ease((t - (t1 - 0.25)) / 0.25);
+  const n = Math.floor(clamp((t - t0 - 0.12) / 0.045, 0, 99));
+  const chars = [...txt], show = chars.slice(0, n).join('');
+  X.font = `800 34px ${F}`; const full = X.measureText(txt).width;
+  const x = 46 - (1 - kin) * 340 - kout * 340, y = 70;
+  X.save(); X.globalAlpha = 0.96;
+  rrect(x, y, full + 64, 64, 32); X.fillStyle = 'rgba(18,18,22,.78)'; X.fill();
+  X.fillStyle = '#E0262F'; rrect(x, y, 12, 64, 6); X.fill();
+  X.fillStyle = '#fff'; X.textAlign = 'left'; X.textBaseline = 'middle'; X.fillText(show, x + 32, y + 33);
+  if (n < chars.length && Math.floor(t * 4) % 2 === 0) { const cw = X.measureText(show).width; X.fillRect(x + 34 + cw, y + 16, 3, 34); }
+  X.restore();
+}
+
+// ---------- HUD: Bullet-o-meter (needle + odometer year) + heartbeat line
+function keyval(t, keys) {          // keys: [[time, value]], eased transition of 0.7s into each key
+  let v = keys[0][1];
+  for (let i = 1; i < keys.length; i++) { const [tk, vk] = keys[i]; if (t >= tk) { const k = easeIO((t - tk) / 0.7); v = lerp(keys[i - 1][1], vk, k); if (k < 1) break; } }
+  // recompute properly: find last key passed
+  let li = 0; for (let i = 0; i < keys.length; i++) if (t >= keys[i][0]) li = i;
+  if (li === 0) return keys[0][1];
+  const k = easeIO((t - keys[li][0]) / 0.7); return lerp(keys[li - 1][1], keys[li][1], k);
+}
+function beatEnv(tau) {              // ECG-like spike shape around each heartbeat
+  let y = 0;
+  for (const b of D.beats) { const d = tau - b; if (d > -0.1 && d < 0.4) { y += 1.0 * Math.exp(-Math.pow((d - 0.0) / 0.018, 2)) - 0.35 * Math.exp(-Math.pow((d - 0.04) / 0.02, 2)) + 0.5 * Math.exp(-Math.pow((d - 0.18) / 0.02, 2)) + 0.12 * Math.exp(-Math.pow((d - 0.3) / 0.05, 2)); } }
+  if (tau > D.kick - 0.05 && tau < D.kick + 1.4) { const d = tau - D.kick; y += Math.sin(d * 60) * Math.exp(-d * 3) * 1.1; }
+  return y;
+}
+function hud(t) {
+  const s = D.starts; if (t < s[1] - 0.1 || t > D.end - 2.3) return;
+  const a = clamp((t - s[1] + 0.1) / 0.4, 0, 1) * (1 - clamp((t - (D.end - 2.6)) / 0.3, 0, 1));
+  const px = 770, py = 160, pw = 272, ph = 268;
+  X.save(); X.globalAlpha = a;
+  rrect(px, py, pw, ph, 26); X.fillStyle = 'rgba(14,14,18,.72)'; X.fill(); X.lineWidth = 2; X.strokeStyle = 'rgba(255,255,255,.18)'; X.stroke();
+  // gauge
+  const cx = px + pw / 2, cy = py + 128, R = 92, a0 = Math.PI * 0.8, a1 = Math.PI * 2.2;
+  const g = X.createLinearGradient(cx - R, 0, cx + R, 0); g.addColorStop(0, '#FF3B30'); g.addColorStop(.5, '#FFD21F'); g.addColorStop(1, '#34E27A');
+  X.lineWidth = 14; X.lineCap = 'round'; X.strokeStyle = 'rgba(255,255,255,.12)'; X.beginPath(); X.arc(cx, cy, R, a0, a1); X.stroke();
+  const hv = clamp(keyval(t, D.health) + Math.sin(t * 47) * 0.012 * (beatEnv(t) + 0.3), 0, 1);
+  X.strokeStyle = g; X.beginPath(); X.arc(cx, cy, R, a0, lerp(a0, a1, hv)); X.stroke();
+  for (let i = 0; i <= 10; i++) { const an = lerp(a0, a1, i / 10); X.lineWidth = i % 5 ? 2 : 4; X.strokeStyle = 'rgba(255,255,255,.55)'; X.beginPath(); X.moveTo(cx + Math.cos(an) * (R - 26), cy + Math.sin(an) * (R - 26)); X.lineTo(cx + Math.cos(an) * (R - 16), cy + Math.sin(an) * (R - 16)); X.stroke(); }
+  const na = lerp(a0, a1, hv);
+  X.strokeStyle = '#fff'; X.lineWidth = 5; X.beginPath(); X.moveTo(cx, cy); X.lineTo(cx + Math.cos(na) * (R - 30), cy + Math.sin(na) * (R - 30)); X.stroke();
+  X.fillStyle = '#E0262F'; X.beginPath(); X.arc(cx, cy, 9, 0, 7); X.fill();
+  X.fillStyle = 'rgba(255,255,255,.7)'; X.font = `800 17px ${F}`; X.textAlign = 'center'; X.fillText('BULLET-O-METER', cx, py + 26);
+  // odometer year
+  const yv = keyval(t, D.years), rewind = D.years.some(([tk, v], i) => i && t >= tk && t < tk + 0.8 && v < D.years[i - 1][1]);
+  const digits = 4, dw = 34, dh = 46, ox = cx - (digits * dw) / 2, oy = cy + 22;
+  rrect(ox - 8, oy - 4, digits * dw + 16, dh + 8, 8); X.fillStyle = '#0b0b0d'; X.fill();
+  X.save(); X.beginPath(); X.rect(ox - 8, oy - 4, digits * dw + 16, dh + 8); X.clip();
+  for (let d = 0; d < digits; d++) {
+    const p = Math.pow(10, digits - 1 - d); let pos = (yv / p) % 10;
+    if (d < digits - 1) { const lower = yv % p; const fr = clamp((lower - (p - 1)) / 1, 0, 1); pos = Math.floor(yv / p) % 10 + fr; }
+    const base = Math.floor(pos), fr = pos - base;
+    X.font = `900 38px ${F}`; X.textAlign = 'center'; X.fillStyle = d === digits - 1 ? '#FFD21F' : '#fff';
+    for (const o of (fr > 0.002 ? [0, 1] : [0])) X.fillText(String((base + o) % 10), ox + d * dw + dw / 2, oy + dh / 2 + 3 + (o - fr) * dh);
+  }
+  X.restore();
+  if (rewind) { X.fillStyle = '#FFD21F'; X.font = `900 20px ${F}`; X.fillText('⏪ REWIND', cx, oy + dh + 22); }
+  // heartbeat line
+  const ex = px + 22, ew = pw - 44, ey = py + ph - 34, span = 2.4;
+  const flat = t > D.flat_at && t < D.kick;
+  X.save(); X.beginPath(); X.rect(ex, ey - 34, ew, 60); X.clip();
+  X.lineWidth = 3.5; X.strokeStyle = flat ? '#FF3B30' : '#34E27A'; X.shadowColor = X.strokeStyle; X.shadowBlur = 10;
+  X.beginPath();
+  for (let i = 0; i <= ew; i += 2) { const tau = t - (1 - i / ew) * span; const yy = ey - beatEnv(tau) * 26; i ? X.lineTo(ex + i, yy) : X.moveTo(ex + i, yy); }
+  X.stroke(); X.restore();
+  if (flat && Math.floor(t * 3) % 2 === 0) { X.fillStyle = '#FF3B30'; X.font = `900 16px ${F}`; X.fillText('NO PULSE', cx, ey - 30); }
+  X.restore();
+}
+
+// ---------- particles
+function sparks(t, t0, x, y, seed) {
+  const d = t - t0; if (d < 0 || d > 0.9) return;
+  for (let i = 0; i < 28; i++) {
+    const an = -Math.PI / 2 + (rnd(seed + i) - 0.5) * 2.6, sp = 380 + rnd(seed + i * 3) * 700;
+    const px = x + Math.cos(an) * sp * d, py = y + Math.sin(an) * sp * d + 900 * d * d;
+    X.globalAlpha = clamp(1 - d / 0.8, 0, 1); X.fillStyle = i % 3 ? '#FFB020' : '#FFF1A8';
+    X.beginPath(); X.arc(px, py, 3 + rnd(seed + i * 7) * 4, 0, 7); X.fill();
+  }
+  for (let i = 0; i < 6; i++) {                  // smoke puffs
+    const r = 30 + d * 160 * (0.6 + rnd(seed + i * 11)), px = x + (rnd(seed + i * 5) - 0.5) * 140 * d * 3, py = y - d * 90 - i * 6;
+    X.globalAlpha = clamp(0.35 * (1 - d / 0.9), 0, 1); X.fillStyle = '#d9d4cc'; X.beginPath(); X.arc(px, py, r, 0, 7); X.fill();
+  }
+  X.globalAlpha = 1;
+}
+function comic(t, t0, txt, x, y, rot, col, size = 92, dur = 0.55) {
+  const d = t - t0; if (d < 0 || d > dur) return;
+  const s = lerp(0.2, 1, elastic(d / 0.35)), a = 1 - clamp((d - dur + 0.15) / 0.15, 0, 1);
+  X.save(); X.globalAlpha = a; X.translate(x, y); X.rotate(rot); X.scale(s, s);
+  // burst shape
+  X.beginPath(); const sp = 14; for (let i = 0; i < sp * 2; i++) { const rr = (i % 2 ? 0.62 : 1) * size * 1.6; const an = i / (sp * 2) * Math.PI * 2; i ? X.lineTo(Math.cos(an) * rr * 1.25, Math.sin(an) * rr * 0.75) : X.moveTo(Math.cos(an) * rr * 1.25, Math.sin(an) * rr * 0.75); }
+  X.closePath(); X.fillStyle = col; X.fill(); X.lineWidth = 7; X.strokeStyle = '#111'; X.stroke();
+  strokeText(txt, 0, 4, size, '#fff', { sw: 12 });
+  X.restore();
+}
+function speedLines(t, a) {
+  X.save(); X.globalAlpha = a; X.strokeStyle = 'rgba(255,255,255,.55)';
+  const fr = Math.floor(t * 30);
+  for (let i = 0; i < 46; i++) {
+    const an = rnd(fr * 0.13 + i) * Math.PI * 2, r0 = 620 + rnd(i + fr) * 160, r1 = r0 + 260 + rnd(i * 3 + fr) * 400;
+    X.lineWidth = 2 + rnd(i * 7 + fr) * 5;
+    X.beginPath(); X.moveTo(540 + Math.cos(an) * r0, 960 + Math.sin(an) * r0 * 1.5); X.lineTo(540 + Math.cos(an) * r1, 960 + Math.sin(an) * r1 * 1.5); X.stroke();
+  }
+  X.restore();
+}
+function rain(t, a) {
+  X.save(); X.globalAlpha = a; X.strokeStyle = 'rgba(220,230,240,.45)'; X.lineWidth = 2;
+  for (let i = 0; i < 140; i++) { const x0 = rnd(i) * 1300 - 100, sp = 1600 + rnd(i * 2) * 800, y0 = ((rnd(i * 3) * 2200 + t * sp) % 2200) - 140; X.beginPath(); X.moveTo(x0, y0); X.lineTo(x0 - 18, y0 + 60); X.stroke(); }
+  X.restore();
+}
+function film(t, a) {                 // vintage film: scratches, dust, flicker
+  const fr = Math.floor(t * 30); X.save();
+  X.globalAlpha = a * (0.04 + rnd(fr) * 0.06); X.fillStyle = '#000'; X.fillRect(0, 0, W, H);
+  X.globalAlpha = a * 0.55;
+  for (let i = 0; i < 3; i++) if (rnd(fr * 3 + i) > 0.45) { const x = rnd(fr * 7 + i) * W; X.strokeStyle = 'rgba(255,250,235,.5)'; X.lineWidth = 1 + rnd(fr + i) * 2; X.beginPath(); X.moveTo(x, 0); X.lineTo(x + (rnd(i + fr) - .5) * 30, H); X.stroke(); }
+  for (let i = 0; i < 14; i++) { X.fillStyle = rnd(fr + i * 9) > .5 ? 'rgba(20,15,10,.7)' : 'rgba(255,250,235,.6)'; X.beginPath(); X.arc(rnd(fr * 11 + i) * W, rnd(fr * 13 + i) * H, 1 + rnd(fr * 17 + i) * 4, 0, 7); X.fill(); }
+  X.restore();
+}
+function dust(t, a) {
+  X.save(); for (let i = 0; i < 60; i++) { const x = (rnd(i) * W + Math.sin(t * 0.7 + i) * 40), y = (rnd(i * 5) * H - t * 25 * (0.5 + rnd(i))) % H; X.globalAlpha = a * (0.25 + 0.5 * rnd(i * 3)); X.fillStyle = '#fff6e0'; X.beginPath(); X.arc(x, (y + H) % H, 1.5 + rnd(i * 7) * 3, 0, 7); X.fill(); } X.restore();
+}
+function shock(t, t0, x, y, col = '#fff') {
+  const d = t - t0; if (d < 0 || d > 0.6) return;
+  X.save(); X.globalAlpha = 1 - d / 0.6; X.strokeStyle = col; X.lineWidth = 18 * (1 - d / 0.6) + 2; X.beginPath(); X.arc(x, y, 60 + d * 1400, 0, 7); X.stroke(); X.restore();
+}
+function leak(t, t0) {                // warm light-leak sweep on cuts
+  const d = t - t0; if (d < -0.12 || d > 0.32) return;
+  const k = (d + 0.12) / 0.44, a = Math.sin(k * Math.PI);
+  const x = lerp(-300, W + 300, k);
+  const g = X.createRadialGradient(x, 700, 0, x, 700, 900);
+  g.addColorStop(0, `rgba(255,214,140,${0.55 * a})`); g.addColorStop(.4, `rgba(255,140,60,${0.25 * a})`); g.addColorStop(1, 'rgba(255,120,40,0)');
+  X.save(); X.globalCompositeOperation = 'lighter'; X.fillStyle = g; X.fillRect(0, 0, W, H); X.restore();
+}
+function flash(t, t0, dur = 0.14, a0 = 0.85) { const d = t - t0; if (d < 0 || d > dur) return; X.fillStyle = `rgba(255,255,255,${a0 * (1 - d / dur)})`; X.fillRect(0, 0, W, H); }
+
+// ---------- scenes
+function freezeScene(t) {
+  const t0 = D.freeze_at, t1 = D.freeze_at + D.freeze; if (t < t0 || t > t1 + 0.15) return;
+  const d = t - t0, out = clamp((t - t1) / 0.15, 0, 1);
+  X.save(); X.globalAlpha = 1 - out;
+  // vignette + pause badge
+  const g = X.createRadialGradient(540, 900, 300, 540, 900, 1250); g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.55)'); X.fillStyle = g; X.fillRect(0, 0, W, H);
+  X.strokeStyle = 'rgba(255,255,255,.9)'; X.lineWidth = 6; X.strokeRect(24, 24, W - 48, H - 48);
+  if (Math.floor(d * 2.5) % 2 === 0) { X.fillStyle = '#fff'; X.fillRect(60, 64, 16, 54); X.fillRect(88, 64, 16, 54); X.font = `900 30px ${F}`; X.textAlign = 'left'; X.fillText('PAUSE', 120, 92); }
+  // doodle circle around the rider's head
+  const dk = clamp((d - 0.45) / 0.4, 0, 1);
+  if (dk > 0) {
+    X.strokeStyle = '#FFD21F'; X.lineWidth = 9; X.lineCap = 'round'; X.shadowColor = 'rgba(0,0,0,.5)'; X.shadowBlur = 8; X.beginPath();
+    const steps = 80;
+    for (let i = 0; i <= steps * dk; i++) { const a = -1.2 + (i / steps) * Math.PI * 2.15; const wob = 1 + Math.sin(i * 0.9) * 0.025; const px = 560 + Math.cos(a) * 150 * wob, py = 470 + Math.sin(a) * 190 * wob; i ? X.lineTo(px, py) : X.moveTo(px, py); }
+    X.stroke(); X.shadowBlur = 0;
+  }
+  // arrow + label
+  const lk = clamp((d - 0.85) / 0.25, 0, 1);
+  if (lk > 0) {
+    X.strokeStyle = '#FFD21F'; X.lineWidth = 8; X.beginPath(); X.moveTo(880, 250); X.quadraticCurveTo(820, 330, lerp(880, 712, lk), lerp(250, 400, lk)); X.stroke();
+    if (lk >= 1) { X.beginPath(); X.moveTo(712, 400); X.lineTo(728, 362); X.moveTo(712, 400); X.lineTo(748, 392); X.stroke(); }
+    X.save(); X.translate(870, 205); X.rotate(-0.08); X.scale(back(lk), back(lk));
+    rrect(-170, -42, 340, 84, 16); X.fillStyle = '#FFD21F'; X.fill(); X.lineWidth = 5; X.strokeStyle = '#111'; X.stroke();
+    strokeText('GALI KA DON 😎', 0, 2, 40, '#111', { stroke: false }); X.restore();
+  }
+  // RUKO stamp
+  const sk = clamp((d - 0.05) / 0.28, 0, 1);
+  if (sk > 0) {
+    const sc = lerp(2.8, 1, ease(sk)), sh = Math.exp(-d * 12) * 14;
+    X.save(); X.translate(540 + Math.sin(d * 90) * sh, 1060 + Math.cos(d * 80) * sh); X.rotate(-0.1); X.scale(sc, sc);
+    strokeText('RUKO!', 0, 0, 170, '#FFD21F', { sw: 26 }); X.restore();
+  }
+  caption(t, 'ye bike asli mein <r>British</r> thi 🇬🇧', t0 + 0.4, t1 - 0.15, 1230, 62, 0.7);
+  X.restore();
+}
+
+function statsCard(t) {
+  const s = D.starts, t0 = s[13] + 0.35, t1 = s[14] - 0.1; if (t < t0 || t > t1 + 0.2) return;
+  const k = back((t - t0) / 0.35), out = clamp((t - t1) / 0.2, 0, 1);
+  X.save(); X.globalAlpha = 1 - out; X.translate(400, 430); X.scale(k, k);
+  rrect(-360, -120, 720, 250, 28); X.fillStyle = 'rgba(14,14,18,.8)'; X.fill(); X.lineWidth = 3; X.strokeStyle = 'rgba(255,210,31,.8)'; X.stroke();
+  const v = Math.round(1238659 * easeIO((t - t0 - 0.2) / 1.4));
+  const str = v.toLocaleString('en-IN');
+  strokeText(str, 0, -38, 96, '#FFD21F', { sw: 10 });
+  X.font = `700 30px ${F}`; X.fillStyle = '#fff'; X.textAlign = 'center'; X.fillText('bikes sold in FY26 🏍️', 0, 32);
+  const pk = back((t - t0 - 1.7) / 0.35);
+  if (t > t0 + 1.7) { X.save(); X.translate(0, 92); X.scale(pk, pk); rrect(-150, -26, 300, 52, 26); X.fillStyle = '#E0262F'; X.fill(); X.fillStyle = '#fff'; X.font = `900 28px ${F}`; X.fillText('🌍 80+ countries', 0, 2); X.restore(); }
+  X.restore();
+}
+
+function followCard(t) {
+  const t0 = D.follow; if (t < t0 - 0.4) return;
+  const k = back((t - t0 + 0.4) / 0.4);
+  X.save(); X.translate(540, 880); X.scale(k, k);
+  rrect(-330, -95, 660, 190, 40); X.fillStyle = 'rgba(255,255,255,.96)'; X.fill();
+  X.fillStyle = '#E0262F'; X.beginPath(); X.arc(-235, 0, 58, 0, 7); X.fill();
+  if (D.logo) X.drawImage(D.logo, -293, -58, 116, 116);
+  X.textAlign = 'left'; X.fillStyle = '#111'; X.font = `800 36px ${F}`; X.fillText('@mindset_mode_in', -160, -24);
+  X.fillStyle = '#666'; X.font = `600 24px ${F}`; X.fillText('business stories in 60 sec', -160, 16);
+  const tapT = t0 + 0.55, done = t > tapT, press = Math.exp(-Math.pow((t - tapT) / 0.06, 2));
+  X.save(); X.translate(150, 50); X.scale(1 - press * 0.12, 1 - press * 0.12);
+  rrect(-62, -24, 200, 48, 14); X.fillStyle = done ? '#e9e9ee' : '#0095F6'; X.fill();
+  X.fillStyle = done ? '#111' : '#fff'; X.textAlign = 'center'; X.font = `800 26px ${F}`; X.fillText(done ? 'Following ✓' : 'Follow', 38, 2); X.restore();
+  X.restore();
+  // finger
+  const fk = clamp((t - t0) / 0.5, 0, 1); if (t < tapT + 0.5) { const fx = lerp(980, 760, ease(fk)), fy = lerp(1300, 1010, ease(fk)) + press * 10; X.save(); X.globalAlpha = clamp((tapT + 0.5 - t) / 0.2, 0, 1); X.font = `100px ${F}`; X.textAlign = 'center'; X.textBaseline = 'top'; X.fillText('👆', fx, fy - 40); X.restore(); }
+  // confetti
+  const cd = t - tapT; if (cd > 0) for (let i = 0; i < 90; i++) {
+    const an = rnd(i) * Math.PI * 2, sp = 500 + rnd(i * 2) * 900, px = 540 + Math.cos(an) * sp * cd, py = 880 + Math.sin(an) * sp * cd + 1100 * cd * cd;
+    X.save(); X.globalAlpha = clamp(1.6 - cd, 0, 1); X.translate(px, py); X.rotate(cd * 8 + i); X.fillStyle = ['#FFD21F', '#E0262F', '#34E27A', '#0095F6', '#fff'][i % 5]; X.fillRect(-9, -5, 18, 10); X.restore();
+  }
+}
+
+window.render = function (t) {
+  X.clearRect(0, 0, W, H);
+  const s = D.starts;
+  // hook 1: speed lines, patakas, sparks
+  if (t < D.freeze_at) {
+    speedLines(t, 0.5);
+    D.patakas.forEach((pt, i) => {
+      const x = i % 2 ? 690 : 400, y = 1390;
+      sparks(t, pt, x, y, i * 31);
+      if (i % 2 === 0) comic(t, pt, ['PATAAK!', 'DHAAM!', 'TADAK!', 'BOOM!'][i / 2 % 4], i % 4 ? 790 : 290, 1120 + (i % 3) * 40, (i % 2 ? .18 : -.18), ['#FF4D3D', '#FF9F1C', '#FFD21F', '#FF4D3D'][i / 2 % 4], 64);
+    });
+    caption(t, 'Gali ka asli <y>DON</y> 😎🔥', 0.05, 1.2);
+    X.save(); X.globalAlpha = 0.9; X.font = `700 24px ${F}`; X.fillStyle = '#fff'; X.textAlign = 'center'; X.shadowColor = '#000'; X.shadowBlur = 6; X.fillText('(Modified silencer illegal hai bhai 😅)', 540, 1530); X.restore();
+  }
+  flash(t, D.freeze_at, 0.16, 0.95);
+  freezeScene(t);
+  // vintage sections
+  if (win(t, s[1], s[3])) film(t, 1);
+  if (win(t, s[6], s[7])) film(t, 0.8);
+  if (win(t, s[2], s[3])) rain(t, clamp((t - s[2]) / 0.6, 0, 1) * 0.8);
+  // decline dust
+  if (win(t, s[9], s[10] + 0.3)) dust(t, 0.9);
+  // single DUG on the medallion
+  shock(t, s[3] + 0.05, 540, 960, 'rgba(255,214,140,.9)');
+  // DUG DUG DUG on the building
+  D.beats.filter(b => b > s[4] && b < s[5] - 0.2).slice(0, 4).forEach((b, i) => comic(t, b, 'DUG!', [250, 830, 300, 780][i], [1140, 1100, 1180, 1120][i], [-.2, .15, -.1, .2][i], '#FFD21F', 56, 0.5));
+  // kick-start: VROOOM
+  if (t > D.kick + 0.3 && t < D.kick + 1.3) { flash(t, D.kick + 0.3, 0.12, 0.6); shock(t, D.kick + 0.3, 540, 1000, '#FFD21F'); comic(t, D.kick + 0.3, 'VROOOM!', 540, 1120, -0.08, '#FF4D3D', 92, 1.0); }
+  // transitions
+  for (let k = 1; k < s.length; k++) if (![1, 2].includes(k)) leak(t, s[k]);
+  // tags
+  for (const [k, txt] of D.tags) tag(t, txt, s[k] + 0.3, (k + 1 < s.length ? s[k + 1] : D.end) - 0.1);
+  hud(t);
+  statsCard(t);
+  // captions (lines 2..15 -> clips 1..14)
+  D.caps.forEach((c, i) => { const li = i + 1; caption(t, c, D.line_starts[li], D.line_ends[li]); });
+  followCard(t);
+  // progress bar
+  X.fillStyle = 'rgba(255,255,255,.25)'; X.fillRect(0, 0, W, 8);
+  X.fillStyle = '#E0262F'; X.shadowColor = '#E0262F'; X.shadowBlur = 12; X.fillRect(0, 0, W * t / D.dur, 8); X.shadowBlur = 0;
+};
+</script></body></html>
