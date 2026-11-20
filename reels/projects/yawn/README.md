@@ -14,3 +14,7 @@ Clips used (plan number → upload id): 1 couple 5d3da5a5 · 2 family at the doo
 Order: hook (couple) → door (family) → stage title → train → teacher → hero (24297194) → stadium → umpire (a42120d8) → lab → AC brain → copy → office → dinner → night → mummy (ad7e6e5c) → Zoom → dog/chimps (d1a5df19) → screen squish (ac391af5) → newlyweds callback (d8d072de) → pass it on (978b14c9, held 3s for the CTA).
 
 Added for the full cut: "THE CONTAGIOUS VILLAIN" title with a BRAAAM hit, widescreen bars, lens flare and SLO-MO FAIL for the hero, HOWZAT/NOT OUT for the umpire, OYE!! for mummy with a cat meow, Copied 🐶 and chimp callouts with a woof, a glass crack and smudge with knock-knock on the screen squish, a shehnai reprise on the callback, and a finale with a magic shimmer, the counter rolling to 10 lakh, "Kitni aayi?", a share button and the Follow tap. Every story beat is timed from the source footage (`beats` in `timeline.json`).
+
+## Audio fix (v2)
+- The earlier exports had 96 kHz AAC audio (loudnorm upsamples internally), which many phones play as silence, and a quiet first ~2s. All reels are now 48 kHz. `compose.py` outputs `-ar 48000`; the final loudness uses two-pass linear loudnorm (-14 LUFS).
+- New realistic yawns come from `yawnvox.py`: a source-filter synth with an inhale, then a high voiced "aaah" gliding down, then "ohh", then a closed-mouth "mmm" with vocal fry. There are voices for man, woman, Dadi, kid, mascot, dog and chimp, with one or more yawns in every scene and the music ducking under them.

@@ -54,7 +54,7 @@ cmd = ["ffmpeg", "-v", "error", "-y",
        "-i", "logo_m.png", "-i", "soundtrack2.wav", "-i", "vo_fit.wav",
        "-filter_complex_script", "fc.txt", "-map", "[v]", "-map", "[a]",
        "-c:v", "libx264", "-preset", "medium", "-b:v", "9M", "-maxrate", "13M", "-bufsize", "18M", "-profile:v", "high", "-r", "30",
-       "-c:a", "aac", "-b:a", "192k", "-movflags", "+faststart", "-t", f"{DUR:.3f}", "royal_enfield_mg.mp4"]
+       "-c:a", "aac", "-b:a", "192k", "-ar", "48000", "-movflags", "+faststart", "-t", f"{DUR:.3f}", "royal_enfield_mg.mp4"]
 subprocess.run(cmd, stdin=mg.stdout, check=True)
 mg.wait()
 print("done")
