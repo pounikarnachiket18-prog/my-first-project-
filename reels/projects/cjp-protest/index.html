@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CJP Protest Reel</title>
+<script src="../../node_modules/gsap/dist/gsap.min.js"></script>
+<style>
+  :root {
+    --ink: #07080f;
+    --white: #ffffff;
+    --mute: rgba(255,255,255,.66);
+    --red: #ff3b30;
+    --hl: #ffb020;          /* saffron highlight */
+    --police: #6fa8ff;      /* POLICE SAY tag */
+    --cjp: #ff8a3d;         /* CJP SAYS tag */
+    --rep: #b9b3c9;         /* REPORTED tag */
+    --display: "Inter Display", "Inter", system-ui, sans-serif;
+    --ui: "Inter", system-ui, sans-serif;
+    --mono: "DejaVu Sans Mono", monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--ink); }
+  body { font-family: var(--display); color: var(--white); -webkit-font-smoothing: antialiased; }
+  #stage { position: absolute; inset: 0; overflow: hidden; background: var(--ink); }
+  .scene { position: absolute; inset: 0; visibility: hidden; overflow: hidden; }
+
+  /* ============================================ street world: depth layers */
+  .layer { position: absolute; left: -400px; top: -300px; width: 1880px; height: 2520px; transform-origin: 940px 1260px; will-change: transform; }
+  .layer > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  #lSky { background:
+      radial-gradient(ellipse 60% 18% at 58% 57%, rgba(255,140,60,.35), transparent 70%),
+      linear-gradient(180deg, #05060f 0%, #0b0d24 30%, #1c1338 48%, #3a1d3c 56%, #120c1c 60%, #0a0910 100%); }
+  .smoke { position: absolute; border-radius: 50%; opacity: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(206,198,214,.62) 0%, rgba(190,178,196,.38) 35%, rgba(170,160,180,0) 70%); }
+  .smoke.warm { background: radial-gradient(circle at 50% 50%, rgba(235,200,170,.55) 0%, rgba(210,170,150,.32) 38%, rgba(170,140,140,0) 70%); }
+  .proj { position: absolute; left: 0; top: 0; opacity: 0; }
+  .stone { width: 30px; height: 24px; margin: -12px -15px; background: #8a7f86; border-radius: 40% 55% 45% 50%; box-shadow: inset -4px -4px 0 rgba(0,0,0,.45), 0 0 14px 2px rgba(255,170,90,.45); }
+  .can { width: 18px; height: 18px; margin: -9px; border-radius: 50%; background: #fff6e0; box-shadow: 0 0 18px 6px rgba(255,230,190,.7); }
+  .beacon { position: absolute; width: 520px; height: 520px; border-radius: 50%; mix-blend-mode: screen; opacity: 0; }
+  .beacon.r { background: radial-gradient(circle, rgba(255,40,40,.55), rgba(255,40,40,0) 65%); }
+  .beacon.b { background: radial-gradient(circle, rgba(60,120,255,.55), rgba(60,120,255,0) 65%); }
+  .geo { position: absolute; font: 700 30px var(--mono); letter-spacing: .18em; color: rgba(255,255,255,.85); opacity: 0;
+    padding: 8px 16px; border: 2px solid rgba(255,255,255,.55); border-radius: 6px; background: rgba(7,8,15,.45); white-space: nowrap; }
+
+  /* ============================================ graphic scenes */
+  .bgGrid { position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 55% at 50% 45%, rgba(255,176,32,.10), transparent 70%),
+      repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 2px, transparent 2px 90px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.035) 0 2px, transparent 2px 90px),
+      #0a0b14; }
+  .profile { position: absolute; left: 130px; right: 130px; top: 960px; padding: 46px 46px 40px; border-radius: 44px;
+    background: linear-gradient(180deg, #171925, #10111a); box-shadow: 0 50px 120px rgba(0,0,0,.6), inset 0 0 0 2px rgba(255,255,255,.07);
+    font-family: var(--ui); }
+  .profile .row { display: flex; gap: 30px; align-items: center; }
+  .profile .av { width: 150px; height: 150px; border-radius: 50%; flex: none; background: radial-gradient(circle at 40% 35%, #ffcf70, #ff8a3d 70%); display: grid; place-items: center; box-shadow: 0 0 0 6px #10111a, 0 0 0 10px rgba(255,138,61,.6); }
+  .profile .av svg { width: 110px; height: 110px; }
+  .profile .nm { font: 800 54px var(--display); letter-spacing: -.02em; line-height: 1.02; }
+  .profile .meta { font-size: 30px; color: var(--mute); margin-top: 10px; font-weight: 500; }
+  .profile .bio { margin-top: 34px; font-size: 32px; line-height: 1.35; color: rgba(255,255,255,.86); font-weight: 500; }
+  .profile .btn { margin-top: 30px; display: inline-block; padding: 16px 40px; border-radius: 40px; background: var(--cjp); color: #160a02; font: 700 30px var(--ui); }
+  .stamp { position: absolute; font: 900 92px var(--display); letter-spacing: .06em; color: var(--red); border: 10px solid var(--red); border-radius: 18px;
+    padding: 6px 30px 10px; opacity: 0; mix-blend-mode: screen; text-transform: uppercase; white-space: nowrap; }
+  .stamp small { display: block; font: 700 26px var(--mono); letter-spacing: .3em; text-align: center; margin-top: -4px; }
+  #tiltWrap { position: absolute; inset: 0; will-change: transform; }
+  .paper { position: absolute; left: 150px; width: 780px; top: 1010px; height: 980px; border-radius: 10px; transform: rotate(-3deg);
+    background: linear-gradient(180deg, #f2ede2, #e4dccb); color: #2b2a33; box-shadow: 0 60px 120px rgba(0,0,0,.6); padding: 50px 56px; font-family: var(--ui); }
+  .paper .hd { display: flex; justify-content: space-between; align-items: baseline; border-bottom: 4px solid #2b2a33; padding-bottom: 18px; }
+  .paper .hd b { font: 900 64px var(--display); letter-spacing: .02em; }
+  .paper .hd span { font: 600 24px var(--mono); letter-spacing: .12em; }
+  .paper .q { margin-top: 30px; font-size: 26px; font-weight: 600; }
+  .paper .opts { display: flex; gap: 26px; margin-top: 14px; }
+  .paper .opts i { width: 44px; height: 44px; border-radius: 50%; border: 3px solid #6a6672; display: grid; place-items: center; font: 600 20px var(--ui); font-style: normal; color: #6a6672; }
+  .paper .opts i.f { background: #2b2a33; border-color: #2b2a33; color: #e9e3d6; }
+
+  /* ============================================ placard (hook) */
+  #placard { position: absolute; left: 170px; top: 1080px; width: 740px; transform-origin: 50% 100%; }
+  #placard .board { position: relative; height: 520px; border-radius: 12px; background: linear-gradient(170deg, #e3c79a, #c9a26c 60%, #b38a55);
+    box-shadow: 0 40px 90px rgba(0,0,0,.65), inset 0 0 60px rgba(90,50,10,.35); display: flex; flex-direction: column; align-items: center; justify-content: center; color: #1a0f08; }
+  #placard .board svg { width: 300px; height: 250px; }
+  #placard .board b { font: 900 120px var(--display); letter-spacing: .02em; line-height: .9; margin-top: 6px; }
+  #placard .stick { width: 34px; height: 600px; margin: 0 auto; background: linear-gradient(90deg, #4a2f18, #7a5330, #3a2410); }
+
+  /* ============================================ text */
+  #words { position: absolute; inset: 0; pointer-events: none; }
+  .w { position: absolute; left: 70px; right: 70px; text-align: center; font-weight: 800; letter-spacing: -.03em; line-height: .98;
+    opacity: 0; will-change: transform, opacity, filter; text-shadow: 0 4px 30px rgba(0,0,0,.75), 0 0 2px rgba(0,0,0,.6); }
+  .w .red { color: var(--red); } .w .hl { color: var(--hl); }
+  .w .thin { font-weight: 300; }
+  .sub { font-family: var(--ui); font-weight: 500; letter-spacing: -.005em; line-height: 1.25; }
+  .tag { display: inline-block; font: 700 30px var(--mono); letter-spacing: .16em; padding: 10px 20px 8px; border-radius: 8px; text-shadow: none; }
+  .tag.pol { background: var(--police); color: #06122a; }
+  .tag.cjp { background: var(--cjp); color: #1d0b00; }
+  .tag.rep { background: var(--rep); color: #15121c; }
+  .tag.date { background: rgba(255,255,255,.92); color: #0a0b14; }
+  .tag.ex { background: var(--red); color: #fff; }
+
+  /* stats */
+  #stats { position: absolute; left: 80px; right: 80px; top: 330px; display: flex; flex-direction: column; gap: 22px; }
+  .stat { display: grid; grid-template-columns: 300px 1fr; align-items: center; gap: 24px; padding: 20px 30px; border-radius: 26px;
+    background: rgba(7,8,15,.72); box-shadow: inset 0 0 0 2px rgba(255,255,255,.08); opacity: 0; }
+  .stat .n { font: 900 128px var(--display); letter-spacing: -.05em; line-height: 1; text-align: right; font-variant-numeric: tabular-nums; }
+  .stat .l { font: 700 40px var(--display); letter-spacing: -.01em; line-height: 1.08; }
+  .stat .l .tag { font-size: 22px; padding: 6px 12px 5px; margin-top: 10px; }
+
+  /* overlays */
+  #grade { position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(180deg, rgba(10,12,40,.35), transparent 35%, transparent 70%, rgba(5,5,12,.55)); }
+  #grain { position: absolute; inset: -200px; pointer-events: none; opacity: .10; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 1.4 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+  #vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 90% 72% at 50% 46%, transparent 52%, rgba(0,0,0,.62) 100%); }
+  #progress { position: absolute; left: 0; bottom: 0; height: 9px; width: 100%; background: var(--red); transform-origin: 0 50%; transform: scaleX(0); }
+  #handle { position: absolute; top: 150px; right: 70px; display: none; font: 600 30px var(--ui); color: rgba(255,255,255,.85); }
+  #sources { position: absolute; left: 110px; right: 110px; top: 850px; padding: 14px 20px; border-radius: 14px; background: rgba(7,8,15,.6); text-align: center; font: 500 26px var(--ui); color: rgba(255,255,255,.72); opacity: 0; line-height: 1.4; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- street world (shots 1, 4-10) -->
+  <section class="scene" id="sW">
+    <div class="layer" id="lSky"></div>
+    <div class="layer" id="lParl"></div>
+    <div class="layer" id="lLamps"></div>
+    <div class="layer" id="lPolice"></div>
+    <div class="layer" id="lProj"></div>
+    <div class="layer" id="lCrowd"></div>
+    <div class="layer" id="lSmoke"></div>
+    <div class="layer" id="lFore"></div>
+    <div id="placard">
+      <div class="board"><svg viewBox="0 0 120 100"><use href="#roach"/></svg><b>CJP</b></div>
+      <div class="stick"></div>
+    </div>
+  </section>
+
+  <!-- shot 2: origin -->
+  <section class="scene" id="s2">
+    <div class="bgGrid"></div>
+    <div class="profile" id="profile">
+      <div class="row">
+        <div class="av"><svg viewBox="0 0 120 100"><use href="#roach" style="color:#1a0f08"/></svg></div>
+        <div><div class="nm">Cockroach<br>Janta Party</div><div class="meta">Political satire · Est. 16 May 2026</div></div>
+      </div>
+      <div class="bio">Launched online by Abhijeet Dipke. The name answers a "cockroach" remark and parodies the BJP.</div>
+      <div class="btn">Follow</div>
+    </div>
+    <div class="stamp" id="satire" style="left:520px; top:1460px; transform: rotate(-9deg)">Satire</div>
+  </section>
+
+  <!-- shot 3: NEET -->
+  <section class="scene" id="s3">
+    <div class="bgGrid"></div>
+    <div id="tiltWrap">
+      <div class="paper">
+        <div class="hd"><b>NEET</b><span>MEDICAL ENTRANCE</span></div>
+        <div class="q">Q.17&nbsp; Which organelle is called the powerhouse of the cell?</div>
+        <div class="opts"><i>A</i><i class="f">B</i><i>C</i><i>D</i></div>
+        <div class="q">Q.18&nbsp; The functional unit of the kidney is…</div>
+        <div class="opts"><i>A</i><i>B</i><i class="f">C</i><i>D</i></div>
+        <div class="q">Q.19&nbsp; Which hormone regulates blood glucose?</div>
+        <div class="opts"><i class="f">A</i><i>B</i><i>C</i><i>D</i></div>
+        <div class="q">Q.20&nbsp; Mendel's law of segregation states…</div>
+        <div class="opts"><i>A</i><i>B</i><i>C</i><i class="f">D</i></div>
+      </div>
+      <div class="stamp" id="leak" style="left:230px; top:1330px; transform: rotate(-12deg); mix-blend-mode: multiply; background: rgba(255,255,255,.0)">Paper leak?<small>ALLEGED</small></div>
+    </div>
+  </section>
+
+  <div id="words"></div>
+  <div id="sources">Sources: NPR · Al Jazeera · CNN · TIME · ETV Bharat · Business Standard · Deccan Chronicle</div>
+  <div id="grade"></div>
+  <div id="grain"></div>
+  <div id="vignette"></div>
+  <div id="handle"></div>
+  <div id="progress"></div>
+</div>
+
+<!-- shared symbol: the CJP cockroach -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="roach" viewBox="0 0 120 100">
+      <g fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round">
+        <path d="M70 34 Q86 10 112 6"/><path d="M66 32 Q74 8 92 2"/>
+        <path d="M48 44 L30 30 L20 34"/><path d="M48 54 L26 54 L16 64"/><path d="M50 62 L36 78 L28 92"/>
+        <path d="M70 44 L84 32 L96 34"/><path d="M72 54 L92 58 L102 70"/><path d="M68 62 L80 80 L86 94"/>
+      </g>
+      <ellipse cx="58" cy="56" rx="17" ry="27" fill="currentColor" transform="rotate(-28 58 56)"/>
+      <ellipse cx="70" cy="36" rx="9" ry="8" fill="currentColor"/>
+      <path d="M58 32 L52 78" stroke="#c9a26c" stroke-width="1.6" opacity=".55" transform="rotate(-28 58 56)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<script>
+/* ==================================================================== config */
+const CONFIG = { handle: "", fps: 30, duration: 20 };
+
+/* ==================================================================== setup */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+let seed = 20072026;
+const rnd = () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296);
+const R = (a, b) => a + rnd() * (b - a);
+if (CONFIG.handle) { $("#handle").style.display = "block"; $("#handle").textContent = CONFIG.handle; }
+
+const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+const cues = [];
+const updaters = [];
+const sfx = (t, name, gain = 1, extra = {}) => cues.push({ t: +t.toFixed(3), sfx: name, gain, ...extra });
+const svgNS = "http://www.w3.org/2000/svg";
+const LX = 400, LY = 300;                    // viewport -> layer coordinate offset
+function svgIn(layer, inner) {
+  const s = document.createElementNS(svgNS, "svg");
+  s.setAttribute("viewBox", "0 0 1880 2520");
+  s.innerHTML = inner;
+  $(layer).appendChild(s);
+  return s;
+}
+function scene(id, t0, t1) {
+  tl.set(`#${id}`, { visibility: "visible" }, t0);
+  if (t1 != null) tl.set(`#${id}`, { visibility: "hidden" }, t1);
+}
+
+/* ==================================================================== build the street world */
+// --- Parliament: a generic circular colonnade (far layer). Viewport coords: centre x 700, base y 1150.
+(() => {
+  const cx = 700 + LX, base = 1150 + LY, w = 820, h = 210;
+  let g = `<defs><linearGradient id="pg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2a48"/><stop offset="1" stop-color="#1c1426"/></linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="rgba(255,170,90,.45)"/><stop offset="1" stop-color="rgba(255,170,90,0)"/></radialGradient></defs>`;
+  g += `<ellipse cx="${cx}" cy="${base - 80}" rx="${w * 0.75}" ry="170" fill="url(#glow)"/>`;
+  g += `<rect x="${cx - w / 2 - 30}" y="${base - 28}" width="${w + 60}" height="28" fill="#140e1c"/>`;               // plinth
+  g += `<rect x="${cx - w / 2}" y="${base - h}" width="${w}" height="${h - 28}" fill="url(#pg)"/>`;                  // drum
+  const cols = 30;
+  for (let i = 0; i < cols; i++) {                                                                                // lit columns
+    const x = cx - w / 2 + 14 + (i * (w - 28)) / (cols - 1);
+    const k = Math.cos(((i / (cols - 1)) - 0.5) * Math.PI);                                                          // curved drum shading
+    g += `<rect x="${x - 6}" y="${base - h + 34}" width="12" height="${h - 72}" fill="rgba(255,196,130,${0.25 + 0.5 * k})"/>`;
+  }
+  g += `<rect x="${cx - w / 2 - 14}" y="${base - h - 6}" width="${w + 28}" height="40" fill="#241a30"/>`;            // cornice
+  g += `<path d="M${cx - w * 0.32} ${base - h - 6} Q ${cx} ${base - h - 120} ${cx + w * 0.32} ${base - h - 6} Z" fill="#20172b"/>`; // low dome
+  g += `<rect x="${cx - 3}" y="${base - h - 230}" width="6" height="120" fill="#2a2034"/>`;                          // flagpole
+  svgIn("#lParl", g);
+  const lab = document.createElement("div");
+  lab.className = "geo"; lab.id = "geoParl"; lab.textContent = "PARLIAMENT";
+  Object.assign(lab.style, { left: (cx - 120) + "px", top: (base - h - 330) + "px" });
+  $("#lParl").appendChild(lab);
+})();
+
+// --- lamps, trees and road (mid layer)
+(() => {
+  let g = `<defs><radialGradient id="lg" cx=".5" cy=".1" r=".9"><stop offset="0" stop-color="rgba(255,170,80,.55)"/><stop offset="1" stop-color="rgba(255,150,60,0)"/></radialGradient>
+    <linearGradient id="road" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1a1420"/><stop offset="1" stop-color="#0a080e"/></linearGradient></defs>`;
+  g += `<rect x="0" y="${1150 + LY}" width="1880" height="1400" fill="url(#road)"/>`;
+  const vx = 700 + LX, vy = 1150 + LY;
+  for (const k of [-1.6, -0.5, 0.5, 1.6]) g += `<path d="M${vx + k * 20} ${vy} L ${vx + k * 900} ${vy + 1300}" stroke="rgba(255,220,170,.10)" stroke-width="${6}" stroke-dasharray="40 50"/>`;
+  for (const tx of [-260, -110, 40, 160, 1250, 1400]) {                             // tree line at the edges only
+    const x = tx + LX + R(-30, 30), y = 1160 + LY, s = R(0.6, 0.85);
+    g += `<ellipse cx="${x}" cy="${y - 110 * s}" rx="${120 * s}" ry="${95 * s}" fill="#0d0a14"/><rect x="${x - 8}" y="${y - 40}" width="16" height="45" fill="#0d0a14"/>`;
+  }
+  for (const [x, h] of [[30, 520], [380, 470], [1020, 500]]) {                      // sodium lamps
+    const X = x + LX, Y = 1260 + LY;
+    g += `<ellipse cx="${X + 40}" cy="${Y + 30}" rx="280" ry="46" fill="rgba(255,160,70,.16)"/><ellipse cx="${X + 48}" cy="${Y - h + 40}" rx="85" ry="95" fill="url(#lg)" opacity=".35"/>`;
+    g += `<rect x="${X - 6}" y="${Y - h}" width="12" height="${h}" fill="#08070c"/><rect x="${X - 6}" y="${Y - h}" width="60" height="10" fill="#08070c"/>`;
+    g += `<ellipse cx="${X + 48}" cy="${Y - h + 14}" rx="22" ry="9" fill="#ffd49a"/><circle cx="${X + 48}" cy="${Y - h + 14}" r="40" fill="rgba(255,190,110,.35)"/>`;
+  }
+  svgIn("#lLamps", g);
+})();
+
+// --- people
+function person(x, feet, h, o = {}) {
+  // facing right; o.sign = placard text; o.rim = rim colour; o.fill = body colour
+  const f = o.fill || "#0b0812", rim = o.rim || "rgba(255,150,80,.55)";
+  const hr = h * 0.075, sh = feet - h * 0.8, hip = feet - h * 0.45, cx = x;
+  const st = R(-0.06, 0.06) * h;
+  const body = (dx) => `
+    <circle cx="${cx + dx}" cy="${feet - h * 0.9}" r="${hr}"/>
+    <path d="M${cx - h * 0.13 + dx} ${sh} Q ${cx + dx} ${sh - h * 0.05} ${cx + h * 0.13 + dx} ${sh} L ${cx + h * 0.1 + dx} ${hip} L ${cx - h * 0.1 + dx} ${hip} Z"/>
+    <path d="M${cx - h * 0.09 + dx} ${hip} L ${cx - h * 0.1 + st + dx} ${feet} L ${cx - h * 0.03 + st + dx} ${feet} L ${cx + dx} ${hip + h * 0.05} L ${cx + h * 0.03 - st + dx} ${feet} L ${cx + h * 0.1 - st + dx} ${feet} L ${cx + h * 0.09 + dx} ${hip} Z"/>`;
+  let s = `<g fill="${rim}">${body(4)}</g><g fill="${f}">${body(0)}</g>`;
+  if (o.sign) {
+    const pw = h * 0.42, ph = h * 0.27, px = cx + h * 0.02, py = feet - h * 1.32;
+    s += `<rect x="${px - 3}" y="${py + ph - 4}" width="6" height="${h * 0.42}" fill="#3a2410"/>`;
+    s += `<path d="M${cx + h * 0.1} ${sh + 6} L ${px + 3} ${py + ph + h * 0.1}" stroke="${f}" stroke-width="${h * 0.045}" stroke-linecap="round"/>`;
+    s += `<g transform="rotate(${R(-7, 7)} ${px} ${py + ph / 2})"><rect x="${px - pw / 2}" y="${py}" width="${pw}" height="${ph}" rx="3" fill="${o.board || "#c9a26c"}"/>`;
+    if (o.sign === "roach") s += `<use href="#roach" x="${px - ph * 0.55}" y="${py + ph * 0.06}" width="${ph * 1.1}" height="${ph * 0.9}" style="color:#1a0f08"/>`;
+    else s += `<text x="${px}" y="${py + ph * 0.66}" text-anchor="middle" font-family="Inter Display" font-weight="900" font-size="${ph * 0.42}" fill="#1a0f08">${o.sign}</text>`;
+    s += `</g>`;
+  } else if (rnd() < 0.5) {
+    s += `<path d="M${cx + h * 0.1} ${sh + 6} L ${cx + h * 0.2} ${sh - h * 0.25}" stroke="${f}" stroke-width="${h * 0.045}" stroke-linecap="round"/>`; // raised fist
+  }
+  return s;
+}
+function cop(x, feet, h) {
+  const f = "#0a0b12", hr = h * 0.08, sh = feet - h * 0.8, hip = feet - h * 0.45;
+  let s = `<g fill="rgba(120,160,255,.35)"><circle cx="${x - 4}" cy="${feet - h * 0.9}" r="${hr}"/></g><g fill="${f}">
+    <circle cx="${x}" cy="${feet - h * 0.9}" r="${hr}"/>
+    <rect x="${x - hr}" y="${feet - h * 0.92}" width="${hr * 2}" height="${hr * 0.5}" fill="rgba(150,180,230,.35)"/>
+    <path d="M${x - h * 0.15} ${sh} L ${x + h * 0.15} ${sh} L ${x + h * 0.11} ${hip} L ${x - h * 0.11} ${hip} Z"/>
+    <rect x="${x - h * 0.1}" y="${hip}" width="${h * 0.08}" height="${h * 0.45}"/><rect x="${x + h * 0.02}" y="${hip}" width="${h * 0.08}" height="${h * 0.45}"/></g>`;
+  s += `<path d="M${x + h * 0.08} ${sh + 8} L ${x + h * 0.18} ${sh - h * 0.22}" stroke="#2a2218" stroke-width="${h * 0.03}" stroke-linecap="round"/>`; // lathi
+  s += `<rect x="${x - h * 0.26}" y="${sh - h * 0.02}" width="${h * 0.22}" height="${h * 0.62}" rx="6" fill="rgba(160,190,235,.16)" stroke="rgba(200,220,255,.55)" stroke-width="3"/>`; // shield, facing left
+  s += `<path d="M${x - h * 0.22} ${sh + h * 0.04} L ${x - h * 0.08} ${sh + h * 0.3}" stroke="rgba(255,255,255,.35)" stroke-width="3"/>`;
+  return s;
+}
+
+// --- police line + barricades + van beacons
+(() => {
+  let g = `<defs><pattern id="stripe" width="40" height="40" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+    <rect width="20" height="40" fill="#e0b21c"/><rect x="20" width="20" height="40" fill="#141218"/></pattern></defs>`;
+  g += `<rect x="${1040 + LX}" y="${1160 + LY}" width="560" height="200" rx="18" fill="#12131c"/><rect x="${1060 + LX}" y="${1180 + LY}" width="160" height="70" fill="rgba(120,150,210,.25)"/>`; // van
+  const cops = [];
+  for (let i = 0; i < 13; i++) cops.push(cop(640 + LX + i * 48 + R(-6, 6), 1420 + LY + R(-6, 6), 240 + R(-10, 10)));
+  g += `<g id="copLine">${cops.join("")}</g>`;
+  for (let i = 0; i < 6; i++) {
+    const x = 560 + LX + i * 120, y = 1440 + LY;
+    g += `<rect x="${x}" y="${y - 110}" width="112" height="16" fill="url(#stripe)"/><rect x="${x}" y="${y - 70}" width="112" height="16" fill="url(#stripe)"/>`;
+    g += `<rect x="${x}" y="${y - 118}" width="8" height="118" fill="#3a3a44"/><rect x="${x + 104}" y="${y - 118}" width="8" height="118" fill="#3a3a44"/>`;
+  }
+  svgIn("#lPolice", g);
+  [["r", 1100, 1050], ["b", 1260, 1040]].forEach(([c, x, y]) => {
+    const b = document.createElement("div");
+    b.className = `beacon ${c}`; b.id = `beacon_${c}`;
+    Object.assign(b.style, { left: x + LX - 260 + "px", top: y + LY - 260 + "px" });
+    $("#lPolice").appendChild(b);
+  });
+})();
+
+// --- crowd (three depth rows inside one layer) - each person is a <g> so it can bob
+const SIGNS = ["NEET", "RESIGN", "roach", "JUSTICE", null, null, "roach", "NEET", null, "RE-EXAM", null];
+const crowdPeople = [];
+(() => {
+  const rows = [
+    { feet: 1440, h: 190, n: 16, x0: -340, x1: 540, fill: "#2a2236", rim: "rgba(255,150,80,.35)" },
+    { feet: 1560, h: 270, n: 13, x0: -360, x1: 500, fill: "#1a1424", rim: "rgba(255,150,80,.45)" },
+    { feet: 1720, h: 380, n: 9,  x0: -380, x1: 440, fill: "#09070e", rim: "rgba(255,150,80,.55)" },
+  ];
+  const svg = svgIn("#lCrowd", "");
+  rows.forEach((r) => {
+    for (let i = 0; i < r.n; i++) {
+      const g = document.createElementNS(svgNS, "g");
+      const x = r.x0 + LX + ((i + R(0.1, 0.9)) * (r.x1 - r.x0)) / r.n;
+      const sign = rnd() < 0.55 ? SIGNS[Math.floor(rnd() * SIGNS.length)] : null;
+      g.innerHTML = person(x, r.feet + LY + R(-8, 8), r.h * R(0.92, 1.08), { fill: r.fill, rim: r.rim, sign });
+      svg.appendChild(g);
+      crowdPeople.push({ g, ph: R(0, 6.28), sp: R(4.5, 7), amp: r.h * 0.018 });
+    }
+  });
+})();
+// --- blurred foreground heads (nearest layer)
+(() => {
+  let g = "";
+  for (let i = 0; i < 7; i++) {
+    const x = -300 + LX + i * 190 + R(-30, 30), y = 1900 + LY + R(0, 60), h = R(520, 640);
+    g += person(x, y + h * 0.55, h, { fill: "#050408", rim: "rgba(255,140,70,.4)", sign: i === 2 ? "NEET" : i === 5 ? "roach" : null, board: "#a98457" });
+  }
+  const s = svgIn("#lFore", `<defs><filter id="fb"><feGaussianBlur stdDeviation="9"/></filter></defs><g filter="url(#fb)">${g}</g>`);
+})();
+
+/* ==================================================================== virtual camera over the layers */
+const LAYERS = [["#lSky", 0.05], ["#lParl", 0.18], ["#lLamps", 0.38], ["#lPolice", 0.62], ["#lProj", 0.7], ["#lCrowd", 0.85], ["#lSmoke", 0.8], ["#lFore", 1.25]]
+  .map(([s, p]) => [$(s), p]);
+const cam = { x: 0, y: 0, z: 1 };
+const hand = { a: 0 };                                   // handheld amplitude in px
+function camSet(t, s) { tl.set(cam, s, t); }
+function camMove(t0, t1, s, ease = "power2.inOut") { tl.to(cam, { ...s, duration: t1 - t0, ease }, t0); }
+updaters.push((t) => {
+  const hx = hand.a * (Math.sin(t * 11.3) * 0.6 + Math.sin(t * 23.7 + 1.3) * 0.4);
+  const hy = hand.a * (Math.sin(t * 9.1 + 2.1) * 0.6 + Math.sin(t * 19.9) * 0.4);
+  for (const [el, p] of LAYERS) {
+    const z = 1 + (cam.z - 1) * p;
+    el.style.transform = `translate(${-(cam.x + hx) * p * z}px, ${-(cam.y + hy) * p * z}px) scale(${z})`;
+  }
+  for (const c of crowdPeople) c.g.setAttribute("transform", `translate(0 ${(Math.sin(t * c.sp + c.ph) * c.amp).toFixed(2)})`);
+  const bb = (Math.sin(t * Math.PI * 2 * 1.1) + 1) / 2;      // soft alternating beacons, ~1 Hz
+  $("#beacon_r").style.opacity = beacon.on * (0.25 + 0.6 * bb);
+  $("#beacon_b").style.opacity = beacon.on * (0.25 + 0.6 * (1 - bb));
+});
+const beacon = { on: 0 };
+
+/* projectiles: parabolic flights in the projectile layer (viewport coords) */
+const flights = [];
+function fly(cls, t0, dur, [x0, y0], [x1, y1], arc) {
+  const el = document.createElement("div");
+  el.className = "proj " + cls;
+  $("#lProj").appendChild(el);
+  flights.push({ el, t0, dur, x0, y0, x1, y1, arc, cls });
+}
+updaters.push((t) => {
+  for (const f of flights) {
+    const k = (t - f.t0) / f.dur;
+    if (k < 0 || k > 1) { f.el.style.opacity = 0; continue; }
+    const x = f.x0 + (f.x1 - f.x0) * k + LX, y = f.y0 + (f.y1 - f.y0) * k - f.arc * 4 * k * (1 - k) + LY;
+    f.el.style.opacity = 1;
+    f.el.style.transform = `translate(${x}px, ${y}px) rotate(${k * 540}deg)`;
+  }
+});
+/* smoke puffs: grow and drift */
+function puff(t, x, y, size, o = {}) {
+  const el = document.createElement("div");
+  el.className = "smoke" + (o.warm ? " warm" : "");
+  Object.assign(el.style, { left: x + LX - size / 2 + "px", top: y + LY - size / 2 + "px", width: size + "px", height: size + "px" });
+  $("#lSmoke").appendChild(el);
+  tl.fromTo(el, { opacity: 0, scale: 0.15 }, { opacity: o.op ?? 0.95, scale: 1, duration: o.grow ?? 1.1, ease: "power2.out" }, t);
+  tl.to(el, { x: o.dx ?? R(40, 160), y: o.dy ?? R(-260, -120), scale: o.end ?? 1.6, duration: CONFIG.duration - t, ease: "none" }, t);
+  tl.to(el, { opacity: o.fadeTo ?? 0.3, duration: 3, ease: "power1.inOut" }, o.fade ?? Math.max(t + 1.2, 16.2));
+}
+
+/* ==================================================================== text */
+const W = $("#words");
+function word(html, t, t1, o = {}) {
+  const el = document.createElement("div");
+  el.className = "w" + (o.cls ? " " + o.cls : "");
+  el.innerHTML = html;
+  el.style.fontSize = (o.size || 96) + "px";
+  el.style.top = (o.y ?? 300) + "px";
+  if (o.align) el.style.textAlign = o.align;
+  W.appendChild(el);
+  if (o.poster) tl.set(el, { opacity: 1 }, 0);
+  else {
+    const from = o.from || { opacity: 0, y: 40, filter: "blur(12px)" };
+    tl.fromTo(el, from, { opacity: 1, y: 0, x: 0, scale: 1, filter: "blur(0px)", duration: o.inDur || 0.3, ease: o.ease || "expo.out" }, t);
+  }
+  if (t1 != null) tl.to(el, { opacity: 0, y: -20, filter: "blur(8px)", duration: 0.14, ease: "power2.in" }, t1 - 0.14);
+  if (o.sfx) sfx(t - 0.03, o.sfx, o.gain ?? 0.5);
+  return el;
+}
+const tag = (cls, txt) => `<span class="tag ${cls}">${txt}</span>`;
+function stampIn(sel, t) {
+  tl.fromTo(sel, { opacity: 0, scale: 2.4 }, { opacity: 1, scale: 1, duration: 0.16, ease: "power4.in" }, t);
+  sfx(t + 0.14, "hit", 0.8);
+  sfx(t + 0.14, "shutter", 0.35);
+}
+function shakeStage(t, dur = 0.3, amp = 14) {
+  const steps = Math.round(dur / 0.033);
+  for (let i = 0; i < steps; i++) { const k = 1 - i / steps; tl.set("#stage", { x: R(-amp, amp) * k, y: R(-amp, amp) * k }, t + i * 0.033); }
+  tl.set("#stage", { x: 0, y: 0 }, t + dur);
+}
+
+/* ==================================================================== TIMELINE (120 BPM grid: beat 0.5 s, bar 2 s) */
+sfx(0, "drone", 0.34, { dur: 20 });
+sfx(0, "pad", 0.16, { dur: 9 });
+
+/* ---------- 1. HOOK 0.0-2.0 · close-up, low angle · slow push in on the placard */
+scene("sW", 0, 2.0);
+camSet(0, { x: -260, y: 260, z: 1.5 });
+camMove(0, 2.0, { z: 1.58, y: 280 }, "none");
+tl.set("#placard", { opacity: 1, rotation: -4 }, 0);
+tl.to("#placard", { rotation: -2, y: -18, duration: 2, ease: "sine.inOut" }, 0);
+tl.set("#placard", { opacity: 0 }, 2.0);
+puff(0, 860, 1180, 700, { warm: true, op: 0.5, grow: 0.01, dx: 120, dy: -80, end: 1.2 });
+word(tag("ex", "EXPLAINED"), 0, 1.98, { size: 40, y: 230, poster: true });
+word('How did a <span class="hl">joke</span> party\'s protest turn <span class="red">violent?</span>', 0, 1.98, { size: 104, y: 320, poster: true });
+sfx(0, "hit", 0.6);
+sfx(1.4, "riser_short", 0.35);
+
+/* ---------- 2. ORIGIN 2.0-4.5 · static information shot */
+scene("s2", 2.0, 4.5);
+sfx(1.97, "whoosh", 0.6);
+tl.fromTo("#profile", { y: 260, opacity: 0 }, { y: 0, opacity: 1, duration: 0.55, ease: "expo.out" }, 2.05);
+sfx(2.1, "pop", 0.45);
+word(tag("date", "16 MAY 2026"), 2.05, 4.45, { size: 40, y: 230 });
+word('A CJI remark likened jobless youth to <span class="red">“cockroaches.”</span>', 2.1, 3.3, { size: 76, y: 330 });
+word('<span class="sub" style="font-size:34px;color:var(--mute)">He later said he meant people with fake degrees.</span>', 2.35, 3.3, { size: 34, y: 610 });
+word('So Abhijeet Dipke launched a <span class="hl">satire party</span> online.', 3.3, 4.45, { size: 76, y: 330, sfx: "swish", gain: 0.4 });
+stampIn("#satire", 3.45);
+
+/* ---------- 3. ANGER 4.5-6.5 · tilt up from the exam paper to the demand */
+scene("s3", 4.5, 6.5);
+sfx(4.47, "swish", 0.55);
+tl.fromTo("#tiltWrap", { y: -340 }, { y: -340, duration: 0.01 }, 4.5);
+stampIn("#leak", 4.7);
+tl.to("#tiltWrap", { y: 240, duration: 1.4, ease: "power2.inOut" }, 5.0);
+word(tag("rep", "THE ANGER"), 4.55, 6.45, { size: 40, y: 230 });
+word('Alleged <span class="red">NEET paper leaks.</span>', 4.6, 5.55, { size: 92, y: 330 });
+word('Demand: Education Minister <span class="hl">Dharmendra Pradhan</span> must resign.', 5.55, 6.45, { size: 80, y: 330, sfx: "swish", gain: 0.4 });
+
+/* ---------- 4. GEOGRAPHY 6.5-9.0 · pedestal down from sky/Parliament to street level */
+scene("sW", 6.5, null);
+camSet(6.5, { x: 120, y: -760, z: 0.96 });
+camMove(6.5, 8.7, { x: 0, y: 0, z: 1 }, "power2.inOut");
+tl.fromTo("#lCrowd", { x: -120 }, { x: 0, duration: 4.0, ease: "power1.out" }, 6.5);       // crowd advances screen-right
+tl.to("#geoParl", { opacity: 1, duration: 0.4 }, 6.8);
+tl.to("#geoParl", { opacity: 0, duration: 0.3 }, 9.0);
+tl.to(beacon, { on: 1, duration: 1.0 }, 7.5);
+sfx(6.45, "whoosh_long", 0.6);
+word(tag("date", "20 JULY 2026 · NEW DELHI"), 6.55, 8.95, { size: 40, y: 230 });
+word('<span class="hl">“Sansad Chalo”</span>: a march on Parliament.', 6.6, 7.85, { size: 84, y: 330 });
+word('<span class="sub" style="font-size:34px;color:var(--mute)">~20,000, mostly students and young people (one outlet\'s estimate)</span>', 6.85, 7.85, { size: 34, y: 530 });
+word(tag("pol", "POLICE") + '<br>Banned: prohibitory orders, march declared <span class="red">“unlawful.”</span>', 7.85, 8.95, { size: 72, y: 300, sfx: "swish", gain: 0.4 });
+
+/* ---------- 5. HELD MOMENT 9.0-10.5 · static, locked off, both sides in frame */
+camSet(9.0, { x: 0, y: 0, z: 1 });
+word('At the barricades<span class="thin">…</span>', 9.05, 10.45, { size: 84, y: 330, inDur: 0.8, ease: "power2.out", from: { opacity: 0, y: 0, filter: "blur(6px)" } });
+sfx(9.0, "heartbeat", 0.75);
+sfx(9.75, "riser", 0.45);
+
+/* ---------- 6. POLICE VERSION 10.5-11.5 · medium on barricade, restrained handheld */
+camSet(10.5, { x: 170, y: 120, z: 1.32 });
+camMove(10.5, 11.5, { x: 190 }, "none");
+tl.set(hand, { a: 9 }, 10.5);
+for (let i = 0; i < 14; i++) {
+  const t = 10.42 + i * 0.065 + R(0, 0.04);
+  fly("stone", t, 0.42, [R(220, 470), R(1160, 1260)], [R(620, 820), R(1230, 1330)], R(160, 260));
+  if (i % 2 === 0) sfx(t + 0.42, "tick", 0.5, { pan: 0.4 });
+}
+sfx(10.5, "boom", 0.7);
+sfx(10.5, "hit", 0.7);
+shakeStage(10.5, 0.25, 12);
+word(tag("pol", "POLICE SAY") + '<br>Crowd tried to breach barricades, <span class="red">threw stones.</span>', 10.52, 11.48, { size: 72, y: 300, inDur: 0.16 });
+
+/* ---------- 7. TEAR GAS 11.5-12.5 · truck left following the canisters into the crowd */
+camSet(11.5, { x: 150, y: 120, z: 1.32 });
+camMove(11.5, 12.5, { x: -150, y: 140 }, "power2.inOut");
+[[11.42, 200, 1470], [11.58, 380, 1540], [11.78, 60, 1500], [11.95, 300, 1420]].forEach(([t, x, y], i) => {
+  fly("can", t, 0.55, [R(720, 860), 1170], [x, y], 300);
+  sfx(t, "whoosh", 0.4, { pan: 0.3 - i * 0.2 });
+  sfx(t + 0.55, "pop_low", 0.7, { pan: -0.3 });
+  puff(t + 0.5, x, y - 40, 420, { op: 0.9 });
+  puff(t + 0.62, x + 80, y - 120, 560, { op: 0.75 });
+  puff(t + 0.75, x - 70, y - 170, 640, { op: 0.6, warm: i % 2 === 1 });
+});
+tl.to("#copLine", { x: -70, duration: 0.5, ease: "power2.out" }, 11.9);                  // lathi charge: line pushes left
+tl.to("#lCrowd", { x: -90, duration: 0.6, ease: "power2.out" }, 12.0);                    // crowd recoils left
+sfx(12.0, "hit", 0.6);
+word(tag("rep", "REPORTED") + '<br><span class="red">Tear gas.</span> Lathi charge.', 11.52, 12.48, { size: 92, y: 300, inDur: 0.16 });
+
+/* ---------- 8. CJP VERSION 12.5-14.0 · slow push into the smoke */
+camSet(12.5, { x: -150, y: 140, z: 1.32 });
+camMove(12.5, 14.0, { x: -180, y: 60, z: 1.6 }, "power1.inOut");
+tl.set(hand, { a: 5 }, 12.5);
+puff(12.5, 180, 1300, 900, { op: 0.7, warm: true });
+sfx(12.48, "hit", 0.55);
+word(tag("cjp", "CJP SAYS") + '<br>Founder Dipke: police were <span class="red">“really cruel and evil.”</span>', 12.52, 13.98, { size: 72, y: 300, inDur: 0.2 });
+
+/* ---------- 9. THE TOLL 14.0-17.0 · steady pull out from the smoke to the whole street */
+camSet(14.0, { x: -180, y: 60, z: 1.6 });
+camMove(14.0, 16.9, { x: 0, y: -260, z: 0.94 }, "power2.inOut");
+tl.set(hand, { a: 0 }, 14.0);
+sfx(13.97, "whoosh_down", 0.6);
+const STATS = [
+  [118, "", "police personnel injured", "pol", "POLICE"],
+  [60, "", "protesters injured", "pol", "POLICE"],
+  [150, "~", "protesters hospitalised", "cjp", "CJP"],
+  [70, "", "people detained", "pol", "POLICE"],
+];
+const statsEl = document.createElement("div");
+statsEl.id = "stats";
+W.appendChild(statsEl);
+STATS.forEach(([n, pre, label, cls, src], i) => {
+  const row = document.createElement("div");
+  row.className = "stat";
+  row.innerHTML = `<div class="n" style="color:${i < 2 ? "var(--white)" : i === 2 ? "var(--cjp)" : "var(--white)"}">${pre}<span>0</span></div><div class="l">${label}<br>${tag(cls, src)}</div>`;
+  statsEl.appendChild(row);
+  const t = 14.15 + i * 0.4;
+  tl.fromTo(row, { opacity: 0, x: -80 }, { opacity: 1, x: 0, duration: 0.4, ease: "expo.out" }, t);
+  tl.to(row, { opacity: 0, duration: 0.15 }, 16.86);
+  sfx(t, "swish", 0.4);
+  for (let k = 0; k < 6; k++) sfx(t + 0.05 + k * 0.08, "counter", 0.25);
+  updaters.push((tt) => {
+    const kk = Math.min(1, Math.max(0, (tt - t - 0.05) / 0.55));
+    row.querySelector("span").textContent = Math.round(n * gsap.parseEase("power2.out")(kk));
+  });
+});
+word(tag("ex", "THE TOLL") + ' <span class="sub" style="font-size:30px;color:var(--mute)">· figures from each side</span>', 14.05, 16.98, { size: 40, y: 230 });
+
+/* ---------- 10. OPEN QUESTION 17.0-20.0 · static wide, answer lands on the 18.0 downbeat */
+camSet(17.0, { x: 0, y: -260, z: 0.94 });
+camMove(17.0, 20.0, { y: -280 }, "none");
+tl.to(beacon, { on: 0.45, duration: 2 }, 17.0);
+sfx(17.0, "boom", 0.45);
+word("So who started it?", 17.03, null, { size: 100, y: 300 });
+word('<span class="red">Each side blames the other.</span>', 18.0, null, { size: 84, y: 450, inDur: 0.14, from: { opacity: 0, scale: 1.25, filter: "blur(14px)" } });
+sfx(18.0, "hit", 0.85);
+word('<span class="sub" style="font-size:38px">Delhi Police Crime Branch has registered an FIR. CJP paused its Delhi marches, but vows to keep protesting.</span>', 18.5, null, { size: 38, y: 650 });
+tl.fromTo("#sources", { opacity: 0 }, { opacity: 1, duration: 0.6 }, 18.9);
+
+/* global progress bar */
+tl.fromTo("#progress", { scaleX: 0 }, { scaleX: 1, duration: CONFIG.duration, ease: "none" }, 0);
+tl.set({}, {}, CONFIG.duration);
+
+/* ==================================================================== API */
+const grain = $("#grain");
+window.REEL = {
+  width: 1080, height: 1920, fps: CONFIG.fps, duration: CONFIG.duration,
+  cues: cues.sort((a, b) => a.t - b.t),
+  seek(t) {
+    tl.seek(Math.max(t, 1e-4), false);
+    updaters.forEach((fn) => fn(t));
+    const f = Math.floor(t * 24);
+    grain.style.transform = `translate(${(f * 73) % 200 - 100}px, ${(f * 131) % 200 - 100}px)`;
+  },
+};
+window.REEL_READY = (async () => { await document.fonts.ready; REEL.seek(0); })();
+</script>
+</body>
+</html>
