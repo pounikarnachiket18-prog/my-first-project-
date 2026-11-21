@@ -40,7 +40,8 @@ const available = fs.existsSync(imagesDir)
   ? fs.readdirSync(imagesDir).filter((f) => /\.(jpe?g|png|webp)$/i.test(f))
   : [];
 
-const browser = await chromium.launch({ args: ["--force-color-profile=srgb", "--disable-lcd-text"] });
+// SwiftShader flags let 3D (WebGL/Three.js) projects render on machines without a GPU.
+const browser = await chromium.launch({ args: ["--force-color-profile=srgb", "--disable-lcd-text", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] });
 const page = await browser.newPage({ viewport: { width: 1080, height: 1920 }, deviceScaleFactor: 1 });
 await page.addInitScript((imgs) => (window.AVAILABLE_IMAGES = imgs), available);
 page.on("pageerror", (e) => console.error("[page error]", e.message));
@@ -104,8 +105,20 @@ const shifted = meta.cues.filter((c) => c.t >= from - 3 && c.t < to).map((c) => 
 fs.writeFileSync(cuesPath, JSON.stringify(shifted, null, 1));
 spawnSync("python3", [path.join(ROOT, "tools/sfx.py"), "mix", cuesPath, wavPath, String(to - from)], { stdio: "inherit" });
 
+// Optional voiceover: projects/<name>/voiceover.(wav|mp3|m4a) is mixed over the sound effects.
+const vo = ["wav", "mp3", "m4a"].map((e) => path.join(projectDir, `voiceover.${e}`)).find((f) => fs.existsSync(f));
+let audioPath = wavPath;
+if (vo) {
+  audioPath = path.join(outDir, `${name}.mix.wav`);
+  spawnSync("ffmpeg", ["-v", "error", "-y", "-i", wavPath, "-ss", String(from), "-i", vo, "-filter_complex",
+    "[0:a]volume=0.55[s];[1:a]aresample=48000,volume=1.0[v];[s][v]amix=inputs=2:duration=first:normalize=0,alimiter=limit=0.95[a]",
+    "-map", "[a]", audioPath], { stdio: "inherit" });
+  console.log(`  mixed voiceover: ${path.basename(vo)}`);
+}
+
 const final = path.join(outDir, `${name}.mp4`);
-spawnSync("ffmpeg", ["-v", "error", "-y", "-i", silent, "-i", wavPath, "-map", "0:v", "-map", "1:a",
+spawnSync("ffmpeg", ["-v", "error", "-y", "-i", silent, "-i", audioPath, "-map", "0:v", "-map", "1:a",
   "-c:v", "copy", "-c:a", "aac", "-b:a", "256k", "-ar", "48000", "-shortest", "-movflags", "+faststart", final], { stdio: "inherit" });
 fs.rmSync(silent);
+if (vo) fs.rmSync(audioPath);
 console.log(`done -> ${final}`);
