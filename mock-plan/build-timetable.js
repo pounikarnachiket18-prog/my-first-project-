@@ -55,6 +55,8 @@ h1 { white-space: nowrap; font-family: "Inter Display", Inter, sans-serif; font-
 .top { display: flex; justify-content: space-between; align-items: end; border-bottom: 2px solid #111827; padding-bottom: 2mm; }
 .top p { font-size: 9.4pt; font-weight: 600; text-align: right; }
 .top p span { display: inline-block; color: #fff; font-weight: 800; padding: .4mm 2mm; border-radius: 1mm; margin-left: 1mm; }
+.seal { position: absolute; top: 112mm; left: 50%; width: 150mm; height: 150mm; transform: translateX(-50%); opacity: .075; z-index: -1; }
+body { position: relative; }
 .quote { margin-top: 3mm; background: #111827; color: #fff; border-radius: 1.6mm; padding: 2.6mm 5mm; border-left: 2.4mm solid #ff2d87; }
 .quote p { font-family: "Inter Display", Inter, sans-serif; font-weight: 900; font-size: 13pt; line-height: 1.22; letter-spacing: -.005em; }
 .strip { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1.6mm; margin: 3mm 0; }
@@ -80,6 +82,14 @@ td.done span { display: inline-block; width: 4.4mm; height: 4.4mm; border: 1.4px
 tr.stage td { border-top: 1.6px solid #111827; }
 .foot { display: flex; justify-content: space-between; font-size: 7.6pt; color: #4b5563; margin-top: 2.5mm; }
 </style></head><body>
+  <svg class="seal" viewBox="0 0 400 400" aria-hidden="true">
+    <defs><path id="ring" d="M200,200 m-158,0 a158,158 0 1,1 316,0 a158,158 0 1,1 -316,0"/></defs>
+    <circle cx="200" cy="200" r="192" fill="none" stroke="#111827" stroke-width="5"/>
+    <circle cx="200" cy="200" r="184" fill="none" stroke="#111827" stroke-width="1.5"/>
+    <circle cx="200" cy="200" r="132" fill="none" stroke="#111827" stroke-width="3"/>
+    <text font-family="Inter Display, Inter, sans-serif" font-size="23" font-weight="900" letter-spacing="8.6" fill="#111827"><textPath href="#ring">TARGET · RBI GRADE B PHASE 1 · ZERO TO HERO ·</textPath></text>
+    <text x="200" y="262" text-anchor="middle" font-family="Inter Display, Inter, sans-serif" font-size="180" font-weight="900" fill="#111827">₹</text>
+  </svg>
   <div class="top">
     <h1>Mock Timetable</h1>
     <p>${start.getDate()} Nov – ${end.getDate()} Dec 2026 · ${days.length} days · one mock a day
