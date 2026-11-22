@@ -1,0 +1,535 @@
+<title>Zero to Hero Mock Plan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: one column. Header, the six-level exam ladder, the daily routines, then the day-by-day timetable grouped by level. */
+:root {
+  --bg: #f3f5f8;
+  --surface: #ffffff;
+  --sunk: #e9edf2;
+  --ink: #142030;
+  --muted: #586778;
+  --line: #d9e0e8;
+  --accent: #1c56c4;
+  --accent-ink: #ffffff;
+  --good: #1f7a4d;
+  --l0: #586778;
+  --l1: #2b7a57;
+  --l2: #2e6bb0;
+  --l3: #7449b0;
+  --l4: #b0532a;
+  --l5: #1f8585;
+  --l6: #8c6a14;
+  --f-display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --f-body: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e141b; --surface: #151d27; --sunk: #1b2530; --ink: #e5ebf2; --muted: #97a5b4; --line: #26323f;
+    --accent: #77a2ff; --accent-ink: #0e141b; --good: #5cc795;
+    --l0: #97a5b4; --l1: #5cc795; --l2: #6fa8ec; --l3: #b08ef0; --l4: #f0946a; --l5: #5ccaca; --l6: #e0bb55;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e141b; --surface: #151d27; --sunk: #1b2530; --ink: #e5ebf2; --muted: #97a5b4; --line: #26323f;
+  --accent: #77a2ff; --accent-ink: #0e141b; --good: #5cc795;
+  --l0: #97a5b4; --l1: #5cc795; --l2: #6fa8ec; --l3: #b08ef0; --l4: #f0946a; --l5: #5ccaca; --l6: #e0bb55;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: var(--f-body); font-size: 15px; line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 64px;
+}
+.wrap { max-width: 1080px; margin: 0 auto; display: grid; gap: 44px; }
+h1, h2, h3 { font-family: var(--f-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -0.02em; }
+h2 { font-size: 1.5rem; letter-spacing: -0.01em; }
+h3 { font-size: 1.05rem; }
+p { margin: 0; }
+.eyebrow { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+section { display: grid; gap: 18px; }
+.lede { max-width: 66ch; color: var(--muted); }
+
+/* Header */
+header { display: grid; gap: 18px; }
+.meta { display: flex; flex-wrap: wrap; gap: 10px 28px; align-items: baseline; }
+.stat { display: grid; gap: 2px; }
+.stat b { font-family: var(--f-mono); font-size: 1.6rem; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 0.8rem; color: var(--muted); }
+.progress { display: grid; gap: 8px; max-width: 560px; }
+.bar { height: 10px; background: var(--sunk); border-radius: 99px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .4s ease; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+button.btn {
+  font: 600 0.85rem var(--f-body); border-radius: 8px; padding: 9px 14px; cursor: pointer;
+  border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink);
+}
+button.btn.ghost { background: transparent; color: var(--accent); }
+button.btn:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Ladder */
+.ladder { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.rung {
+  background: var(--surface); border: 1px solid var(--line); border-top: 4px solid var(--c);
+  border-radius: 10px; padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0;
+}
+.rung .top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.lvl { font-family: var(--f-mono); font-size: 0.75rem; font-weight: 700; color: var(--c); letter-spacing: 0.06em; }
+.rung .dates { font-size: 0.8rem; color: var(--muted); }
+.rung dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 0.85rem; }
+.rung dt { color: var(--muted); }
+.rung dd { margin: 0; }
+.rung .why { font-size: 0.85rem; color: var(--muted); }
+.avg { font-size: 0.8rem; border-top: 1px dashed var(--line); padding-top: 8px; color: var(--muted); }
+.avg b { color: var(--ink); font-family: var(--f-mono); }
+
+/* Routines */
+.routines { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.routine { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.routine ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 0.86rem; }
+.routine li { display: grid; grid-template-columns: 7.2em 1fr; gap: 8px; }
+.routine li .mono { color: var(--muted); font-size: 0.78rem; padding-top: 2px; }
+.rules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 28px; }
+.rules > div { display: grid; gap: 6px; min-width: 0; }
+.rules ul { margin: 0; padding-left: 1.1em; display: grid; gap: 4px; font-size: 0.9rem; }
+.tag { display: inline-block; font: 700 0.72rem var(--f-mono); padding: 1px 6px; border-radius: 4px; background: var(--sunk); }
+
+/* Timetable */
+.phase { display: grid; gap: 0; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); }
+.phase-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 16px; align-items: baseline; padding: 14px 16px; background: var(--sunk); border-bottom: 1px solid var(--line); }
+.phase-head h3 { display: flex; gap: 10px; align-items: baseline; }
+.phase-head .lvl { font-size: 0.78rem; }
+.day { display: grid; grid-template-columns: 92px minmax(0, 1.1fr) minmax(0, 1.6fr) 44px; gap: 14px; padding: 14px 16px; border-bottom: 1px solid var(--line); align-items: start; }
+.day:last-child { border-bottom: 0; }
+.day.today { box-shadow: inset 4px 0 0 var(--accent); background: color-mix(in srgb, var(--accent) 7%, var(--surface)); }
+.day.done .when, .day.done .plan { opacity: 0.55; }
+.when { display: grid; gap: 0; }
+.when .d { font-family: var(--f-mono); font-weight: 700; font-size: 1.05rem; font-variant-numeric: tabular-nums; }
+.when .w { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.when .today-pill { margin-top: 4px; justify-self: start; font: 700 0.66rem var(--f-body); letter-spacing: 0.08em; text-transform: uppercase; background: var(--accent); color: var(--accent-ink); padding: 2px 6px; border-radius: 4px; }
+.mocks { display: grid; gap: 6px; }
+.mock { display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 1px solid var(--line); border-left: 3px solid var(--c); border-radius: 6px; padding: 6px 8px; font-size: 0.85rem; font-weight: 600; }
+.mock .nm { min-width: 0; }
+.mock .nm small { display: block; font-weight: 400; color: var(--muted); font-size: 0.75rem; }
+.mock label { display: flex; align-items: center; gap: 4px; font: 500 0.78rem var(--f-mono); color: var(--muted); white-space: nowrap; }
+.mock input { width: 4.2em; font: 600 0.85rem var(--f-mono); padding: 3px 5px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--ink); text-align: right; }
+.nomock { font-size: 0.85rem; color: var(--muted); border: 1px dashed var(--line); border-radius: 6px; padding: 6px 8px; }
+.plan { font-size: 0.88rem; display: grid; gap: 5px; }
+.plan .k { font-weight: 600; color: var(--muted); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; margin-right: 6px; }
+.chk { display: grid; justify-items: center; gap: 2px; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.chk input { width: 22px; height: 22px; accent-color: var(--good); cursor: pointer; }
+.review { font-weight: 600; color: var(--ink); }
+
+/* Summary table */
+.tablebox { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 0.88rem; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+th { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); background: var(--sunk); }
+td.n, th.n { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+tr:last-child td { border-bottom: 0; font-weight: 700; }
+.note { font-size: 0.82rem; color: var(--muted); max-width: 80ch; }
+
+@media (max-width: 900px) {
+  .ladder, .routines { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .ladder, .routines, .rules { grid-template-columns: 1fr; }
+  .day { grid-template-columns: 64px minmax(0, 1fr) 40px; }
+  .day .plan { grid-column: 2 / 4; }
+  .day .mocks { grid-column: 2 / 3; }
+  .chk { grid-column: 3; grid-row: 1; }
+  .when .d { font-size: 0.95rem; }
+}
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Banking mock plan · 22 Nov → 31 Dec 2026</p>
+    <h1>Zero to Hero Mock Plan</h1>
+    <p class="lede">Six levels, one exam family at a time, each harder than the last: SBI Clerk Prelims, IBPS Clerk, IBPS PO, SBI PO, SBI Clerk Mains, then RBI Grade B Phase 2. Every full mock is followed by an analysis block at least as long as the mock itself. Tick a day when it is done and type your score next to each mock; both are saved in this browser.</p>
+    <div class="meta">
+      <div class="stat"><b>40</b><span>days</span></div>
+      <div class="stat"><b>24</b><span>prelims mocks</span></div>
+      <div class="stat"><b>12</b><span>bank mains mocks</span></div>
+      <div class="stat"><b>6</b><span>RBI Phase 2 papers</span></div>
+    </div>
+    <div class="progress">
+      <div class="bar" aria-hidden="true"><i id="bar"></i></div>
+      <p class="muted" id="progressText">0 of 42 full mocks done</p>
+    </div>
+    <div class="actions">
+      <button class="btn" id="jumpToday" type="button">Go to today</button>
+      <button class="btn ghost" id="resetBtn" type="button">Clear my ticks and scores</button>
+      <span id="resetConfirm" hidden>
+        <button class="btn" id="resetYes" type="button">Yes, clear everything</button>
+        <button class="btn ghost" id="resetNo" type="button">Keep</button>
+      </span>
+    </div>
+  </header>
+
+  <section aria-labelledby="ladderH">
+    <div>
+      <p class="eyebrow">The ladder</p>
+      <h2 id="ladderH">Six levels, in this order</h2>
+    </div>
+    <div class="ladder" id="ladder"></div>
+    <p class="note">Patterns are from the most recent notifications. Banks tweak section sizes most years, so check your test series is set to the latest pattern before Level 3 and Level 4.</p>
+  </section>
+
+  <section aria-labelledby="routineH">
+    <div>
+      <p class="eyebrow">How a day runs</p>
+      <h2 id="routineH">Three day types</h2>
+      <p class="lede">Built for about 9 study hours. Each day in the timetable is one of these. Mains mocks sit in the 9 to 12 slot because that is when most real shifts run.</p>
+    </div>
+    <div class="routines">
+      <div class="routine">
+        <h3>Prelims mock day</h3>
+        <ol>
+          <li><span class="mono">06:30–07:00</span><span>Warm-up: 15 simplification Qs + 1 puzzle</span></li>
+          <li><span class="mono">07:00–08:00</span><span>Full mock, sectional timers on, phone in another room</span></li>
+          <li><span class="mono">08:20–10:20</span><span>Analysis: re-solve every wrong and skipped Q without a timer, log each one</span></li>
+          <li><span class="mono">10:30–12:30</span><span>Drill the weakest topic from today's analysis</span></li>
+          <li><span class="mono">14:00–15:00</span><span>Current affairs + banking awareness</span></li>
+          <li><span class="mono">15:00–17:30</span><span>Second mock or sectionals listed for the day, then its analysis</span></li>
+          <li><span class="mono">20:30–21:00</span><span>Error log revision + 20 new words</span></li>
+        </ol>
+      </div>
+      <div class="routine">
+        <h3>Mains mock day</h3>
+        <ol>
+          <li><span class="mono">06:30–07:30</span><span>Light revision only, nothing new</span></li>
+          <li><span class="mono">09:00–12:00</span><span>Full mains mock (+30 min descriptive on PO days)</span></li>
+          <li><span class="mono">12:00–13:00</span><span>Lunch away from screens</span></li>
+          <li><span class="mono">13:00–16:00</span><span>Section-by-section analysis. Every missed GA fact goes into the GA notebook</span></li>
+          <li><span class="mono">16:30–18:00</span><span>Two sectionals on the weakest mains section</span></li>
+          <li><span class="mono">20:00–21:00</span><span>Current affairs + error log</span></li>
+        </ol>
+      </div>
+      <div class="routine">
+        <h3>Build or repair day</h3>
+        <ol>
+          <li><span class="mono">07:00–09:00</span><span>Concept learning for the topics listed</span></li>
+          <li><span class="mono">09:15–12:30</span><span>Sectionals at real timers, analysed after each one</span></li>
+          <li><span class="mono">14:00–16:00</span><span>Re-solve the error log from the week</span></li>
+          <li><span class="mono">16:00–17:00</span><span>Current affairs + static GK</span></li>
+          <li><span class="mono">17:30–19:00</span><span>Topic drill or descriptive writing</span></li>
+          <li><span class="mono">20:30–21:00</span><span>Plan tomorrow from the error log</span></li>
+        </ol>
+      </div>
+    </div>
+    <div class="rules">
+      <div>
+        <h3>Analysis rules</h3>
+        <ul>
+          <li>Analysis time is at least the mock time: 1 hr mock, 2 hr analysis; 3 hr mains, 3 hr analysis.</li>
+          <li>Tag every wrong or skipped Q: <span class="tag">A</span> concept gap, <span class="tag">B</span> knew it but too slow, <span class="tag">C</span> silly mistake, <span class="tag">D</span> should have skipped.</li>
+          <li>If prelims accuracy is below 85%, attempt fewer questions next mock, not more. Negative marking is 0.25 per wrong answer.</li>
+          <li>Track per mock: score, attempts, accuracy %, minutes per section, and your percentile if the series shows one.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>If you only have 4 hours a day</h3>
+        <ul>
+          <li>Do only the first mock listed on each day and its analysis. Skip the second mock and the drills.</li>
+          <li>Never skip a mains mock or the level review on Sundays.</li>
+          <li>Move current affairs to your commute: 30 minutes of a daily CA quiz or capsule.</li>
+          <li>Use one test series per level so difficulty stays comparable from mock to mock.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="ttH">
+    <div>
+      <p class="eyebrow">Timetable</p>
+      <h2 id="ttH">Day by day</h2>
+    </div>
+    <div id="timetable" style="display:grid; gap:18px;"></div>
+  </section>
+
+  <section aria-labelledby="sumH">
+    <div>
+      <p class="eyebrow">The count</p>
+      <h2 id="sumH">Mocks per level</h2>
+    </div>
+    <div class="tablebox">
+      <table>
+        <thead><tr><th>Level</th><th>Dates</th><th class="n">Days</th><th class="n">Prelims</th><th class="n">Mains</th><th class="n">RBI papers</th><th class="n">Total</th></tr></thead>
+        <tbody id="sumBody"></tbody>
+      </table>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var LEVELS = [
+    { id: 0, name: "Baseline", c: "--l0", dates: "Sun 22 Nov", days: 1 },
+    { id: 1, name: "SBI Clerk Prelims", c: "--l1", dates: "23 – 29 Nov", days: 7,
+      pattern: [["Paper", "100 Q · 60 min"], ["Sections", "English 30 · Numerical 35 · Reasoning 35"], ["Timer", "20 min per section"]],
+      target: "Baseline → 75+ / 100",
+      why: "Easiest paper in the family. Builds calculation speed and the basic puzzle types everything else rests on." },
+    { id: 2, name: "IBPS Clerk", c: "--l2", dates: "30 Nov – 6 Dec", days: 7,
+      pattern: [["Prelims", "100 Q · 60 min, same shape as SBI Clerk"], ["Mains", "190 Q · 160 min"], ["Mains split", "GA 50 · English 40 · Reasoning & Computer 50 · Quant 50"]],
+      target: "Prelims 78+ · Mains 90+ / 200",
+      why: "Same prelims you just practised, plus your first mains: General Awareness and computer aptitude enter here." },
+    { id: 3, name: "IBPS PO", c: "--l3", dates: "7 – 13 Dec", days: 7,
+      pattern: [["Prelims", "100 Q · 60 min"], ["Mains", "about 155 Q · 3 hr objective"], ["Descriptive", "Essay + letter · 30 min"]],
+      target: "Prelims 60+ · Mains 75+ / 200",
+      why: "Harder puzzles, data interpretation as its own section, and descriptive writing for the first time." },
+    { id: 4, name: "SBI PO", c: "--l4", dates: "14 – 20 Dec", days: 7,
+      pattern: [["Prelims", "100 Q · 60 min"], ["Mains", "objective · 3 hr"], ["Descriptive", "Essay + letter · 30 min"]],
+      target: "Prelims 55+ · Mains 70+ / 200",
+      why: "Toughest bank paper. Lower raw scores are normal here; judge yourself by percentile in the series." },
+    { id: 5, name: "SBI Clerk Mains", c: "--l5", dates: "21 – 24 Dec", days: 4,
+      pattern: [["Mains", "190 Q · 160 min"], ["Split", "GA 50/35m · English 40/35m · Quant 50/45m · Reasoning & CA 50/45m"]],
+      target: "100+ / 200",
+      why: "After PO-level papers, clerk mains feels fast. Use that to push attempts and lock in GA before RBI." },
+    { id: 6, name: "RBI Grade B Phase 2", c: "--l6", dates: "25 – 31 Dec", days: 7,
+      pattern: [["Paper I", "Economic & Social Issues · 100 marks · 120 min"], ["Paper II", "English (Writing) · 100 marks · 90 min"], ["Paper III", "Finance & Management · 100 marks · 120 min"], ["Paper I & III", "half objective (30 min), half descriptive (90 min)"]],
+      target: "Finish all three papers in time; 50%+ in the objective parts",
+      why: "A different exam: syllabus-heavy and typed descriptive answers. This week is your introduction, not the finish line." }
+  ];
+
+  // m: [type, name, max, note]; type p = prelims, m = mains, r = RBI paper
+  var DAYS = [
+    { d: "2026-11-22", L: 0, m: [["p", "SBI Clerk Pre · Mock 1", 100, "Baseline, taken cold"]],
+      plan: [["Work", "No preparation before this mock. Two hours of analysis after it."], ["Set up", "Error log sheet (date, mock, section, topic, tag A/B/C/D, fix) and the score boxes on this page. Read the SBI Clerk syllabus once."], ["GA", "Start a 6-month current affairs capsule (May – Oct 2026)."]] },
+
+    { d: "2026-11-23", L: 1, m: [],
+      plan: [["Sectionals", "Quant ×2, Reasoning ×2, English ×2 (20 min each)."], ["Drill", "Simplification & approximation (40 Qs, daily from now on), number series, inequality."], ["GA", "Current affairs, last week."]] },
+    { d: "2026-11-24", L: 1, m: [["p", "SBI Clerk Pre · Mock 2", 100]],
+      plan: [["Drill", "Puzzles and seating: linear, circular, floor (6 sets)."], ["GA", "RBI functions and monetary policy tools (repo, CRR, SLR, OMO)."]] },
+    { d: "2026-11-25", L: 1, m: [["p", "SBI Clerk Pre · Mock 3", 100]],
+      plan: [["Drill", "Arithmetic: percentage, ratio, profit & loss, SI/CI (30 Qs)."], ["English", "2 reading comprehensions daily from today."], ["GA", "Current affairs."]] },
+    { d: "2026-11-26", L: 1, m: [["p", "SBI Clerk Pre · Mock 4", 100, "Morning"], ["p", "SBI Clerk Pre · Mock 5", 100, "Afternoon"]],
+      plan: [["Work", "Double mock day. Analysis only, no new topics."], ["GA", "15 minutes, light."]] },
+    { d: "2026-11-27", L: 1, m: [],
+      plan: [["Repair", "6 sectionals on your two weakest sections."], ["Drill", "Data interpretation (table, bar, pie: 4 sets), syllogism, coding-decoding."], ["GA", "Current affairs."]] },
+    { d: "2026-11-28", L: 1, m: [["p", "SBI Clerk Pre · Mock 6", 100]],
+      plan: [["Drill", "Re-solve every A and C question in the error log."], ["English", "Para jumbles, fillers, error spotting."], ["GA", "Weekly current affairs quiz."]] },
+    { d: "2026-11-29", L: 1, m: [["p", "SBI Clerk Pre · Mock 7", 100], ["p", "SBI Clerk Pre · Mock 8", 100, "Back to back, exam-day simulation"]],
+      plan: [["Review", "Level 1 review: compare with Mock 1. Target 75+. If you are below 65, repeat Wednesday's and Friday's drills inside Level 2's build slots."]], review: true },
+
+    { d: "2026-11-30", L: 2, m: [["p", "IBPS Clerk Pre · Mock 1", 100]],
+      plan: [["Learn", "Computer awareness basics: memory, networking, shortcuts, MS Office (1 hr)."], ["GA", "Banking awareness: types of banks, accounts, KYC, NPAs."]] },
+    { d: "2026-12-01", L: 2, m: [["m", "IBPS Clerk Mains · Mock 1", 200, "Your first mains"]],
+      plan: [["Work", "Diagnostic mains. In analysis, note minutes spent per section against 35/35/45/45."], ["GA", "Write every missed GA question into the GA notebook."]] },
+    { d: "2026-12-02", L: 2, m: [["p", "IBPS Clerk Pre · Mock 2", 100]],
+      plan: [["Sectionals", "Mains-level Reasoning (tougher puzzles, input-output) ×1, Mains Quant (caselet DI, arithmetic) ×1."], ["English", "Cloze test, error spotting."]] },
+    { d: "2026-12-03", L: 2, m: [["p", "IBPS Clerk Pre · Mock 3", 100], ["p", "IBPS Clerk Pre · Mock 4", 100]],
+      plan: [["GA", "Static GK: capitals and currencies, bank headquarters and taglines, national parks."]] },
+    { d: "2026-12-04", L: 2, m: [["m", "IBPS Clerk Mains · Mock 2", 200]],
+      plan: [["Work", "Fix the time split you noted on 1 Dec. Attempt GA first, it takes the least time."], ["GA", "Current affairs."]] },
+    { d: "2026-12-05", L: 2, m: [["p", "IBPS Clerk Pre · Mock 5", 100]],
+      plan: [["Sectionals", "GA 50 Q in 35 min ×2, computer aptitude 20 Q."], ["Drill", "Error log re-solve."]] },
+    { d: "2026-12-06", L: 2, m: [["m", "IBPS Clerk Mains · Mock 3", 200]],
+      plan: [["Review", "Level 2 review: Prelims 78+, Mains 90+ / 200 with every section attempted."]], review: true },
+
+    { d: "2026-12-07", L: 3, m: [["p", "IBPS PO Pre · Mock 1", 100]],
+      plan: [["Descriptive", "Learn the formal letter and essay formats. Write 1 letter (150 words)."], ["Drill", "DI: missing data, caselets."]] },
+    { d: "2026-12-08", L: 3, m: [["p", "IBPS PO Pre · Mock 2", 100], ["p", "IBPS PO Pre · Mock 3", 100]],
+      plan: [["Drill", "Harder puzzles (box, scheduling with two variables), quadratic equations."]] },
+    { d: "2026-12-09", L: 3, m: [["m", "IBPS PO Mains · Mock 1", 200, "+30 min descriptive"]],
+      plan: [["Work", "First PO mains. Write the descriptive right after, as in the real exam."], ["GA", "Current affairs."]] },
+    { d: "2026-12-10", L: 3, m: [["p", "IBPS PO Pre · Mock 4", 100]],
+      plan: [["Sectionals", "Reasoning & Computer (data sufficiency, coded inequality, critical reasoning), Data Analysis (45 min)."], ["English", "Word usage, paragraph summary, connectors."]] },
+    { d: "2026-12-11", L: 3, m: [["m", "IBPS PO Mains · Mock 2", 200, "+30 min descriptive"]],
+      plan: [["GA", "Write every missed GA question into the GA notebook."]] },
+    { d: "2026-12-12", L: 3, m: [["p", "IBPS PO Pre · Mock 5", 100]],
+      plan: [["GA", "Economy: inflation, GDP, fiscal deficit terms, latest RBI policy decisions."], ["Descriptive", "2 essays, 15 minutes each, typed."]] },
+    { d: "2026-12-13", L: 3, m: [["m", "IBPS PO Mains · Mock 3", 200, "+30 min descriptive"]],
+      plan: [["Review", "Level 3 review: Prelims 60+, Mains 75+ / 200."]], review: true },
+
+    { d: "2026-12-14", L: 4, m: [["p", "SBI PO Pre · Mock 1", 100]],
+      plan: [["Drill", "High-level DI: radar charts, arithmetic DI, DI with conditions."]] },
+    { d: "2026-12-15", L: 4, m: [["p", "SBI PO Pre · Mock 2", 100], ["p", "SBI PO Pre · Mock 3", 100]],
+      plan: [["English", "Inference-based reading comprehension, vocabulary in context."]] },
+    { d: "2026-12-16", L: 4, m: [["m", "SBI PO Mains · Mock 1", 200, "+30 min descriptive"]],
+      plan: [["Work", "Letter + essay in 30 minutes after the objective paper."], ["GA", "Current affairs."]] },
+    { d: "2026-12-17", L: 4, m: [["p", "SBI PO Pre · Mock 4", 100]],
+      plan: [["Sectionals", "Reasoning & Computer (50 min), Data Analysis & Interpretation (45 min)."]] },
+    { d: "2026-12-18", L: 4, m: [["m", "SBI PO Mains · Mock 2", 200, "+30 min descriptive"]],
+      plan: [["GA", "Write every missed GA question into the GA notebook."]] },
+    { d: "2026-12-19", L: 4, m: [["p", "SBI PO Pre · Mock 5", 100]],
+      plan: [["GA", "Economy and banking: Union Budget, government schemes, RBI reports, financial terms."], ["Descriptive", "2 pieces, typed and timed."]] },
+    { d: "2026-12-20", L: 4, m: [["m", "SBI PO Mains · Mock 3", 200, "+30 min descriptive"]],
+      plan: [["Review", "Level 4 review: Prelims 55+, Mains 70+ / 200. Compare percentiles, not raw scores, with Level 3."]], review: true },
+
+    { d: "2026-12-21", L: 5, m: [["m", "SBI Clerk Mains · Mock 1", 200]],
+      plan: [["Work", "After PO papers this should feel faster. Push attempts, keep accuracy above 80%."]] },
+    { d: "2026-12-22", L: 5, m: [],
+      plan: [["Sectionals", "All four at mains timers: GA 50/35m, English 40/35m, Quant 50/45m, Reasoning & CA 50/45m."], ["GA", "6-month current affairs rapid revision."]] },
+    { d: "2026-12-23", L: 5, m: [["m", "SBI Clerk Mains · Mock 2", 200]],
+      plan: [["GA", "Banking awareness revision from the GA notebook."]] },
+    { d: "2026-12-24", L: 5, m: [["m", "SBI Clerk Mains · Mock 3", 200]],
+      plan: [["Review", "Bank exams wrap-up: target 100+ / 200. Make a one-page list of your 10 most repeated errors. Read the RBI Grade B Phase 2 syllabus tonight."]], review: true },
+
+    { d: "2026-12-25", L: 6, m: [],
+      plan: [["Learn", "ESI and Finance & Management syllabus walk-through. Make notes from the Economic Survey and Budget highlights."], ["Sectionals", "ESI objective, 30 Q."], ["Descriptive", "2 answers of about 200 words each."]] },
+    { d: "2026-12-26", L: 6, m: [["r", "RBI Paper II · English Writing · Mock 1", 100, "Essay, précis, comprehension · 90 min, typed"]],
+      plan: [["Read", "F&M: financial system, markets and regulators."]] },
+    { d: "2026-12-27", L: 6, m: [["r", "RBI Paper I · ESI · Mock 1", 100, "120 min"]],
+      plan: [["Work", "Compare your answers with the model answers line by line: structure, data points, word count."]] },
+    { d: "2026-12-28", L: 6, m: [["r", "RBI Paper III · F&M · Mock 1", 100, "120 min"]],
+      plan: [["Read", "Management: motivation and leadership theories, corporate governance."]] },
+    { d: "2026-12-29", L: 6, m: [],
+      plan: [["Descriptive", "Answer-writing drill: 6 ESI + 6 F&M answers, timed."], ["English", "1 précis + 1 essay, typed."], ["Sectionals", "ESI and F&M objective, 30 Q each."]] },
+    { d: "2026-12-30", L: 6, m: [["r", "RBI Paper I · ESI · Mock 2", 100], ["r", "RBI Paper II · English · Mock 2", 100], ["r", "RBI Paper III · F&M · Mock 2", 100]],
+      plan: [["Work", "Full Phase 2 simulation. The real exam runs all three papers on one day, so practise that stamina here."]] },
+    { d: "2026-12-31", L: 6, m: [["p", "SBI Clerk Pre · Hero mock", 100, "Same level as your 22 Nov baseline"]],
+      plan: [["Review", "Hero test: put this score next to Mock 1. Review the whole error log and plan January 2027 around your weakest level."]], review: true }
+  ];
+
+  var KEY = "zero-hero-mock-plan-v1";
+  var state = { done: {}, scores: {} };
+  try { var raw = localStorage.getItem(KEY); if (raw) { var s = JSON.parse(raw); state.done = s.done || {}; state.scores = s.scores || {}; } } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+
+  var WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  var MO = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  function parts(iso) { var p = iso.split("-").map(Number); return new Date(p[0], p[1] - 1, p[2]); }
+  function todayIso() { var t = new Date(); return t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0"); }
+  var TODAY = todayIso();
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  // Ladder
+  var ladder = document.getElementById("ladder");
+  LEVELS.slice(1).forEach(function (L) {
+    var el = document.createElement("article");
+    el.className = "rung";
+    el.style.setProperty("--c", "var(" + L.c + ")");
+    el.innerHTML =
+      '<div class="top"><span class="lvl">LEVEL ' + L.id + '</span><span class="dates">' + esc(L.dates) + '</span></div>' +
+      '<h3>' + esc(L.name) + '</h3>' +
+      '<dl>' + L.pattern.map(function (r) { return '<dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd>'; }).join("") +
+      '<dt>Target</dt><dd><b>' + esc(L.target) + '</b></dd></dl>' +
+      '<p class="why">' + esc(L.why) + '</p>' +
+      '<p class="avg" id="avg-' + L.id + '">Your average: <b>–</b></p>';
+    ladder.appendChild(el);
+  });
+
+  // Timetable
+  var tt = document.getElementById("timetable");
+  var totalMocks = 0;
+  LEVELS.forEach(function (L) {
+    var days = DAYS.filter(function (x) { return x.L === L.id; });
+    var count = days.reduce(function (a, x) { return a + x.m.length; }, 0);
+    var box = document.createElement("div");
+    box.className = "phase";
+    box.style.setProperty("--c", "var(" + L.c + ")");
+    var head = '<div class="phase-head"><h3><span class="lvl">' + (L.id === 0 ? "START" : "LEVEL " + L.id) + '</span>' + esc(L.name) + '</h3>' +
+      '<span class="muted mono" style="font-size:.8rem">' + esc(L.dates) + ' · ' + count + ' full mock' + (count === 1 ? "" : "s") + '</span></div>';
+    var rows = days.map(function (x) {
+      var dt = parts(x.d);
+      var mocks = x.m.length ? x.m.map(function (mk, i) {
+        totalMocks++;
+        var id = "s-" + x.d + "-" + i;
+        var val = state.scores[id] != null ? state.scores[id] : "";
+        return '<div class="mock"><span class="nm">' + esc(mk[1]) + (mk[3] ? '<small>' + esc(mk[3]) + '</small>' : "") + '</span>' +
+          '<label for="' + id + '"><input type="number" inputmode="decimal" step="0.25" min="-50" max="' + mk[2] + '" id="' + id + '" data-level="' + x.L + '" data-max="' + mk[2] + '" value="' + esc(val) + '" aria-label="Score for ' + esc(mk[1]) + '">/' + mk[2] + '</label></div>';
+      }).join("") : '<div class="nomock">No full mock. Sectionals and concepts.</div>';
+      var plan = x.plan.map(function (p) { return '<p' + (p[0] === "Review" ? ' class="review"' : "") + '><span class="k">' + esc(p[0]) + '</span>' + esc(p[1]) + '</p>'; }).join("");
+      var isToday = x.d === TODAY;
+      var did = !!state.done[x.d];
+      return '<div class="day' + (isToday ? " today" : "") + (did ? " done" : "") + '" id="day-' + x.d + '">' +
+        '<div class="when"><span class="d">' + dt.getDate() + ' ' + MO[dt.getMonth()] + '</span><span class="w">' + WD[dt.getDay()] + '</span>' + (isToday ? '<span class="today-pill">Today</span>' : "") + '</div>' +
+        '<div class="mocks">' + mocks + '</div>' +
+        '<div class="plan">' + plan + '</div>' +
+        '<label class="chk" for="d-' + x.d + '"><input type="checkbox" id="d-' + x.d + '" data-day="' + x.d + '"' + (did ? " checked" : "") + '>Done</label>' +
+        '</div>';
+    }).join("");
+    box.innerHTML = head + rows;
+    tt.appendChild(box);
+  });
+
+  // Summary table
+  var sum = document.getElementById("sumBody");
+  var tot = { days: 0, p: 0, m: 0, r: 0 };
+  LEVELS.forEach(function (L) {
+    var days = DAYS.filter(function (x) { return x.L === L.id; });
+    var c = { p: 0, m: 0, r: 0 };
+    days.forEach(function (x) { x.m.forEach(function (mk) { c[mk[0]]++; }); });
+    tot.days += days.length; tot.p += c.p; tot.m += c.m; tot.r += c.r;
+    var tr = document.createElement("tr");
+    tr.innerHTML = '<td>' + (L.id ? "L" + L.id + " · " : "") + esc(L.name) + '</td><td>' + esc(L.dates) + '</td><td class="n">' + days.length + '</td><td class="n">' + c.p + '</td><td class="n">' + c.m + '</td><td class="n">' + c.r + '</td><td class="n">' + (c.p + c.m + c.r) + '</td>';
+    sum.appendChild(tr);
+  });
+  var trT = document.createElement("tr");
+  trT.innerHTML = '<td>Total</td><td>22 Nov – 31 Dec</td><td class="n">' + tot.days + '</td><td class="n">' + tot.p + '</td><td class="n">' + tot.m + '</td><td class="n">' + tot.r + '</td><td class="n">' + (tot.p + tot.m + tot.r) + '</td>';
+  sum.appendChild(trT);
+
+  // Progress and averages
+  function refresh() {
+    var done = 0;
+    DAYS.forEach(function (x) {
+      x.m.forEach(function (mk, i) {
+        var id = "s-" + x.d + "-" + i;
+        if (state.done[x.d] || (state.scores[id] !== undefined && state.scores[id] !== "")) done++;
+      });
+    });
+    document.getElementById("bar").style.width = (100 * done / totalMocks) + "%";
+    document.getElementById("progressText").textContent = done + " of " + totalMocks + " full mocks done";
+    LEVELS.slice(1).forEach(function (L) {
+      var pcts = [];
+      DAYS.forEach(function (x) {
+        if (x.L !== L.id) return;
+        x.m.forEach(function (mk, i) {
+          var v = state.scores["s-" + x.d + "-" + i];
+          if (v !== undefined && v !== "" && !isNaN(parseFloat(v))) pcts.push(100 * parseFloat(v) / mk[2]);
+        });
+      });
+      var el = document.getElementById("avg-" + L.id);
+      if (!pcts.length) { el.innerHTML = "Your average: <b>–</b>"; return; }
+      var avg = pcts.reduce(function (a, b) { return a + b; }, 0) / pcts.length;
+      el.innerHTML = "Your average: <b>" + avg.toFixed(1) + "%</b> over " + pcts.length + " mock" + (pcts.length === 1 ? "" : "s");
+    });
+  }
+
+  tt.addEventListener("input", function (e) {
+    var t = e.target;
+    if (t.matches('input[type="number"]')) { state.scores[t.id] = t.value; if (t.value === "") delete state.scores[t.id]; save(); refresh(); }
+  });
+  tt.addEventListener("change", function (e) {
+    var t = e.target;
+    if (t.matches('input[type="checkbox"]')) {
+      var day = t.getAttribute("data-day");
+      if (t.checked) state.done[day] = true; else delete state.done[day];
+      document.getElementById("day-" + day).classList.toggle("done", t.checked);
+      save(); refresh();
+    }
+  });
+
+  document.getElementById("jumpToday").addEventListener("click", function () {
+    var first = DAYS[0].d, last = DAYS[DAYS.length - 1].d;
+    var target = TODAY < first ? first : (TODAY > last ? last : TODAY);
+    var el = document.getElementById("day-" + target);
+    if (el) el.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+  });
+  var confirmBox = document.getElementById("resetConfirm");
+  document.getElementById("resetBtn").addEventListener("click", function () { confirmBox.hidden = false; });
+  document.getElementById("resetNo").addEventListener("click", function () { confirmBox.hidden = true; });
+  document.getElementById("resetYes").addEventListener("click", function () {
+    state = { done: {}, scores: {} }; save();
+    document.querySelectorAll('#timetable input[type="number"]').forEach(function (i) { i.value = ""; });
+    document.querySelectorAll('#timetable input[type="checkbox"]').forEach(function (i) { i.checked = false; });
+    document.querySelectorAll(".day.done").forEach(function (d) { d.classList.remove("done"); });
+    confirmBox.hidden = true; refresh();
+  });
+
+  refresh();
+})();
+</script>
