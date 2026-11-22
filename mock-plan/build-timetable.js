@@ -55,6 +55,8 @@ h1 { white-space: nowrap; font-family: "Inter Display", Inter, sans-serif; font-
 .top { display: flex; justify-content: space-between; align-items: end; border-bottom: 2px solid #111827; padding-bottom: 2mm; }
 .top p { font-size: 9.4pt; font-weight: 600; text-align: right; }
 .top p span { display: inline-block; color: #fff; font-weight: 800; padding: .4mm 2mm; border-radius: 1mm; margin-left: 1mm; }
+.quote { margin-top: 3mm; background: #111827; color: #fff; border-radius: 1.6mm; padding: 2.6mm 5mm; border-left: 2.4mm solid #ff2d87; }
+.quote p { font-family: "Inter Display", Inter, sans-serif; font-weight: 900; font-size: 13pt; line-height: 1.22; letter-spacing: -.005em; }
 .strip { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1.6mm; margin: 3mm 0; }
 .strip div { border-top: 1.6mm solid var(--c); background: #f6f7f9; border-radius: 0 0 1.2mm 1.2mm; padding: 1.4mm 2mm; }
 .strip b { display: block; font-size: 8pt; white-space: nowrap; }
@@ -62,7 +64,7 @@ h1 { white-space: nowrap; font-family: "Inter Display", Inter, sans-serif; font-
 table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 th { white-space: nowrap; font-size: 7pt; letter-spacing: .04em; text-transform: uppercase; text-align: left; padding: 1.6mm 1.6mm; border-bottom: 1.6px solid #111827; color: #374151; }
 th.sub { text-align: center; }
-td { white-space: nowrap; border-bottom: 1px solid #c9d0d9; padding: 0 1.6mm; height: 8.15mm; vertical-align: middle; }
+td { white-space: nowrap; border-bottom: 1px solid #c9d0d9; padding: 0 1.6mm; height: 7.35mm; vertical-align: middle; }
 tr td:first-child { border-left: 1.8mm solid var(--c); }
 td.day { font-family: "JetBrains Mono", monospace; font-weight: 800; font-size: 12pt; text-align: center; background: var(--t); }
 td.date b { font-family: "JetBrains Mono", monospace; font-size: 9.2pt; }
@@ -83,6 +85,7 @@ tr.stage td { border-top: 1.6px solid #111827; }
     <p>${start.getDate()} Nov – ${end.getDate()} Dec 2026 · ${days.length} days · one mock a day
       <span style="background:#1e6bff">Quant</span><span style="background:#ff2d87">Reasoning</span><span style="background:#00a63e">English</span></p>
   </div>
+  <div class="quote"><p>“The exam doesn’t care how tired you were. Every mock you skip is a seat you hand to someone else.”</p></div>
   <div class="strip">${strip}</div>
   <table>
     <colgroup><col style="width:9mm"><col style="width:25mm"><col style="width:41mm"><col style="width:16mm"><col style="width:16mm"><col><col><col><col style="width:18mm"><col style="width:11mm"></colgroup>
