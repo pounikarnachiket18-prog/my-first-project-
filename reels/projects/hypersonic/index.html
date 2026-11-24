@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Supersonic vs Hypersonic</title>
+<script src="../../node_modules/gsap/dist/gsap.min.js"></script>
+<style>
+  /* ===================================================== tokens */
+  :root {
+    --ink: #04060c;
+    --navy: #0a1426;
+    --cyan: #35d6ff;      /* supersonic */
+    --orange: #ff6a1a;    /* hypersonic */
+    --gold: #ffc23d;
+    --white: #ffffff;
+    --mute: rgba(255,255,255,.6);
+    --line: rgba(255,255,255,.12);
+    --display: "Inter Display", "Inter", system-ui, sans-serif;
+    --ui: "Inter", system-ui, sans-serif;
+    --emoji: "Noto Color Emoji";
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--ink); }
+  body { font-family: var(--display); color: var(--white); -webkit-font-smoothing: antialiased; }
+
+  #stage { position: absolute; inset: 0; overflow: hidden; background: var(--ink); transform-origin: 50% 50%; }
+  .scene { position: absolute; inset: 0; visibility: hidden; overflow: hidden; }
+  .fill  { position: absolute; inset: 0; }
+  .grid-bg { position: absolute; inset: 0; opacity: .5;
+    background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 90px 90px; mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, #000 30%, transparent 80%); }
+
+  /* ===================================================== kinetic words */
+  .w { position: absolute; left: 60px; right: 60px; text-align: center; font-weight: 800; letter-spacing: -0.035em;
+    line-height: .95; opacity: 0; will-change: transform, opacity, filter; text-shadow: 0 6px 40px rgba(0,0,0,.5); }
+  .cy { color: var(--cyan); }
+  .or { color: var(--orange); }
+  .thin { font-weight: 300; }
+  .sub { font-family: var(--ui); font-weight: 500; letter-spacing: -.01em; }
+  .mute { color: var(--mute); }
+  .emoji { font-family: var(--emoji); font-weight: 400; letter-spacing: 0; }
+  .glow-c { text-shadow: 0 0 50px rgba(53,214,255,.55), 0 6px 40px rgba(0,0,0,.5); }
+  .glow-o { text-shadow: 0 0 60px rgba(255,106,26,.65), 0 6px 40px rgba(0,0,0,.5); }
+
+  /* ===================================================== overlays */
+  #streaks { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+  #streaks i { position: absolute; height: 3px; border-radius: 3px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.75)); }
+  #grain { position: absolute; inset: -200px; pointer-events: none; opacity: .1; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 1.4 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"); }
+  #vignette { position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(ellipse 85% 70% at 50% 48%, transparent 55%, rgba(0,0,0,.6) 100%); }
+  #flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+  #progress { position: absolute; left: 0; bottom: 0; height: 9px; width: 100%;
+    background: linear-gradient(90deg, var(--cyan), var(--orange)); transform-origin: 0 50%; transform: scaleX(0); }
+
+  /* ===================================================== missile */
+  .msl { position: absolute; display: block; overflow: visible; }
+
+  /* ===================================================== B: mach rings */
+  .ring { position: absolute; left: 540px; top: 760px; width: 1000px; height: 1000px; margin: -500px;
+    border-radius: 50%; border: 3px solid var(--cyan); opacity: 0; }
+
+  /* ===================================================== C: mach scale */
+  #scale { position: absolute; left: 90px; width: 900px; top: 1020px; height: 50px; }
+  #scale .bar { position: absolute; inset: 0; border-radius: 25px; background: rgba(255,255,255,.07); overflow: hidden; }
+  #scale .seg { position: absolute; top: 0; bottom: 0; transform-origin: 0 50%; transform: scaleX(0); }
+  #scale .tick { position: absolute; top: 70px; width: 60px; margin-left: -30px; text-align: center;
+    font: 600 30px var(--ui); color: var(--mute); }
+  #scale .zone { position: absolute; top: -78px; text-align: center; font: 800 34px var(--ui); letter-spacing: .12em; opacity: 0; }
+  #scale .zone small { display: block; font-size: 24px; font-weight: 600; letter-spacing: .08em; opacity: .7; margin-top: 4px; }
+  #marker { position: absolute; top: -20px; width: 6px; height: 90px; margin-left: -3px; background: #fff; border-radius: 3px;
+    box-shadow: 0 0 20px rgba(255,255,255,.8); opacity: 0; }
+  #readout { position: absolute; left: 0; right: 0; top: 1230px; text-align: center; opacity: 0; }
+  #readout .m { font: 800 170px var(--display); letter-spacing: -.045em; line-height: 1; font-variant-numeric: tabular-nums; }
+  #readout .k { font: 600 58px var(--ui); color: var(--mute); margin-top: 12px; font-variant-numeric: tabular-nums; }
+
+  /* ===================================================== D: race */
+  .lane-lbl { position: absolute; left: 90px; font: 800 40px var(--ui); letter-spacing: .08em; opacity: 0; }
+  .lane-lbl small { display: block; font: 600 30px var(--ui); letter-spacing: .04em; color: var(--mute); margin-top: 6px; }
+  .clock { position: absolute; right: 90px; text-align: right; font: 800 80px var(--display); letter-spacing: -.03em;
+    font-variant-numeric: tabular-nums; opacity: 0; line-height: 1; }
+  .clock small { font: 600 34px var(--ui); color: var(--mute); letter-spacing: 0; }
+  .track { position: absolute; left: 90px; width: 900px; height: 4px; opacity: 0;
+    background: repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 22px, transparent 22px 40px); }
+  .target { position: absolute; width: 96px; height: 96px; margin: -48px; opacity: 0; }
+  .boom { position: absolute; width: 260px; height: 260px; margin: -130px; border-radius: 50%; opacity: 0;
+    background: radial-gradient(circle, #fff 0%, var(--gold) 25%, var(--orange) 50%, transparent 70%); }
+
+  /* ===================================================== E: compare cards */
+  .card { position: absolute; left: 70px; right: 70px; height: 490px; border-radius: 48px; padding: 44px 48px; opacity: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
+    box-shadow: inset 0 0 0 2px var(--c), 0 40px 100px rgba(0,0,0,.5); font-family: var(--ui); }
+  .card .hd { display: inline-block; padding: 12px 28px; border-radius: 40px; background: var(--c); color: var(--ink);
+    font: 800 44px var(--ui); letter-spacing: .06em; }
+  .card .rows { margin-top: 34px; display: flex; flex-direction: column; gap: 26px; width: 600px; }
+  .card .row { display: flex; gap: 22px; align-items: center; font: 600 42px var(--ui); letter-spacing: -.01em; line-height: 1.15; opacity: 0; }
+  .card .row .emoji { font-size: 48px; flex: none; width: 60px; text-align: center; }
+  .card svg.path { position: absolute; right: 40px; top: 150px; width: 260px; height: 300px; overflow: visible; }
+
+  /* ===================================================== F: trajectories */
+  #traj { position: absolute; left: 0; top: 760px; width: 1080px; height: 860px; overflow: visible; }
+  .tlabel { position: absolute; font: 700 38px var(--ui); letter-spacing: .02em; opacity: 0; padding: 10px 22px; border-radius: 30px;
+    background: rgba(4,6,12,.75); }
+
+  /* ===================================================== G: examples */
+  .col { position: absolute; top: 470px; width: 450px; display: flex; flex-direction: column; gap: 22px; }
+  .col .hd { padding: 16px 0; border-radius: 30px; text-align: center; font: 800 38px var(--ui); letter-spacing: .1em; color: var(--ink); opacity: 0; }
+  .ex { padding: 26px 30px; border-radius: 30px; background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 2px rgba(255,255,255,.08); opacity: 0; }
+  .ex b { display: block; font: 800 54px var(--display); letter-spacing: -.03em; }
+  .ex span { display: block; font: 500 30px var(--ui); color: var(--mute); margin-top: 6px; }
+
+  /* ===================================================== H: CTA */
+  .recap { position: absolute; left: 80px; right: 80px; padding: 36px 44px; border-radius: 40px; font: 700 54px var(--ui);
+    letter-spacing: -.02em; opacity: 0; background: rgba(255,255,255,.06); box-shadow: inset 0 0 0 3px var(--c); display: flex; justify-content: space-between; align-items: center; }
+  .recap b { color: var(--c); }
+  .recap span { font-weight: 500; color: rgba(255,255,255,.85); }
+  .pill { position: absolute; left: 80px; right: 80px; padding: 32px 40px; border-radius: 36px; font: 700 46px var(--ui);
+    letter-spacing: -.015em; opacity: 0; line-height: 1.2; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- =========================== A: HOOK -->
+  <section class="scene" id="sA">
+    <div class="fill" style="background: radial-gradient(ellipse 80% 55% at 50% 50%, #10213f 0%, #060b18 60%, #020307 100%)"></div>
+    <div class="grid-bg"></div>
+    <div id="aMsl1"></div><div id="aMsl2"></div>
+  </section>
+
+  <!-- =========================== B: SPEED OF SOUND -->
+  <section class="scene" id="sB">
+    <div class="fill" style="background: radial-gradient(ellipse 70% 50% at 50% 40%, #0b2a3d 0%, #050b14 65%, #020307 100%)"></div>
+    <div id="bRings"></div>
+  </section>
+
+  <!-- =========================== C: MACH SCALE -->
+  <section class="scene" id="sC">
+    <div class="fill" style="background: radial-gradient(ellipse 80% 55% at 50% 55%, #0d1a30 0%, #05080f 70%)"></div>
+    <div class="grid-bg"></div>
+    <div id="scale">
+      <div class="bar">
+        <div class="seg" id="segSub" style="left:0; width:90px; background:#5d6676"></div>
+        <div class="seg" id="segSup" style="left:90px; width:360px; background:linear-gradient(90deg,#1aa6d6,var(--cyan))"></div>
+        <div class="seg" id="segHyp" style="left:450px; width:450px; background:linear-gradient(90deg,var(--gold),var(--orange) 45%,#ff2a3b)"></div>
+      </div>
+      <div class="zone" id="zSub" style="left:-20px; width:130px; color:#9aa3b2; font-size:26px">SUB<small>&lt; Mach 1</small></div>
+      <div class="zone cy" id="zSup" style="left:90px; width:360px">SUPERSONIC<small>Mach 1 – 5</small></div>
+      <div class="zone or" id="zHyp" style="left:450px; width:450px">HYPERSONIC<small>Mach 5 +</small></div>
+      <div id="marker"></div>
+      <div id="ticks"></div>
+    </div>
+    <div id="cMsl"></div>
+    <div id="readout"><div class="m" id="rM">MACH 0.0</div><div class="k" id="rK">0 km/h</div></div>
+  </section>
+
+  <!-- =========================== D: RACE -->
+  <section class="scene" id="sD">
+    <div class="fill" style="background: radial-gradient(ellipse 80% 60% at 50% 50%, #0c1628 0%, #04060c 75%)"></div>
+    <div class="grid-bg"></div>
+
+    <div class="lane-lbl cy" id="l1" style="top:600px">SUPERSONIC<small>Mach 3 · ~3,700 km/h</small></div>
+    <div class="clock" id="c1" style="top:600px">0.0<small> min</small></div>
+    <div class="track" id="t1" style="top:820px"></div>
+    <svg class="target" id="g1" style="left:960px; top:822px" viewBox="0 0 96 96"><circle cx="48" cy="48" r="40" fill="none" stroke="#fff" stroke-width="4" opacity=".8"/><circle cx="48" cy="48" r="20" fill="none" stroke="#fff" stroke-width="4" opacity=".8"/><path d="M48 0v30M48 66v30M0 48h30M66 48h30" stroke="#fff" stroke-width="4"/></svg>
+    <div class="boom" id="b1" style="left:960px; top:822px"></div>
+    <div id="m1"></div>
+
+    <div class="lane-lbl or" id="l2" style="top:1000px">HYPERSONIC<small>Mach 8 · ~9,900 km/h</small></div>
+    <div class="clock" id="c2" style="top:1000px">0.0<small> min</small></div>
+    <div class="track" id="t2" style="top:1220px"></div>
+    <svg class="target" id="g2" style="left:960px; top:1222px" viewBox="0 0 96 96"><circle cx="48" cy="48" r="40" fill="none" stroke="#fff" stroke-width="4" opacity=".8"/><circle cx="48" cy="48" r="20" fill="none" stroke="#fff" stroke-width="4" opacity=".8"/><path d="M48 0v30M48 66v30M0 48h30M66 48h30" stroke="#fff" stroke-width="4"/></svg>
+    <div class="boom" id="b2" style="left:960px; top:1222px"></div>
+    <div id="m2"></div>
+  </section>
+
+  <!-- =========================== E: HOW THEY FLY -->
+  <section class="scene" id="sE">
+    <div class="fill" style="background: radial-gradient(ellipse 80% 60% at 50% 50%, #0c1628 0%, #04060c 75%)"></div>
+    <div class="card" id="e1" style="top:440px; --c: var(--cyan)">
+      <div class="hd">SUPERSONIC</div>
+      <div class="rows">
+        <div class="row"><span class="emoji">⚙️</span><span>Rocket or ramjet engine</span></div>
+        <div class="row"><span class="emoji">➡️</span><span>Mostly predictable path</span></div>
+        <div class="row"><span class="emoji">🛡️</span><span>Modern air defence<br>can intercept it</span></div>
+      </div>
+      <svg class="path" viewBox="0 0 260 300"><path id="p1" d="M10 250 L250 60" fill="none" stroke="#35d6ff" stroke-width="8" stroke-linecap="round"/></svg>
+    </div>
+    <div class="card" id="e2" style="top:980px; --c: var(--orange)">
+      <div class="hd">HYPERSONIC</div>
+      <div class="rows">
+        <div class="row"><span class="emoji">🚀</span><span>Scramjet or<br>boost-glide</span></div>
+        <div class="row"><span class="emoji">〰️</span><span>Maneuvers mid-flight</span></div>
+        <div class="row"><span class="emoji">⚠️</span><span>Extremely hard<br>to intercept</span></div>
+      </div>
+      <svg class="path" viewBox="0 0 260 300"><path id="p2" d="M10 260 C 60 260, 40 60, 110 110 S 160 230, 200 140 S 230 40, 250 60" fill="none" stroke="#ff6a1a" stroke-width="8" stroke-linecap="round"/></svg>
+    </div>
+  </section>
+
+  <!-- =========================== F: PLOT TWIST -->
+  <section class="scene" id="sF">
+    <div class="fill" style="background: radial-gradient(ellipse 80% 60% at 50% 60%, #1a0e08 0%, #05050a 75%)"></div>
+    <div class="grid-bg" style="opacity:.3"></div>
+    <svg id="traj" viewBox="0 0 1080 860">
+      <line x1="40" y1="800" x2="1040" y2="800" stroke="rgba(255,255,255,.25)" stroke-width="3"/>
+      <path id="arcP" d="M90 800 Q 540 -330 990 800" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="6" stroke-linecap="round"/>
+      <path id="glideP" d="M90 800 C 140 420, 230 300, 330 330 S 470 520, 560 430 S 700 230, 790 360 S 920 560, 990 800" fill="none" stroke="#ff6a1a" stroke-width="9" stroke-linecap="round"/>
+      <circle id="arcDot" r="16" fill="#fff" opacity="0"/>
+    </svg>
+    <div id="fMsl"></div>
+    <div class="tlabel" id="lblArc" style="left:330px; top:770px; color:#fff">Predictable arc</div>
+    <div class="tlabel or" id="lblGlide" style="left:600px; top:1380px">Changes direction</div>
+  </section>
+
+  <!-- =========================== G: EXAMPLES -->
+  <section class="scene" id="sG">
+    <div class="fill" style="background: radial-gradient(ellipse 80% 60% at 50% 50%, #0c1628 0%, #04060c 75%)"></div>
+    <div class="col" id="gL" style="left:60px">
+      <div class="hd" style="background:var(--cyan)">SUPERSONIC</div>
+      <div class="ex"><b>BrahMos</b><span>India–Russia · ~Mach 3</span></div>
+      <div class="ex"><b>P-800 Oniks</b><span>Russia · ~Mach 2.5</span></div>
+    </div>
+    <div class="col" id="gR" style="left:570px">
+      <div class="hd" style="background:var(--orange)">HYPERSONIC</div>
+      <div class="ex"><b>Avangard</b><span>Russia · glide vehicle</span></div>
+      <div class="ex"><b>Zircon</b><span>Russia · scramjet</span></div>
+      <div class="ex"><b>DF-17</b><span>China · glide vehicle</span></div>
+      <div class="ex"><b>Dark Eagle</b><span>USA · glide vehicle</span></div>
+    </div>
+  </section>
+
+  <!-- =========================== H: CTA -->
+  <section class="scene" id="sH">
+    <div class="fill" style="background: radial-gradient(ellipse 80% 60% at 50% 45%, #10213f 0%, #04060c 75%)"></div>
+    <div class="recap" style="top:520px; --c: var(--cyan)"><b>Supersonic</b><span>Mach 1–5</span></div>
+    <div class="recap" style="top:700px; --c: var(--orange)"><b>Hypersonic</b><span>Mach 5+ &amp; steers</span></div>
+    <div class="pill" style="top:1010px; background:#fff; color:var(--ink)"><span class="emoji">📌</span>  Save this for exam prep</div>
+    <div class="pill" style="top:1170px; background:var(--orange); color:#fff"><span class="emoji">💬</span>  Comment: which missile should I explain next?</div>
+  </section>
+
+  <!-- kinetic text layer (above all scenes) -->
+  <div class="fill" id="words"></div>
+
+  <div id="streaks"></div>
+  <div id="grain"></div>
+  <div id="vignette"></div>
+  <div id="flash"></div>
+  <div id="progress"></div>
+</div>
+
+<script>
+/* ==================================================================== config */
+const CONFIG = { fps: 30, duration: 35.0 };
+
+/* ==================================================================== setup */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+let seed = 4242;
+const rnd = () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296);
+const R = (a, b) => a + rnd() * (b - a);
+const clamp01 = (x) => Math.max(0, Math.min(1, x));
+
+const tl = gsap.timeline({ paused: true, defaults: { ease: "power3.out" } });
+const cues = [];
+const updaters = [];
+const sfx = (t, name, gain = 1, extra = {}) => cues.push({ t: +t.toFixed(3), sfx: name, gain, ...extra });
+
+function scene(id, t0, t1) {
+  tl.set(`#${id}`, { visibility: "visible" }, t0);
+  tl.set(`#${id}`, { visibility: "hidden" }, t1);
+}
+
+/* missile drawing: nose points right; accent colours fins and exhaust */
+let mslId = 0;
+function missile(host, width, accent, x = 0, y = 0) {
+  const id = "msl" + mslId++;
+  const h = typeof host === "string" ? $(host) : host;
+  h.insertAdjacentHTML("beforeend", `
+  <svg class="msl" id="${id}" viewBox="0 0 600 120" style="width:${width}px; left:${x}px; top:${y}px">
+    <defs>
+      <linearGradient id="${id}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f4f8"/><stop offset=".45" stop-color="#b4bdc9"/><stop offset="1" stop-color="#58616f"/></linearGradient>
+      <radialGradient id="${id}f" cx="1" cy=".5" r="1"><stop offset="0" stop-color="#fff"/><stop offset=".25" stop-color="${accent}"/><stop offset="1" stop-color="${accent}" stop-opacity="0"/></radialGradient>
+    </defs>
+    <ellipse class="flame" cx="70" cy="60" rx="80" ry="15" fill="url(#${id}f)"/>
+    <path d="M128 46 L93 12 L172 12 L214 46Z M128 74 L93 108 L172 108 L214 74Z" fill="${accent}"/>
+    <path d="M120 44 H470 Q560 47 594 60 Q560 73 470 76 H120 Z" fill="url(#${id}b)"/>
+    <path d="M402 44 L388 28 L432 28 L446 44Z M402 76 L388 92 L432 92 L446 76Z" fill="${accent}" opacity=".9"/>
+    <rect x="452" y="44" width="12" height="32" fill="${accent}"/>
+  </svg>`);
+  return $("#" + id);
+}
+
+/* kinetic word */
+const W = $("#words");
+function word(html, t, t1, o = {}) {
+  const el = document.createElement("div");
+  el.className = "w" + (o.cls ? " " + o.cls : "");
+  el.innerHTML = html;
+  el.style.fontSize = (o.size || 130) + "px";
+  el.style.top = (o.y ?? 860) + "px";
+  if (o.weight) el.style.fontWeight = o.weight;
+  W.appendChild(el);
+  const from = o.from || { opacity: 0, scale: 1.28, filter: "blur(16px)" };
+  tl.fromTo(el, from, { opacity: 1, scale: 1, y: 0, x: 0, filter: "blur(0px)", duration: o.inDur || 0.24, ease: o.ease || "expo.out" }, t);
+  if (t1 != null) tl.to(el, { opacity: 0, filter: "blur(10px)", scale: o.outScale || 0.94, duration: 0.12, ease: "power2.in" }, t1 - 0.12);
+  if (o.sfx !== false) sfx(t - 0.03, o.sfx || "swish", o.gain ?? 0.5);
+  return el;
+}
+
+function glitch(el, t, dur = 0.4, power = 1) {
+  const steps = Math.round(dur / 0.04);
+  for (let i = 0; i < steps; i++) {
+    tl.set(el, {
+      x: R(-18, 18) * power, y: R(-6, 6) * power, skewX: R(-8, 8) * power,
+      textShadow: `${R(-22, 22) * power}px 0 rgba(255,106,26,.9), ${R(-22, 22) * power}px 0 rgba(53,214,255,.85)`,
+    }, t + i * 0.04);
+  }
+  tl.set(el, { x: 0, y: 0, skewX: 0, textShadow: "0 0 60px rgba(255,106,26,.65), 0 6px 40px rgba(0,0,0,.5)" }, t + dur);
+}
+function shake(t, dur = 0.35, amp = 22) {
+  const steps = Math.round(dur / 0.033);
+  for (let i = 0; i < steps; i++) {
+    const k = 1 - i / steps;
+    tl.set("#stage", { x: R(-amp, amp) * k, y: R(-amp, amp) * k, rotation: R(-0.8, 0.8) * k }, t + i * 0.033);
+  }
+  tl.set("#stage", { x: 0, y: 0, rotation: 0 }, t + dur);
+}
+function zoomOut(id, t) {
+  tl.fromTo(`#${id}`, { scale: 1, filter: "blur(0px) brightness(1)", opacity: 1 }, { scale: 1.25, filter: "blur(30px) brightness(1.4)", opacity: 0, duration: 0.3, ease: "power2.in", immediateRender: false }, t - 0.3);
+  sfx(t - 0.32, "whoosh", 0.7);
+}
+function zoomIn(id, t) {
+  tl.fromTo(`#${id}`, { scale: 0.86, filter: "blur(24px) brightness(1)", opacity: 0 }, { scale: 1, filter: "blur(0px) brightness(1)", opacity: 1, duration: 0.42, ease: "expo.out" }, t);
+}
+function flash(t, peak = 0.85, dur = 0.35) {
+  tl.fromTo("#flash", { opacity: peak }, { opacity: 0, duration: dur, ease: "power2.out", immediateRender: false }, t);
+}
+
+/* speed streaks (deterministic, driven by time) */
+const STREAKS = Array.from({ length: 46 }, () => {
+  const i = document.createElement("i");
+  const s = { y: R(80, 1840), len: R(120, 520), v: R(1800, 4200), x0: R(0, 1600), o: R(0.15, 0.7) };
+  i.style.top = s.y + "px"; i.style.width = s.len + "px"; i.style.opacity = s.o;
+  $("#streaks").appendChild(i);
+  return { el: i, ...s };
+});
+updaters.push((t) => {
+  STREAKS.forEach((s) => {
+    const span = 1080 + s.len * 2;
+    const x = 1080 - (((s.x0 + t * s.v) % span + span) % span);
+    s.el.style.transform = `translateX(${x}px)`;
+  });
+});
+// flame flicker on every missile
+updaters.push((t) => {
+  const f = Math.floor(t * 30);
+  $$(".msl .flame").forEach((el, i) => {
+    const k = 0.85 + (((f * 37 + i * 91) % 23) / 23) * 0.35;
+    el.setAttribute("rx", 80 * k);
+  });
+});
+
+/* ==================================================================== TIMELINE */
+sfx(0, "drone", 0.3, { dur: 24.1 });
+
+/* ---------- A. HOOK  0 – 3.6 ---------- */
+scene("sA", 0, 3.6);
+tl.fromTo("#streaks", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 0);
+const a1 = missile("#aMsl1", 360, "#35d6ff", -400, 300);
+const a2 = missile("#aMsl2", 360, "#ff6a1a", -400, 1460);
+tl.fromTo(a1, { x: 0 }, { x: 1700, duration: 1.4, ease: "power1.in" }, 0.05);
+tl.fromTo(a2, { x: 0 }, { x: 1700, duration: 0.6, ease: "power2.in" }, 0.85);
+sfx(0.05, "whoosh_long", 0.5, { pan: -0.3 });
+sfx(0.85, "whoosh", 0.8, { pan: 0.3 });
+word('<span class="cy glow-c">SUPERSONIC</span>', 0.25, 2.3, { size: 150, y: 640, sfx: "whoosh", gain: 0.5 });
+word('<span class="thin mute">vs</span>', 0.7, 2.3, { size: 100, y: 820, sfx: "pop_low", gain: 0.4 });
+const hyp = word('<span class="or glow-o">HYPERSONIC</span>', 1.05, 2.3, { size: 160, y: 940, sfx: "hit", gain: 1, inDur: 0.12, from: { opacity: 0, scale: 2.2, filter: "blur(30px)" } });
+glitch(hyp, 1.1, 0.36, 1);
+sfx(1.08, "glitch", 0.55);
+shake(1.05, 0.4, 24);
+flash(1.05, 0.35, 0.3);
+word('It\'s <span class="or">not</span> just<br>about speed.', 2.35, 3.55, { size: 130, y: 760, sfx: "swish" });
+tl.to("#streaks", { opacity: 0, duration: 0.3 }, 3.3);
+zoomOut("sA", 3.6);
+
+/* ---------- B. SPEED OF SOUND  3.6 – 7.8 ---------- */
+scene("sB", 3.6, 7.8);
+zoomIn("sB", 3.6);
+const RINGS = Array.from({ length: 6 }, () => { const r = document.createElement("div"); r.className = "ring"; $("#bRings").appendChild(r); return r; });
+updaters.push((t) => {
+  if (t < 3.6 || t > 7.8) return;
+  RINGS.forEach((r, i) => {
+    const p = ((t - 3.6) * 0.45 + i / RINGS.length) % 1;
+    r.style.transform = `scale(${0.08 + p * 1.1})`;
+    r.style.opacity = (1 - p) * 0.55;
+  });
+});
+for (let i = 0; i < 4; i++) sfx(3.7 + i * 0.95, "pop_low", 0.22);
+word('<span class="thin">First, know this:</span>', 3.7, 4.45, { size: 90, y: 330 });
+word("MACH 1", 4.45, 7.75, { size: 250, y: 480, sfx: "hit", gain: 0.7, inDur: 0.14, from: { opacity: 0, scale: 1.8, filter: "blur(24px)" } });
+shake(4.45, 0.25, 10);
+word('<span class="sub mute">= the speed of sound</span>', 4.8, 7.75, { size: 64, y: 760, sfx: false });
+const kmh = word('<span class="cy glow-c">≈ <span id="bKmh">0</span> km/h</span>', 5.1, 7.75, { size: 120, y: 880, sfx: "riser_short", gain: 0.4 });
+updaters.push((t) => {
+  if (t < 5.1 || t > 7.8) return;
+  const k = gsap.parseEase("power2.out")(clamp01((t - 5.1) / 0.9));
+  $("#bKmh").textContent = (Math.round(1235 * k)).toLocaleString("en-IN");
+});
+for (let i = 0; i < 8; i++) sfx(5.12 + i * 0.1, "counter", 0.3);
+word('<span class="sub mute" style="font-size:40px">(at sea level)</span>', 5.6, 7.75, { size: 40, y: 1030, sfx: false });
+word('<span class="sub">Mach 2 = 2× that.<br>Mach 5 = <span class="or">5× that.</span></span>', 6.25, 7.75, { size: 76, y: 1240, sfx: "pop", gain: 0.45 });
+zoomOut("sB", 7.8);
+
+/* ---------- C. MACH SCALE  7.8 – 13.0 ---------- */
+scene("sC", 7.8, 13.0);
+zoomIn("sC", 7.8);
+for (let m = 0; m <= 10; m++) {
+  const d = document.createElement("div");
+  d.className = "tick"; d.style.left = m * 90 + "px"; d.textContent = m === 10 ? "10+" : m;
+  $("#ticks").appendChild(d);
+}
+tl.fromTo("#ticks .tick", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, stagger: 0.03 }, 7.95);
+const cm = missile("#cMsl", 190, "#ffffff", 0, 850);
+tl.to("#segSub", { scaleX: 1, duration: 0.3 }, 8.0);
+tl.to("#zSub", { opacity: 1, duration: 0.3 }, 8.0);
+word('<span class="cy">Supersonic</span><br><span class="thin">= Mach 1 to 5</span>', 8.2, 10.35, { size: 120, y: 330 });
+tl.to("#segSup", { scaleX: 1, duration: 0.7, ease: "power2.out" }, 8.35);
+tl.fromTo("#zSup", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35 }, 8.45);
+sfx(8.35, "riser_short", 0.35);
+tl.to(["#marker", "#readout"], { opacity: 1, duration: 0.3 }, 8.3);
+word('<span class="or">Hypersonic</span><br><span class="thin">= Mach 5 and up</span>', 10.35, 12.95, { size: 120, y: 330 });
+tl.to("#segHyp", { scaleX: 1, duration: 0.8, ease: "power2.out" }, 10.4);
+tl.fromTo("#zHyp", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35 }, 10.5);
+sfx(10.38, "riser", 0.45);
+// marker Mach value over time
+const machAt = (t) => {
+  if (t < 8.4) return 0;
+  if (t < 9.4) return 3 * gsap.parseEase("power2.inOut")((t - 8.4) / 1.0);
+  if (t < 10.5) return 3;
+  if (t < 11.6) return 3 + 5 * gsap.parseEase("power2.inOut")((t - 10.5) / 1.1);
+  return 8;
+};
+updaters.push((t) => {
+  if (t < 7.8 || t > 13.0) return;
+  const m = machAt(t);
+  $("#marker").style.left = m * 90 + "px";
+  cm.style.left = 90 + m * 90 - 186 + "px";
+  const c = m >= 5 ? "#ff6a1a" : m >= 1 ? "#35d6ff" : "#ffffff";
+  $("#rM").textContent = "MACH " + m.toFixed(1);
+  $("#rM").style.color = c;
+  $("#rK").textContent = "≈ " + (Math.round((m * 1235) / 10) * 10).toLocaleString("en-IN") + " km/h";
+});
+for (let i = 0; i < 9; i++) sfx(8.45 + i * 0.1, "counter", 0.25);
+for (let i = 0; i < 10; i++) sfx(10.55 + i * 0.1, "counter", 0.28);
+sfx(11.6, "hit", 0.6);
+shake(11.6, 0.25, 10);
+word('<span class="sub">That\'s <span class="or">~2.7 km</span><br>every <b>second.</b></span>', 11.75, 12.95, { size: 76, y: 1500, sfx: "pop", gain: 0.45 });
+zoomOut("sC", 13.0);
+
+/* ---------- D. RACE  13.0 – 18.6 ---------- */
+scene("sD", 13.0, 18.6);
+zoomIn("sD", 13.0);
+word('Race to <span class="or">1,000 km</span>', 13.05, 18.55, { size: 110, y: 330, sfx: false });
+tl.fromTo(["#l1", "#c1", "#t1", "#g1"], { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.35, stagger: 0.05 }, 13.15);
+tl.fromTo(["#l2", "#c2", "#t2", "#g2"], { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.35, stagger: 0.05 }, 13.3);
+const r1 = missile("#m1", 230, "#35d6ff", 0, 776);
+const r2 = missile("#m2", 230, "#ff6a1a", 0, 1176);
+const RACE0 = 13.9, RACE_LEN = 3.2, SIM_MAX = 16.2;  // simulated minutes
+const ARR = { 1: 1000 / (3 * 1235) * 60, 2: 1000 / (8 * 1235) * 60 };  // 16.2 and 6.07 minutes
+const realArr = (n) => RACE0 + (RACE_LEN * ARR[n]) / SIM_MAX;
+sfx(RACE0 - 0.05, "whoosh_long", 0.5);
+sfx(RACE0 - 0.05, "whoosh", 0.6);
+[1, 2].forEach((n) => {
+  const ta = realArr(n);
+  tl.fromTo(`#b${n}`, { opacity: 0, scale: 0.2 }, { opacity: 1, scale: 1.2, duration: 0.2, ease: "power2.out" }, ta);
+  tl.to(`#b${n}`, { opacity: 0, scale: 1.6, duration: 0.5 }, ta + 0.2);
+  tl.to(n === 1 ? r1 : r2, { opacity: 0, duration: 0.1 }, ta);
+  sfx(ta, "boom", n === 2 ? 0.9 : 0.8);
+  sfx(ta, "hit", 0.6);
+  shake(ta, 0.3, n === 2 ? 18 : 12);
+});
+updaters.push((t) => {
+  if (t < 13.0 || t > 18.6) return;
+  const sim = clamp01((t - RACE0) / RACE_LEN) * SIM_MAX;  // minutes elapsed in the race
+  [[1, r1], [2, r2]].forEach(([n, el]) => {
+    const frac = clamp01(sim / ARR[n]);
+    const nose = 120 + frac * 840;
+    el.style.left = nose - 228 + "px";
+    const shown = Math.min(sim, ARR[n]);
+    $(`#c${n}`).innerHTML = (frac >= 1 ? '<span class="emoji" style="font-size:56px">✅</span> ' : "") + shown.toFixed(1) + "<small> min</small>";
+  });
+});
+for (let t = RACE0; t < realArr(1); t += 0.2) sfx(t, "tick", 0.25);
+word('<span class="or">Less than half</span><br>the warning time.', 17.3, 18.55, { size: 104, y: 1420, sfx: "swish" });
+zoomOut("sD", 18.6);
+
+/* ---------- E. HOW THEY FLY  18.6 – 23.9 ---------- */
+scene("sE", 18.6, 23.9);
+zoomIn("sE", 18.6);
+word("How they fly", 18.65, 23.85, { size: 110, y: 270, sfx: false });
+[["#e1", "#p1", 18.8], ["#e2", "#p2", 20.7]].forEach(([card, path, t]) => {
+  tl.fromTo(card, { opacity: 0, y: 80, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "expo.out" }, t);
+  sfx(t - 0.03, "whoosh", 0.5);
+  $$(".row", $(card)).forEach((row, i) => {
+    tl.fromTo(row, { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 0.3 }, t + 0.35 + i * 0.4);
+    sfx(t + 0.35 + i * 0.4, "pop", 0.4);
+  });
+  const p = $(path), L = p.getTotalLength();
+  p.style.strokeDasharray = L;
+  tl.fromTo(p, { strokeDashoffset: L }, { strokeDashoffset: 0, duration: 1.0, ease: "power1.inOut" }, t + 0.4);
+});
+zoomOut("sE", 23.9);
+
+/* ---------- F. PLOT TWIST  23.9 – 28.6 ---------- */
+scene("sF", 23.9, 28.6);
+zoomIn("sF", 23.9);
+word('Plot twist <span class="emoji">🤯</span>', 23.95, 24.75, { size: 110, y: 380, sfx: "hit", gain: 0.5 });
+word('Old ballistic missiles<br>also hit <span class="or">Mach 20+</span>', 24.75, 26.35, { size: 92, y: 330 });
+const arcP = $("#arcP"), arcL = arcP.getTotalLength();
+arcP.style.strokeDasharray = arcL;
+tl.fromTo(arcP, { strokeDashoffset: arcL }, { strokeDashoffset: 0, duration: 1.1, ease: "none" }, 25.0);
+tl.set("#arcDot", { opacity: 1 }, 25.0);
+tl.to("#arcDot", { opacity: 0, duration: 0.1 }, 26.15);
+tl.to(arcP, { opacity: 0.25, duration: 0.3 }, 26.3);
+tl.fromTo("#lblArc", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3 }, 25.5);
+tl.to("#lblArc", { opacity: 0.35, duration: 0.3 }, 26.3);
+sfx(25.0, "whoosh_long", 0.45);
+word('…but hypersonic<br>ones can <span class="or">STEER.</span>', 26.35, 28.55, { size: 100, y: 330, sfx: "hit", gain: 0.6 });
+const gP = $("#glideP"), gL = gP.getTotalLength();
+gP.style.strokeDasharray = gL;
+tl.fromTo(gP, { strokeDashoffset: gL }, { strokeDashoffset: 0, duration: 1.5, ease: "none" }, 26.5);
+const fm = missile("#fMsl", 150, "#ff6a1a", 0, 0);
+tl.set(fm, { opacity: 0 }, 0);
+tl.set(fm, { opacity: 1 }, 26.5);
+tl.to(fm, { opacity: 0, duration: 0.1 }, 28.0);
+tl.fromTo("#lblGlide", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3 }, 27.2);
+sfx(26.5, "whoosh", 0.6); sfx(26.95, "swish", 0.5); sfx(27.4, "swish", 0.5);
+sfx(28.0, "boom", 0.7);
+shake(28.0, 0.3, 14);
+updaters.push((t) => {
+  if (t < 23.9 || t > 28.6) return;
+  const SVG_TOP = 760;
+  const ka = clamp01((t - 25.0) / 1.1);
+  const pa = arcP.getPointAtLength(ka * arcL);
+  $("#arcDot").setAttribute("cx", pa.x); $("#arcDot").setAttribute("cy", pa.y);
+  const kg = clamp01((t - 26.5) / 1.5);
+  const p0 = gP.getPointAtLength(kg * gL), p1 = gP.getPointAtLength(Math.min(gL, kg * gL + 2));
+  const ang = Math.atan2(p1.y - p0.y, p1.x - p0.x) * 180 / Math.PI;
+  fm.style.left = p0.x - 148 + "px";
+  fm.style.top = SVG_TOP + p0.y - 15 + "px";
+  fm.style.transformOrigin = "148px 15px";
+  fm.style.transform = `rotate(${ang}deg)`;
+});
+zoomOut("sF", 28.6);
+
+/* ---------- G. EXAMPLES  28.6 – 31.8 ---------- */
+scene("sG", 28.6, 31.8);
+zoomIn("sG", 28.6);
+word("Real examples", 28.65, 31.75, { size: 110, y: 300, sfx: false });
+[["#gL", 28.8], ["#gR", 29.05]].forEach(([col, t]) => {
+  $$(".hd, .ex", $(col)).forEach((el, i) => {
+    tl.fromTo(el, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.35, ease: "back.out(1.6)" }, t + i * 0.28);
+    sfx(t + i * 0.28, i ? "pop" : "swish", 0.4);
+  });
+});
+word('<span class="sub mute" style="font-size:34px">Speeds are approximate / officially claimed</span>', 30.2, 31.75, { size: 34, y: 1570, sfx: false });
+zoomOut("sG", 31.8);
+
+/* ---------- H. CTA  31.8 – end ---------- */
+scene("sH", 31.8, CONFIG.duration + 1);
+zoomIn("sH", 31.8);
+sfx(31.75, "pad", 0.6, { dur: 3.3 });
+word("Quick recap", 31.85, null, { size: 110, y: 330, sfx: false });
+$$("#sH .recap").forEach((el, i) => {
+  const t = 32.05 + i * 0.35;
+  tl.fromTo(el, { opacity: 0, x: 400 }, { opacity: 1, x: 0, duration: 0.45, ease: "expo.out" }, t);
+  sfx(t, "swish", 0.45);
+});
+$$("#sH .pill").forEach((el, i) => {
+  const t = 33.0 + i * 0.4;
+  tl.fromTo(el, { opacity: 0, y: 80, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.7)" }, t);
+  sfx(t, i ? "ding" : "pop_high", 0.45);
+});
+tl.to("#sH .pill:last-child", { scale: 1.035, duration: 0.3, yoyo: true, repeat: 1, ease: "sine.inOut" }, 34.2);
+
+/* global progress bar */
+tl.fromTo("#progress", { scaleX: 0 }, { scaleX: 1, duration: CONFIG.duration, ease: "none" }, 0);
+tl.set({}, {}, CONFIG.duration);
+
+/* ==================================================================== API */
+const grain = $("#grain");
+window.REEL = {
+  width: 1080, height: 1920, fps: CONFIG.fps, duration: CONFIG.duration,
+  cues: cues.sort((a, b) => a.t - b.t),
+  seek(t) {
+    tl.seek(t, false);
+    updaters.forEach((fn) => fn(t));
+    const f = Math.floor(t * 24);
+    grain.style.transform = `translate(${(f * 73) % 200 - 100}px, ${(f * 131) % 200 - 100}px)`;
+  },
+};
+window.REEL_READY = (async () => {
+  await document.fonts.ready;
+  REEL.seek(0);
+})();
+</script>
+</body>
+</html>
